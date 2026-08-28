@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/services/prompter_service.dart';
 import 'package:rekeens_flutter_cli/services/template_service.dart';
 import 'package:rekeens_flutter_cli/utils/project_paths.dart';
+import 'package:rekeens_flutter_cli/utils/dependency_resolver.dart';
 
 class CreateCommand extends Command<void> {
   final _templateService = const TemplateService();
@@ -97,7 +98,7 @@ class CreateCommand extends Command<void> {
     await _configureProjectFiles(projectName, options);
 
     print('Adding dependencies...');
-    final dependencies = _getDependencies(options);
+    final dependencies = DependencyResolver.resolve(options);
     await _addDependencies(projectName, dependencies);
 
     print('Formatting code...');
@@ -188,51 +189,6 @@ class CreateCommand extends Command<void> {
       'localization': localization,
       'theme': theme,
     };
-  }
-
-  List<String> _getDependencies(Map<String, dynamic> options) {
-    final deps = <String>[];
-
-    final stateManagement = options['state_management'] as String;
-    final router = options['router'] as String;
-    final networking = options['networking'] as String;
-    final localization = options['localization'] as bool;
-
-    switch (stateManagement) {
-      case 'riverpod':
-        deps.add('flutter_riverpod');
-        break;
-      case 'bloc':
-        deps.add('flutter_bloc');
-        break;
-      default:
-        break;
-    }
-
-    switch (router) {
-      case 'go_router':
-        deps.add('go_router');
-        break;
-      default:
-        break;
-    }
-
-    switch (networking) {
-      case 'dio':
-        deps.add('dio');
-        break;
-      case 'http':
-        deps.add('http');
-        break;
-      default:
-        break;
-    }
-
-    if (localization) {
-      deps.add('intl');
-    }
-
-    return deps;
   }
 
   Future<void> _applyTemplate(String projectName) async {

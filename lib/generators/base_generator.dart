@@ -6,9 +6,12 @@ import 'package:rekeens_flutter_cli/utils/project_paths.dart';
 
 abstract class BaseGenerator {
   final TemplateService _templateService;
+  final String? templatesRootOverride;
 
-  BaseGenerator({TemplateService service = const TemplateService()})
-    : _templateService = service;
+  BaseGenerator({
+    TemplateService templateService = const TemplateService(),
+    this.templatesRootOverride,
+  }) : _templateService = templateService;
 
   bool isSnakeCase(String name) => RegExp(r'^[a-z][a-z0-9_]*$').hasMatch(name);
 
@@ -53,12 +56,8 @@ abstract class BaseGenerator {
     required String targetDir,
     required Map<String, String> variables,
   }) async {
-    final sourceDir = p.join(
-      getPackageRoot(),
-      'templates',
-      'features',
-      templateSubPath,
-    );
+    final root = templatesRootOverride ?? getPackageRoot();
+    final sourceDir = p.join(root, 'templates', 'features', templateSubPath);
     await _templateService.copyTemplate(
       sourceDir: sourceDir,
       targetDir: targetDir,

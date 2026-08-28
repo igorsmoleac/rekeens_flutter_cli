@@ -2,6 +2,8 @@ import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
 
 class ScreenGenerator extends BaseGenerator {
+  ScreenGenerator({super.templateService, super.templatesRootOverride});
+
   Future<void> generate(
     String featureName,
     String screenName, {
@@ -21,7 +23,7 @@ class ScreenGenerator extends BaseGenerator {
 
     ensureDirectory(pagesDir);
 
-    final className = '${toPascalCase(screenName)}Screen';
+    final className = toPascalCase(screenName);
     await copyTemplate(
       templateSubPath: 'screen',
       targetDir: pagesDir,
