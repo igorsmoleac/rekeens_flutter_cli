@@ -5,3 +5,4 @@ build/
 *.iml
 .idea/
 .vscode/
+my_app/
