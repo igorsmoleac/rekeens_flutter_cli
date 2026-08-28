@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 class {{class_name}}Page extends StatelessWidget {
   const {{class_name}}Page({super.key});

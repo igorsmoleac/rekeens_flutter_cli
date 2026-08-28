@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:rekeens_cli/commands/create_command.dart';
-import 'package:rekeens_cli/commands/doctor_command.dart';
-import 'package:rekeens_cli/commands/generate_command.dart';
+import 'package:rekeens_flutter_cli/commands/create_command.dart';
+import 'package:rekeens_flutter_cli/commands/doctor_command.dart';
+import 'package:rekeens_flutter_cli/commands/generate_command.dart';
 
 void main(List<String> args) {
   if (args.isNotEmpty && args.first == 'g') {

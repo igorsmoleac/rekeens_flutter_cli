@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
-import 'package:rekeens_cli/services/prompter_service.dart';
-import 'package:rekeens_cli/services/template_service.dart';
-import 'package:rekeens_cli/utils/project_paths.dart';
+import 'package:rekeens_flutter_cli/services/prompter_service.dart';
+import 'package:rekeens_flutter_cli/services/template_service.dart';
+import 'package:rekeens_flutter_cli/utils/project_paths.dart';
 
 class CreateCommand extends Command<void> {
   final _templateService = const TemplateService();

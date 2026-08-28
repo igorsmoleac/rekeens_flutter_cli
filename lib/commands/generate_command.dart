@@ -1,10 +1,10 @@
 import 'package:args/command_runner.dart';
-import 'package:rekeens_cli/generators/feature_generator.dart';
-import 'package:rekeens_cli/generators/screen_generator.dart';
-import 'package:rekeens_cli/generators/model_generator.dart';
-import 'package:rekeens_cli/generators/repository_generator.dart';
-import 'package:rekeens_cli/generators/service_generator.dart';
-import 'package:rekeens_cli/generators/provider_generator.dart';
+import 'package:rekeens_flutter_cli/generators/feature_generator.dart';
+import 'package:rekeens_flutter_cli/generators/screen_generator.dart';
+import 'package:rekeens_flutter_cli/generators/model_generator.dart';
+import 'package:rekeens_flutter_cli/generators/repository_generator.dart';
+import 'package:rekeens_flutter_cli/generators/service_generator.dart';
+import 'package:rekeens_flutter_cli/generators/provider_generator.dart';
 
 class GenerateCommand extends Command<void> {
   final _featureGenerator = FeatureGenerator();
