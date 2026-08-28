@@ -25,10 +25,10 @@ class TemplateService {
       var relativePath = entity.path.substring(sourceDir.length + 1);
 
       variables.forEach((key, value) {
-        relativePath = relativePath.replaceAll('{{${key}}}', value);
+        relativePath = relativePath.replaceAll('{{$key}}', value);
       });
 
-      final targetPath = '${targetDir}${Platform.pathSeparator}$relativePath';
+      final targetPath = '$targetDir${Platform.pathSeparator}$relativePath';
 
       if (entity is Directory) {
         Directory(targetPath).createSync(recursive: true);
@@ -37,7 +37,7 @@ class TemplateService {
         if (_isTextFile(file.path)) {
           var content = await file.readAsString();
           variables.forEach((key, value) {
-            content = content.replaceAll('{{${key}}}', value);
+            content = content.replaceAll('{{$key}}', value);
           });
           await File(targetPath).writeAsString(content);
         } else {

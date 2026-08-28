@@ -1,10 +1,10 @@
 import 'package:args/command_runner.dart';
 import 'package:rekeens_flutter_cli/generators/feature_generator.dart';
-import 'package:rekeens_flutter_cli/generators/screen_generator.dart';
 import 'package:rekeens_flutter_cli/generators/model_generator.dart';
-import 'package:rekeens_flutter_cli/generators/repository_generator.dart';
-import 'package:rekeens_flutter_cli/generators/service_generator.dart';
 import 'package:rekeens_flutter_cli/generators/provider_generator.dart';
+import 'package:rekeens_flutter_cli/generators/repository_generator.dart';
+import 'package:rekeens_flutter_cli/generators/screen_generator.dart';
+import 'package:rekeens_flutter_cli/generators/service_generator.dart';
 
 class GenerateCommand extends Command<void> {
   final _featureGenerator = FeatureGenerator();
@@ -18,7 +18,7 @@ class GenerateCommand extends Command<void> {
     argParser.addFlag(
       'force',
       abbr: 'f',
-      help: 'Overwrite existing files if feature exists.',
+      help: 'Overwrite existing files.',
       defaultsTo: false,
     );
   }
@@ -40,10 +40,11 @@ class GenerateCommand extends Command<void> {
     }
 
     final type = rest[0];
+    final force = argResults!['force'] as bool;
 
     switch (type) {
       case 'feature':
-        await _featureGenerator.generate(rest[1]);
+        await _featureGenerator.generate(rest[1], force: force);
         break;
       case 'screen':
         _validateLength(
@@ -51,7 +52,7 @@ class GenerateCommand extends Command<void> {
           3,
           'rekeens generate screen <feature_name> <screen_name>',
         );
-        await _screenGenerator.generate(rest[1], rest[2]);
+        await _screenGenerator.generate(rest[1], rest[2], force: force);
         break;
       case 'model':
         _validateLength(
@@ -59,7 +60,7 @@ class GenerateCommand extends Command<void> {
           3,
           'rekeens generate model <feature_name> <model_name>',
         );
-        await _modelGenerator.generate(rest[1], rest[2]);
+        await _modelGenerator.generate(rest[1], rest[2], force: force);
         break;
       case 'repository':
         _validateLength(
@@ -67,7 +68,7 @@ class GenerateCommand extends Command<void> {
           3,
           'rekeens generate repository <feature_name> <repository_name>',
         );
-        await _repositoryGenerator.generate(rest[1], rest[2]);
+        await _repositoryGenerator.generate(rest[1], rest[2], force: force);
         break;
       case 'service':
         _validateLength(
@@ -75,7 +76,7 @@ class GenerateCommand extends Command<void> {
           3,
           'rekeens generate service <feature_name> <service_name>',
         );
-        await _serviceGenerator.generate(rest[1], rest[2]);
+        await _serviceGenerator.generate(rest[1], rest[2], force: force);
         break;
       case 'provider':
         _validateLength(
@@ -83,7 +84,7 @@ class GenerateCommand extends Command<void> {
           3,
           'rekeens generate provider <feature_name> <provider_name>',
         );
-        await _providerGenerator.generate(rest[1], rest[2]);
+        await _providerGenerator.generate(rest[1], rest[2], force: force);
         break;
       default:
         throw UsageException(

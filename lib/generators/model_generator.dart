@@ -1,68 +1,35 @@
-import 'dart:io';
-
 import 'package:path/path.dart' as p;
-import 'package:rekeens_flutter_cli/services/template_service.dart';
-import 'package:rekeens_flutter_cli/utils/project_paths.dart';
+import 'package:rekeens_flutter_cli/generators/base_generator.dart';
 
-class ModelGenerator {
-  final _templateService = const TemplateService();
+class ModelGenerator extends BaseGenerator {
+  ModelGenerator({super.templateService, super.templatesRootOverride});
 
-  Future<void> generate(String featureName, String modelName) async {
+  Future<void> generate(
+    String featureName,
+    String modelName, {
+    bool force = false,
+  }) async {
     if (featureName.isEmpty || modelName.isEmpty) {
       throw Exception('Feature name and model name are required.');
     }
-
-    if (!_isSnakeCase(featureName) || !_isSnakeCase(modelName)) {
-      throw Exception(
-        'Names must be in snake_case (lowercase with underscores).',
-      );
+    if (!isSnakeCase(featureName) || !isSnakeCase(modelName)) {
+      throw Exception('Names must be in snake_case.');
     }
 
-    final currentDir = Directory.current.path;
-    final featureDir = p.join(currentDir, 'lib', 'features', featureName);
-    if (!Directory(featureDir).existsSync()) {
-      throw Exception('Feature "$featureName" does not exist.');
-    }
-
+    final featureDir = getFeatureDir(featureName);
     final modelsDir = p.join(featureDir, 'data', 'models');
     final targetPath = p.join(modelsDir, '${modelName}_model.dart');
-    if (File(targetPath).existsSync()) {
-      throw Exception(
-        'Model "$modelName" already exists in feature "$featureName".',
-      );
-    }
+    checkFileExists(targetPath, 'Model "$modelName"', force: force);
 
-    final className = _toPascalCase(modelName);
-    final variables = <String, String>{
-      'model_name': modelName,
-      'class_name': className,
-    };
+    ensureDirectory(modelsDir);
 
-    final templateDir = p.join(
-      getPackageRoot(),
-      'templates',
-      'features',
-      'model',
-    );
-
-    await _templateService.copyTemplate(
-      sourceDir: templateDir,
+    final className = toPascalCase(modelName);
+    await copyTemplate(
+      templateSubPath: 'model',
       targetDir: modelsDir,
-      variables: variables,
+      variables: {'model_name': modelName, 'class_name': className},
     );
 
     print('Model "$modelName" created in feature "$featureName".');
-  }
-
-  bool _isSnakeCase(String name) {
-    return RegExp(r'^[a-z][a-z0-9_]*$').hasMatch(name);
-  }
-
-  String _toPascalCase(String snakeCase) {
-    final parts = snakeCase.split('_');
-    return parts.map((part) {
-      if (part.isEmpty) return '';
-      return part[0].toUpperCase() + part.substring(1);
-    }).join();
   }
 }

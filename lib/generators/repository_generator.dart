@@ -1,73 +1,38 @@
-import 'dart:io';
-
 import 'package:path/path.dart' as p;
-import 'package:rekeens_flutter_cli/services/template_service.dart';
-import 'package:rekeens_flutter_cli/utils/project_paths.dart';
+import 'package:rekeens_flutter_cli/generators/base_generator.dart';
 
-class RepositoryGenerator {
-  final _templateService = const TemplateService();
+class RepositoryGenerator extends BaseGenerator {
+  RepositoryGenerator({super.templateService, super.templatesRootOverride});
 
-  Future<void> generate(String featureName, String repositoryName) async {
-    _validate(featureName, repositoryName);
-    final featureDir = _getFeatureDir(featureName);
-    final targetDir = p.join(featureDir, 'data', 'repositories');
-    final targetPath = p.join(targetDir, '${repositoryName}_repository.dart');
-    _checkExists(targetPath, repositoryName);
-
-    final className = _toPascalCase(repositoryName);
-    final variables = {
-      'repository_name': repositoryName,
-      'class_name': className,
-    };
-
-    await _templateService.copyTemplate(
-      sourceDir: p.join(
-        getPackageRoot(),
-        'templates',
-        'features',
-        'repository',
-      ),
-      targetDir: targetDir,
-      variables: variables,
-    );
-
-    print('Repository "$repositoryName" created in feature "$featureName".');
-  }
-
-  void _validate(String featureName, String repositoryName) {
+  Future<void> generate(
+    String featureName,
+    String repositoryName, {
+    bool force = false,
+  }) async {
     if (featureName.isEmpty || repositoryName.isEmpty) {
       throw Exception('Feature name and repository name are required.');
     }
-    if (!_isSnakeCase(featureName) || !_isSnakeCase(repositoryName)) {
+    if (!isSnakeCase(featureName) || !isSnakeCase(repositoryName)) {
       throw Exception('Names must be in snake_case.');
     }
-  }
 
-  String _getFeatureDir(String featureName) {
-    final dir = Directory(
-      p.join(Directory.current.path, 'lib', 'features', featureName),
+    final featureDir = getFeatureDir(featureName);
+    final repositoriesDir = p.join(featureDir, 'data', 'repositories');
+    final targetPath = p.join(
+      repositoriesDir,
+      '${repositoryName}_repository.dart',
     );
-    if (!dir.existsSync()) {
-      throw Exception('Feature "$featureName" does not exist.');
-    }
-    return dir.path;
-  }
+    checkFileExists(targetPath, 'Repository "$repositoryName"', force: force);
 
-  void _checkExists(String path, String name) {
-    if (File(path).existsSync()) {
-      throw Exception('Repository "$name" already exists.');
-    }
-  }
+    ensureDirectory(repositoriesDir);
 
-  bool _isSnakeCase(String name) => RegExp(r'^[a-z][a-z0-9_]*$').hasMatch(name);
+    final className = toPascalCase(repositoryName);
+    await copyTemplate(
+      templateSubPath: 'repository',
+      targetDir: repositoriesDir,
+      variables: {'repository_name': repositoryName, 'class_name': className},
+    );
 
-  String _toPascalCase(String snakeCase) {
-    final parts = snakeCase.split('_');
-    return parts
-        .map(
-          (part) =>
-              part.isEmpty ? '' : part[0].toUpperCase() + part.substring(1),
-        )
-        .join();
+    print('Repository "$repositoryName" created in feature "$featureName".');
   }
 }
