@@ -94,11 +94,8 @@ class CreateCommand extends Command<void> {
     await _applyTemplate(projectName);
 
     print('Adding dependencies...');
-    await _addDependencies(projectName, [
-      'flutter_riverpod',
-      'go_router',
-      'dio',
-    ]);
+    final dependencies = _getDependencies(options);
+    await _addDependencies(projectName, dependencies);
 
     print('Formatting code...');
     await _runProcess('dart', ['format', '.'], workingDirectory: projectName);
@@ -188,6 +185,51 @@ class CreateCommand extends Command<void> {
       'localization': localization,
       'theme': theme,
     };
+  }
+
+  List<String> _getDependencies(Map<String, dynamic> options) {
+    final deps = <String>[];
+
+    final stateManagement = options['state_management'] as String;
+    final router = options['router'] as String;
+    final networking = options['networking'] as String;
+    final localization = options['localization'] as bool;
+
+    switch (stateManagement) {
+      case 'riverpod':
+        deps.add('flutter_riverpod');
+        break;
+      case 'bloc':
+        deps.add('flutter_bloc');
+        break;
+      default:
+        break;
+    }
+
+    switch (router) {
+      case 'go_router':
+        deps.add('go_router');
+        break;
+      default:
+        break;
+    }
+
+    switch (networking) {
+      case 'dio':
+        deps.add('dio');
+        break;
+      case 'http':
+        deps.add('http');
+        break;
+      default:
+        break;
+    }
+
+    if (localization) {
+      deps.add('intl');
+    }
+
+    return deps;
   }
 
   Future<void> _applyTemplate(String projectName) async {
