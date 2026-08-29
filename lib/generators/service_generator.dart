@@ -2,7 +2,11 @@ import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
 
 class ServiceGenerator extends BaseGenerator {
-  ServiceGenerator({super.templateService, super.templatesRootOverride});
+  ServiceGenerator({
+    super.templateService,
+    super.templatesRootOverride,
+    super.workingDirectory,
+  });
 
   Future<void> generate(
     String featureName,

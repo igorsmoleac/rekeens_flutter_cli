@@ -2,7 +2,11 @@ import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
 
 class ModelGenerator extends BaseGenerator {
-  ModelGenerator({super.templateService, super.templatesRootOverride});
+  ModelGenerator({
+    super.templateService,
+    super.templatesRootOverride,
+    super.workingDirectory,
+  });
 
   Future<void> generate(
     String featureName,

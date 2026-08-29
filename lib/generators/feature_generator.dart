@@ -3,7 +3,11 @@ import 'dart:io';
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
 
 class FeatureGenerator extends BaseGenerator {
-  FeatureGenerator({super.templateService, super.templatesRootOverride});
+  FeatureGenerator({
+    super.templateService,
+    super.templatesRootOverride,
+    super.workingDirectory,
+  });
 
   Future<void> generate(String featureName, {bool force = false}) async {
     if (featureName.isEmpty) {

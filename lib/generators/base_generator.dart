@@ -7,11 +7,15 @@ import 'package:rekeens_flutter_cli/utils/project_paths.dart';
 abstract class BaseGenerator {
   final TemplateService _templateService;
   final String? templatesRootOverride;
+  final String? workingDirectory;
 
   BaseGenerator({
     TemplateService templateService = const TemplateService(),
     this.templatesRootOverride,
+    this.workingDirectory,
   }) : _templateService = templateService;
+
+  String get _projectDir => workingDirectory ?? Directory.current.path;
 
   bool isSnakeCase(String name) => RegExp(r'^[a-z][a-z0-9_]*$').hasMatch(name);
 
@@ -26,9 +30,7 @@ abstract class BaseGenerator {
   }
 
   String getFeatureDir(String featureName) {
-    final dir = Directory(
-      p.join(Directory.current.path, 'lib', 'features', featureName),
-    );
+    final dir = Directory(p.join(_projectDir, 'lib', 'features', featureName));
     if (!dir.existsSync()) {
       throw Exception('Feature "$featureName" does not exist.');
     }
@@ -36,7 +38,7 @@ abstract class BaseGenerator {
   }
 
   String getNewFeatureDir(String featureName) {
-    return p.join(Directory.current.path, 'lib', 'features', featureName);
+    return p.join(_projectDir, 'lib', 'features', featureName);
   }
 
   void ensureDirectory(String path) {

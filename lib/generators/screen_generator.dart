@@ -2,7 +2,11 @@ import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
 
 class ScreenGenerator extends BaseGenerator {
-  ScreenGenerator({super.templateService, super.templatesRootOverride});
+  ScreenGenerator({
+    super.templateService,
+    super.templatesRootOverride,
+    super.workingDirectory,
+  });
 
   Future<void> generate(
     String featureName,
