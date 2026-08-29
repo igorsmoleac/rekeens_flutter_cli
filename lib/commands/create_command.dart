@@ -8,6 +8,7 @@ import 'package:rekeens_flutter_cli/services/template_service.dart';
 import 'package:rekeens_flutter_cli/utils/project_paths.dart';
 import 'package:rekeens_flutter_cli/utils/dependency_resolver.dart';
 import 'package:rekeens_flutter_cli/config/presets.dart';
+import 'package:rekeens_flutter_cli/config/config_loader.dart';
 
 class CreateCommand extends Command<void> {
   final _templateService = const TemplateService();
@@ -126,27 +127,38 @@ class CreateCommand extends Command<void> {
 
   Map<String, dynamic> _collectOptionsFromFlags() {
     final args = argResults!;
+    final result = <String, dynamic>{};
 
-    final platformsStr = args['platforms'] as String?;
-    final platforms = platformsStr != null
-        ? platformsStr
-              .split(',')
-              .map((e) => e.trim())
-              .where((e) => e.isNotEmpty)
-              .toList()
-        : <String>[];
+    if (args.wasParsed('platforms')) {
+      final platformsStr = args['platforms'] as String?;
+      result['platforms'] = platformsStr != null
+          ? platformsStr
+                .split(',')
+                .map((e) => e.trim())
+                .where((e) => e.isNotEmpty)
+                .toList()
+          : <String>[];
+    }
+    if (args.wasParsed('architecture')) {
+      result['architecture'] = args['architecture'];
+    }
+    if (args.wasParsed('state-management')) {
+      result['state_management'] = args['state-management'];
+    }
+    if (args.wasParsed('router')) {
+      result['router'] = args['router'];
+    }
+    if (args.wasParsed('networking')) {
+      result['networking'] = args['networking'];
+    }
+    if (args.wasParsed('localization')) {
+      result['localization'] = args['localization'];
+    }
+    if (args.wasParsed('theme')) {
+      result['theme'] = args['theme'];
+    }
 
-    final localization = args['localization'] as bool;
-
-    return {
-      'platforms': platforms,
-      'architecture': args['architecture'] ?? 'feature-first',
-      'state_management': args['state-management'] ?? 'riverpod',
-      'router': args['router'] ?? 'go_router',
-      'networking': args['networking'] ?? 'dio',
-      'localization': localization,
-      'theme': args['theme'] ?? 'material3',
-    };
+    return result;
   }
 
   Map<String, dynamic> _collectOptions() {
@@ -408,7 +420,35 @@ class CreateCommand extends Command<void> {
       return _mergePresetWithFlags(preset);
     }
 
-    return _hasAnyCreateFlag() ? _collectOptionsFromFlags() : _collectOptions();
+    final configOptions = ConfigLoader.load();
+    final hasFlags = _hasAnyCreateFlag();
+
+    if (hasFlags) {
+      final flagOptions = _collectOptionsFromFlags();
+      if (configOptions != null) {
+        return {...configOptions, ...flagOptions};
+      }
+      return _fillDefaults(flagOptions);
+    }
+
+    if (configOptions != null) {
+      return configOptions;
+    }
+
+    return _collectOptions();
+  }
+
+  Map<String, dynamic> _fillDefaults(Map<String, dynamic> partial) {
+    return {
+      'platforms':
+          partial['platforms'] ?? ['android', 'ios', 'windows', 'linux'],
+      'architecture': partial['architecture'] ?? 'feature-first',
+      'state_management': partial['state_management'] ?? 'riverpod',
+      'router': partial['router'] ?? 'go_router',
+      'networking': partial['networking'] ?? 'dio',
+      'localization': partial['localization'] ?? false,
+      'theme': partial['theme'] ?? 'material3',
+    };
   }
 
   Map<String, dynamic> _mergePresetWithFlags(Preset preset) {
