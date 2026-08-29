@@ -7,12 +7,17 @@ import 'package:rekeens_flutter_cli/services/prompter_service.dart';
 import 'package:rekeens_flutter_cli/services/template_service.dart';
 import 'package:rekeens_flutter_cli/utils/project_paths.dart';
 import 'package:rekeens_flutter_cli/utils/dependency_resolver.dart';
+import 'package:rekeens_flutter_cli/config/presets.dart';
 
 class CreateCommand extends Command<void> {
   final _templateService = const TemplateService();
   final _prompter = const PrompterService();
 
   CreateCommand() {
+    argParser.addOption(
+      'preset',
+      help: 'Use a preset configuration (minimal, mobile, full)',
+    );
     argParser.addFlag(
       'verbose',
       abbr: 'v',
@@ -78,9 +83,7 @@ class CreateCommand extends Command<void> {
       print('Verbose mode enabled.');
     }
 
-    final options = _hasAnyCreateFlag()
-        ? _collectOptionsFromFlags()
-        : _collectOptions();
+    final options = _resolveOptions();
 
     print('Selected options:');
     options.forEach((key, value) => print('  $key: $value'));
@@ -390,5 +393,57 @@ class CreateCommand extends Command<void> {
   bool _isValidProjectName(String name) {
     final regex = RegExp(r'^[a-z_][a-z0-9_]*$');
     return regex.hasMatch(name);
+  }
+
+  Map<String, dynamic> _resolveOptions() {
+    final presetName = argResults!['preset'] as String?;
+    if (presetName != null) {
+      final preset = presets[presetName];
+      if (preset == null) {
+        throw UsageException(
+          'Unknown preset "$presetName". Available: ${presets.keys.join(', ')}',
+          usage,
+        );
+      }
+      return _mergePresetWithFlags(preset);
+    }
+
+    return _hasAnyCreateFlag() ? _collectOptionsFromFlags() : _collectOptions();
+  }
+
+  Map<String, dynamic> _mergePresetWithFlags(Preset preset) {
+    final options = preset.toOptions();
+    final args = argResults!;
+
+    if (args.wasParsed('platforms')) {
+      final platformsStr = args['platforms'] as String?;
+      options['platforms'] = platformsStr != null
+          ? platformsStr
+                .split(',')
+                .map((e) => e.trim())
+                .where((e) => e.isNotEmpty)
+                .toList()
+          : <String>[];
+    }
+    if (args.wasParsed('architecture')) {
+      options['architecture'] = args['architecture'];
+    }
+    if (args.wasParsed('state-management')) {
+      options['state_management'] = args['state-management'];
+    }
+    if (args.wasParsed('router')) {
+      options['router'] = args['router'];
+    }
+    if (args.wasParsed('networking')) {
+      options['networking'] = args['networking'];
+    }
+    if (args.wasParsed('localization')) {
+      options['localization'] = args['localization'];
+    }
+    if (args.wasParsed('theme')) {
+      options['theme'] = args['theme'];
+    }
+
+    return options;
   }
 }
