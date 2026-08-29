@@ -12,6 +12,7 @@ class RepositoryGenerator extends BaseGenerator {
     String featureName,
     String repositoryName, {
     bool force = false,
+    bool dryRun = false,
   }) async {
     if (featureName.isEmpty || repositoryName.isEmpty) {
       throw Exception('Feature name and repository name are required.');
@@ -27,6 +28,11 @@ class RepositoryGenerator extends BaseGenerator {
       '${repositoryName}_repository.dart',
     );
     checkFileExists(targetPath, 'Repository "$repositoryName"', force: force);
+
+    if (dryRun) {
+      logDryRun('create repository "$repositoryName"', targetPath);
+      return;
+    }
 
     ensureDirectory(repositoriesDir);
 

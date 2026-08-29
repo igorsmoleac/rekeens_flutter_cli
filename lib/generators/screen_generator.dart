@@ -12,6 +12,7 @@ class ScreenGenerator extends BaseGenerator {
     String featureName,
     String screenName, {
     bool force = false,
+    bool dryRun = false,
   }) async {
     if (featureName.isEmpty || screenName.isEmpty) {
       throw Exception('Feature name and screen name are required.');
@@ -24,6 +25,11 @@ class ScreenGenerator extends BaseGenerator {
     final pagesDir = p.join(featureDir, 'presentation', 'pages');
     final targetPath = p.join(pagesDir, '${screenName}_screen.dart');
     checkFileExists(targetPath, 'Screen "$screenName"', force: force);
+
+    if (dryRun) {
+      logDryRun('create screen "$screenName"', targetPath);
+      return;
+    }
 
     ensureDirectory(pagesDir);
 

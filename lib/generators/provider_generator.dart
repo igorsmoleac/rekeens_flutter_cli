@@ -12,6 +12,7 @@ class ProviderGenerator extends BaseGenerator {
     String featureName,
     String providerName, {
     bool force = false,
+    bool dryRun = false,
   }) async {
     if (featureName.isEmpty || providerName.isEmpty) {
       throw Exception('Feature name and provider name are required.');
@@ -24,6 +25,11 @@ class ProviderGenerator extends BaseGenerator {
     final providersDir = p.join(featureDir, 'presentation', 'providers');
     final targetPath = p.join(providersDir, '${providerName}_provider.dart');
     checkFileExists(targetPath, 'Provider "$providerName"', force: force);
+
+    if (dryRun) {
+      logDryRun('create provider "$providerName"', targetPath);
+      return;
+    }
 
     ensureDirectory(providersDir);
 

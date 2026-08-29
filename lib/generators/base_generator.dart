@@ -53,6 +53,12 @@ abstract class BaseGenerator {
     }
   }
 
+  /// Prints a planned [action] targeting [path] without touching the
+  /// filesystem. Used by generators when `dryRun` is enabled.
+  void logDryRun(String action, String path) {
+    print('DRY RUN: would $action -> $path');
+  }
+
   Future<void> copyTemplate({
     required String templateSubPath,
     required String targetDir,

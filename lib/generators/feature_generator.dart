@@ -9,7 +9,11 @@ class FeatureGenerator extends BaseGenerator {
     super.workingDirectory,
   });
 
-  Future<void> generate(String featureName, {bool force = false}) async {
+  Future<void> generate(
+    String featureName, {
+    bool force = false,
+    bool dryRun = false,
+  }) async {
     if (featureName.isEmpty) {
       throw Exception('Feature name is required.');
     }
@@ -22,6 +26,11 @@ class FeatureGenerator extends BaseGenerator {
       throw Exception(
         'Feature "$featureName" already exists. Use --force to overwrite.',
       );
+    }
+
+    if (dryRun) {
+      logDryRun('create feature "$featureName"', featureDir);
+      return;
     }
 
     final className = toPascalCase(featureName);

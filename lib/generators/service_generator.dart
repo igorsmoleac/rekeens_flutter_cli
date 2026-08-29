@@ -12,6 +12,7 @@ class ServiceGenerator extends BaseGenerator {
     String featureName,
     String serviceName, {
     bool force = false,
+    bool dryRun = false,
   }) async {
     if (featureName.isEmpty || serviceName.isEmpty) {
       throw Exception('Feature name and service name are required.');
@@ -24,6 +25,11 @@ class ServiceGenerator extends BaseGenerator {
     final servicesDir = p.join(featureDir, 'data', 'services');
     final targetPath = p.join(servicesDir, '${serviceName}_service.dart');
     checkFileExists(targetPath, 'Service "$serviceName"', force: force);
+
+    if (dryRun) {
+      logDryRun('create service "$serviceName"', targetPath);
+      return;
+    }
 
     ensureDirectory(servicesDir);
 

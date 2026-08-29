@@ -12,6 +12,7 @@ class ModelGenerator extends BaseGenerator {
     String featureName,
     String modelName, {
     bool force = false,
+    bool dryRun = false,
   }) async {
     if (featureName.isEmpty || modelName.isEmpty) {
       throw Exception('Feature name and model name are required.');
@@ -24,6 +25,11 @@ class ModelGenerator extends BaseGenerator {
     final modelsDir = p.join(featureDir, 'data', 'models');
     final targetPath = p.join(modelsDir, '${modelName}_model.dart');
     checkFileExists(targetPath, 'Model "$modelName"', force: force);
+
+    if (dryRun) {
+      logDryRun('create model "$modelName"', targetPath);
+      return;
+    }
 
     ensureDirectory(modelsDir);
 
