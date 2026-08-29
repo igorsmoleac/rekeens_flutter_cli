@@ -1,61 +1,60 @@
 # Rekeens Flutter CLI
 
-A Dart-based CLI for quickly creating Flutter projects with a consistent architecture, structure, and development setup.
-
-The goal is simple: **stop rebuilding the same Flutter foundation for every project.**
-
-Instead of manually creating folders, configuring dependencies, setting up architecture and repeating the same boilerplate, run:
-
-```bash
-rekeens create my_app
-```
-
-and start building the product.
+A command-line tool for scaffolding production-ready Flutter applications with opinionated feature-first architecture, customizable presets, and component generators.
 
 ---
 
-## Features
+## Highlights
 
-* Create Flutter projects from predefined templates
-* Feature-first architecture
-* Consistent project structure
-* Preconfigured application theme
-* Code generators for common components
-* Project environment diagnostics
-* Template-based project generation
-* Fast and repeatable project setup
+- **Feature-First Architecture** &mdash; Clean separation into `data`, `domain`, and `presentation` layers per feature.
+- **Interactive & Headless Scaffolding** &mdash; Interactive prompts, predefined presets, or CLI flags for automated workflows / CI.
+- **Code Generators** &mdash; Generate features, screens, models, repositories, services, and providers with a single command.
+- **Environment Diagnostics** &mdash; Built-in `doctor` command to verify toolchain prerequisites (Dart, Flutter, Git).
+- **Configuration Support** &mdash; Project-level defaults via `rekeens.yaml`.
 
 ---
 
 ## Installation
 
-Install the CLI globally using Dart:
+Activate globally via Dart:
 
 ```bash
 dart pub global activate rekeens_flutter_cli
 ```
 
-Verify the installation:
+Verify the installation and check system prerequisites:
 
 ```bash
-rekeens --help
+rekeens doctor
 ```
 
 ---
 
-## Create a Project
+## Quick Start
 
-Create a new Flutter project:
+### 1. Interactive Mode
+Run without flags to configure options interactively:
 
 ```bash
 rekeens create my_app
 ```
 
-The CLI will guide you through the project configuration using interactive prompts.
+### 2. Using Presets
+Bootstrap quickly using predefined configuration profiles:
 
-### Non-interactive mode
+```bash
+rekeens create my_app --preset=mobile
+```
 
-You can also provide configuration options directly:
+Available presets:
+| Preset | Platforms | State Management | Router | Network | Localization | Theme |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `minimal` | `android,ios` | None | None | None | No | Material 3 |
+| `mobile` | `android,ios` | Riverpod | GoRouter | Dio | Yes | Material 3 |
+| `full` | `android,ios,windows,linux,macos,web` | Riverpod | GoRouter | Dio | Yes | Material 3 |
+
+### 3. Non-Interactive / Flags
+Specify custom parameters directly:
 
 ```bash
 rekeens create my_app \
@@ -63,28 +62,87 @@ rekeens create my_app \
   --state-management=riverpod \
   --router=go_router \
   --networking=dio \
-  --localization
+  --localization \
+  --theme=material3
 ```
 
-If any of these flags are provided, the CLI will skip interactive questions and use the provided values, with defaults for missing options.
+---
+
+## Command Reference
+
+### `rekeens create <project_name> [options]`
+
+| Flag / Option | Allowed Values | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `--preset` | `minimal`, `mobile`, `full` | &mdash; | Uses a preset profile |
+| `--platforms` | `android,ios,windows,linux,macos,web` | `android,ios,windows,linux` | Target platforms (comma-separated) |
+| `--state-management` | `riverpod`, `bloc`, `none` | `riverpod` | State management solution |
+| `--router` | `go_router`, `none` | `go_router` | Routing solution |
+| `--networking` | `dio`, `http`, `none` | `dio` | HTTP client library |
+| `--localization` | `--localization`, `--no-localization` | `false` (interactive: `true`) | Enables localization support |
+| `--theme` | `material3`, `material2` | `material3` | Theme system |
+| `-n, --dry-run` | &mdash; | `false` | Previews actions without modifying disk |
+| `-v, --verbose` | &mdash; | `false` | Enables verbose diagnostic output |
+
+---
+
+### `rekeens generate <type> [args]` (alias: `rekeens g`)
+
+Generate isolated modules or components within an existing project:
+
+```bash
+# Generate a complete feature structure
+rekeens generate feature auth
+
+# Generate specific components inside a feature
+rekeens generate screen auth login
+rekeens generate model auth user
+rekeens generate repository auth user
+rekeens generate service auth api
+rekeens generate provider auth auth_state
+```
+
+#### Generator Flags:
+- `-f, --force` &mdash; Overwrite existing files.
+- `-n, --dry-run` &mdash; Preview generated files without writing to disk.
+
+---
+
+### `rekeens doctor`
+
+Inspects your local environment for required tools and versions:
+
+```bash
+rekeens doctor
+```
+
+Output:
+```text
+Rekeens CLI Doctor
+
+✓ Dart 3.x
+✓ Flutter 3.x
+✓ Git 2.x
+
+Environment is ready.
+```
 
 ---
 
 ## Project Structure
 
-Generated projects follow a feature-first architecture:
+Projects generated by Rekeens CLI adhere to a strict **Feature-First** layout:
 
 ```text
 lib/
-├── app/
+├── app/                  # App setup, global routing, theme definitions
 │   ├── app.dart
 │   ├── router.dart
 │   └── theme/
 │       ├── app_colors.dart
 │       ├── app_theme.dart
 │       └── app_typography.dart
-│
-├── core/
+├── core/                 # Shared infrastructure, base clients, error models
 │   ├── config/
 │   ├── constants/
 │   ├── errors/
@@ -92,201 +150,37 @@ lib/
 │   ├── network/
 │   ├── storage/
 │   └── utils/
-│
-├── features/
-│   └── home/
-│       ├── data/
-│       ├── domain/
-│       └── presentation/
-│
-└── main.dart
-```
-
-The structure is opinionated and designed to provide a consistent starting point for Flutter applications.
-
----
-
-## Code Generators
-
-Rekeens Flutter CLI can generate common application components.
-
-### Feature
-
-```bash
-rekeens generate feature auth
-```
-
-Short form:
-
-```bash
-rekeens g feature auth
-```
-
-Generates:
-
-```text
-features/auth/
-├── data/
-├── domain/
-└── presentation/
-```
-
-### Screen
-
-```bash
-rekeens generate screen login
-```
-
-### Model
-
-```bash
-rekeens generate model User
-```
-
-### Repository
-
-```bash
-rekeens generate repository User
-```
-
-### Service
-
-```bash
-rekeens generate service Auth
-```
-
-### Provider
-
-```bash
-rekeens generate provider Auth
+├── features/             # Business modules
+│   └── <feature_name>/
+│       ├── data/         # Data sources, models, repository implementations
+│       ├── domain/       # Entities, domain repositories, use cases
+│       └── presentation/ # UI pages, state providers/blocs, local widgets
+└── main.dart             # Application entrypoint
 ```
 
 ---
 
-## Doctor
+## Configuration File (`rekeens.yaml`)
 
-Check the development environment:
+Define shared defaults for your team by placing a `rekeens.yaml` file in your root workspace:
 
-```bash
-rekeens doctor
-```
-
-The command checks the required development tools and environment.
-
-Example:
-
-```text
-Rekeens Flutter CLI Doctor
-
-✓ Flutter
-✓ Dart
-✓ Git
-
-Environment is ready.
+```yaml
+defaults:
+  platforms:
+    - android
+    - ios
+    - windows
+  architecture: feature-first
+  state_management: riverpod
+  router: go_router
+  networking: dio
+  localization: true
+  theme: material3
 ```
 
 ---
 
-## Philosophy
-
-Rekeens Flutter CLI is intentionally opinionated.
-
-It is not intended to support every possible Flutter architecture or development style.
-
-Instead, it provides a consistent starting point for projects following the Rekeens development workflow.
-
-The idea:
-
-```text
-New idea
-   ↓
-rekeens create my_app
-   ↓
-Flutter foundation ready
-   ↓
-Build the product
-```
-
-The CLI handles repetitive project setup so development time can be spent on the actual product.
-
----
-
-## How It Works
-
-The CLI uses templates to build the project:
-
-```text
-rekeens create my_app
-        │
-        ▼
-   Flutter project
-        │
-        ▼
-     Templates
-        │
-        ▼
-   Project structure
-        │
-        ▼
-  Ready to develop
-```
-
-Templates are kept separate from the CLI logic, allowing the project foundation to evolve without rewriting the generator itself.
-
----
-
-## Templates
-
-Project templates are stored in:
-
-```text
-templates/
-```
-
-The template system is designed to make the generated project structure easy to modify and extend.
-
-Future versions may support multiple presets, such as:
-
-```text
-minimal
-mobile
-full
-```
-
----
-
-## Roadmap
-
-### Current
-
-* [x] CLI foundation
-* [x] Project creation
-* [x] Interactive mode
-* [x] Non-interactive mode (flags)
-* [x] Template system
-* [x] Feature generator
-* [x] Screen generator
-* [x] Model generator
-* [x] Repository generator
-* [x] Service generator
-* [x] Provider generator
-* [x] Doctor command
-* [x] Basic dependency management
-
-### Planned
-
-* [ ] Presets (minimal/mobile/full)
-* [ ] Configuration file (`rekeens.yaml`)
-* [ ] Dynamic dependency management based on options
-* [ ] Dry-run mode
-* [ ] More generators
-* [ ] Improved validation
-* [ ] Automated tests for generated projects
-
----
-
-## Author
+## License & Author
 
 Developed by **Igor Smoleac** for **Rekeens**.
-
-GitHub: [github.com/igorsmoleac](https://github.com/igorsmoleac)
+Repository: [github.com/igorsmoleac/rekeens_cli](https://github.com/igorsmoleac/rekeens_cli)
