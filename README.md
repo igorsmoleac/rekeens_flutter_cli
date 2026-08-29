@@ -183,4 +183,4 @@ defaults:
 ## License & Author
 
 Developed by **Igor Smoleac** for **Rekeens**.
-Repository: [github.com/igorsmoleac/rekeens_cli](https://github.com/igorsmoleac/rekeens_cli)
+Repository: [github.com/igorsmoleac/rekeens_flutter_cli](https://github.com/igorsmoleac/rekeens_flutter_cli)
