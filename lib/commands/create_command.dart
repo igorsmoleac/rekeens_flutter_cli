@@ -420,6 +420,7 @@ class CreateCommand extends Command<void> {
       return _mergePresetWithFlags(preset);
     }
 
+<<<<<<< HEAD
     final configOptions = ConfigLoader.load();
     final hasFlags = _hasAnyCreateFlag();
 
@@ -431,11 +432,19 @@ class CreateCommand extends Command<void> {
       return _fillDefaults(flagOptions);
     }
 
+=======
+    if (_hasAnyCreateFlag()) {
+      return _collectOptionsFromFlags();
+    }
+
+    final configOptions = ConfigLoader.load();
+>>>>>>> 11d1c97a9a13d75c6383f1e48464f026849423d6
     if (configOptions != null) {
       return configOptions;
     }
 
     return _collectOptions();
+<<<<<<< HEAD
   }
 
   Map<String, dynamic> _fillDefaults(Map<String, dynamic> partial) {
@@ -449,6 +458,8 @@ class CreateCommand extends Command<void> {
       'localization': partial['localization'] ?? false,
       'theme': partial['theme'] ?? 'material3',
     };
+=======
+>>>>>>> 11d1c97a9a13d75c6383f1e48464f026849423d6
   }
 
   Map<String, dynamic> _mergePresetWithFlags(Preset preset) {
