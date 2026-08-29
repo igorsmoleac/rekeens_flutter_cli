@@ -8,6 +8,7 @@ import 'package:rekeens_flutter_cli/services/template_service.dart';
 import 'package:rekeens_flutter_cli/utils/project_paths.dart';
 import 'package:rekeens_flutter_cli/utils/dependency_resolver.dart';
 import 'package:rekeens_flutter_cli/config/presets.dart';
+import 'package:rekeens_flutter_cli/config/config_loader.dart';
 
 class CreateCommand extends Command<void> {
   final _templateService = const TemplateService();
@@ -408,7 +409,16 @@ class CreateCommand extends Command<void> {
       return _mergePresetWithFlags(preset);
     }
 
-    return _hasAnyCreateFlag() ? _collectOptionsFromFlags() : _collectOptions();
+    if (_hasAnyCreateFlag()) {
+      return _collectOptionsFromFlags();
+    }
+
+    final configOptions = ConfigLoader.load();
+    if (configOptions != null) {
+      return configOptions;
+    }
+
+    return _collectOptions();
   }
 
   Map<String, dynamic> _mergePresetWithFlags(Preset preset) {

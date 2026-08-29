@@ -1,0 +1,11 @@
+defaults:
+  platforms:
+    - android
+    - ios
+    - windows
+  architecture: feature-first
+  state_management: riverpod
+  router: go_router
+  networking: dio
+  localization: true
+  theme: material3
