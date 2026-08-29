@@ -21,6 +21,13 @@ class GenerateCommand extends Command<void> {
       help: 'Overwrite existing files.',
       defaultsTo: false,
     );
+    argParser.addFlag(
+      'dry-run',
+      abbr: 'n',
+      help: 'Print planned actions without writing any files.',
+      defaultsTo: false,
+      negatable: false,
+    );
   }
 
   @override
@@ -41,10 +48,11 @@ class GenerateCommand extends Command<void> {
 
     final type = rest[0];
     final force = argResults!['force'] as bool;
+    final dryRun = argResults!['dry-run'] as bool;
 
     switch (type) {
       case 'feature':
-        await _featureGenerator.generate(rest[1], force: force);
+        await _featureGenerator.generate(rest[1], force: force, dryRun: dryRun);
         break;
       case 'screen':
         _validateLength(
@@ -52,7 +60,12 @@ class GenerateCommand extends Command<void> {
           3,
           'rekeens generate screen <feature_name> <screen_name>',
         );
-        await _screenGenerator.generate(rest[1], rest[2], force: force);
+        await _screenGenerator.generate(
+          rest[1],
+          rest[2],
+          force: force,
+          dryRun: dryRun,
+        );
         break;
       case 'model':
         _validateLength(
@@ -60,7 +73,12 @@ class GenerateCommand extends Command<void> {
           3,
           'rekeens generate model <feature_name> <model_name>',
         );
-        await _modelGenerator.generate(rest[1], rest[2], force: force);
+        await _modelGenerator.generate(
+          rest[1],
+          rest[2],
+          force: force,
+          dryRun: dryRun,
+        );
         break;
       case 'repository':
         _validateLength(
@@ -68,7 +86,12 @@ class GenerateCommand extends Command<void> {
           3,
           'rekeens generate repository <feature_name> <repository_name>',
         );
-        await _repositoryGenerator.generate(rest[1], rest[2], force: force);
+        await _repositoryGenerator.generate(
+          rest[1],
+          rest[2],
+          force: force,
+          dryRun: dryRun,
+        );
         break;
       case 'service':
         _validateLength(
@@ -76,7 +99,12 @@ class GenerateCommand extends Command<void> {
           3,
           'rekeens generate service <feature_name> <service_name>',
         );
-        await _serviceGenerator.generate(rest[1], rest[2], force: force);
+        await _serviceGenerator.generate(
+          rest[1],
+          rest[2],
+          force: force,
+          dryRun: dryRun,
+        );
         break;
       case 'provider':
         _validateLength(
@@ -84,7 +112,12 @@ class GenerateCommand extends Command<void> {
           3,
           'rekeens generate provider <feature_name> <provider_name>',
         );
-        await _providerGenerator.generate(rest[1], rest[2], force: force);
+        await _providerGenerator.generate(
+          rest[1],
+          rest[2],
+          force: force,
+          dryRun: dryRun,
+        );
         break;
       default:
         throw UsageException(

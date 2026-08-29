@@ -2,12 +2,17 @@ import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
 
 class ProviderGenerator extends BaseGenerator {
-  ProviderGenerator({super.templateService, super.templatesRootOverride});
+  ProviderGenerator({
+    super.templateService,
+    super.templatesRootOverride,
+    super.workingDirectory,
+  });
 
   Future<void> generate(
     String featureName,
     String providerName, {
     bool force = false,
+    bool dryRun = false,
   }) async {
     if (featureName.isEmpty || providerName.isEmpty) {
       throw Exception('Feature name and provider name are required.');
@@ -20,6 +25,11 @@ class ProviderGenerator extends BaseGenerator {
     final providersDir = p.join(featureDir, 'presentation', 'providers');
     final targetPath = p.join(providersDir, '${providerName}_provider.dart');
     checkFileExists(targetPath, 'Provider "$providerName"', force: force);
+
+    if (dryRun) {
+      logDryRun('create provider "$providerName"', targetPath);
+      return;
+    }
 
     ensureDirectory(providersDir);
 

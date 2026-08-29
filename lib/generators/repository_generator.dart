@@ -2,12 +2,17 @@ import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
 
 class RepositoryGenerator extends BaseGenerator {
-  RepositoryGenerator({super.templateService, super.templatesRootOverride});
+  RepositoryGenerator({
+    super.templateService,
+    super.templatesRootOverride,
+    super.workingDirectory,
+  });
 
   Future<void> generate(
     String featureName,
     String repositoryName, {
     bool force = false,
+    bool dryRun = false,
   }) async {
     if (featureName.isEmpty || repositoryName.isEmpty) {
       throw Exception('Feature name and repository name are required.');
@@ -23,6 +28,11 @@ class RepositoryGenerator extends BaseGenerator {
       '${repositoryName}_repository.dart',
     );
     checkFileExists(targetPath, 'Repository "$repositoryName"', force: force);
+
+    if (dryRun) {
+      logDryRun('create repository "$repositoryName"', targetPath);
+      return;
+    }
 
     ensureDirectory(repositoriesDir);
 
