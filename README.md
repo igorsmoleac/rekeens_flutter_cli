@@ -1,16 +1,29 @@
 # Rekeens Flutter CLI
 
-A command-line tool for scaffolding production-ready Flutter applications with opinionated feature-first architecture, customizable presets, and component generators.
+<p align="center">
+  <strong>Production-ready Flutter scaffolding and code generation tool.</strong><br>
+  Built on Feature-First Clean Architecture, pre-configured state management, and modular generators.
+</p>
+
+<p align="center">
+  <a href="https://pub.dev/packages/rekeens_flutter_cli"><img src="https://img.shields.io/pub/v/rekeens_flutter_cli.svg" alt="coming soon"></a>
+  <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.13+-blue.svg" alt="Dart SDK Version"></a>
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.x-02569B.svg" alt="Flutter"></a>
+  <a href="https://github.com/igorsmoleac/rekeens_flutter_cli/actions"><img src="https://img.shields.io/github/actions/workflow/status/igorsmoleac/rekeens_flutter_cli/dart.yml?branch=main" alt="CI Status"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"></a>
+</p>
 
 ---
 
 ## Highlights
 
-- **Feature-First Architecture** &mdash; Clean separation into `data`, `domain`, and `presentation` layers per feature.
-- **Interactive & Headless Scaffolding** &mdash; Interactive prompts, predefined presets, or CLI flags for automated workflows / CI.
-- **Code Generators** &mdash; Generate features, screens, models, repositories, services, and providers with a single command.
-- **Environment Diagnostics** &mdash; Built-in `doctor` command to verify toolchain prerequisites (Dart, Flutter, Git).
-- **Configuration Support** &mdash; Project-level defaults via `rekeens.yaml`.
+- **Instant Scaffolding** &mdash; Creates a runnable Flutter app with routing, theme, state management, and networking pre-wired.
+- **Feature-First Architecture** &mdash; Enforces domain boundaries (`data`, `domain`, `presentation`) per business feature.
+- **Code Generators** &mdash; Scaffolds features, screens, repositories, services, providers, and typed models (`fromJson`/`toJson`).
+- **Presets and Configs** &mdash; Predefined profiles (`minimal`, `mobile`, `full`) and team-wide defaults via `rekeens.yaml`.
+- **Environment Diagnostics** &mdash; Built-in `doctor` command to inspect your local Flutter/Dart toolchain.
+
+For complete specifications and template override guides, see the [Technical Documentation](DOCUMENTATION.md).
 
 ---
 
@@ -28,193 +41,128 @@ Verify the installation and check system prerequisites:
 rekeens doctor
 ```
 
+*(Ensure your global pub cache bin directory is in your system `PATH`)*
+
 ---
 
 ## Quick Start
 
-### 1. Interactive Mode
-Run without flags to configure options interactively:
+### 1. Create a Project
 
 ```bash
+# Interactive wizard
 rekeens create my_app
-```
 
-### 2. Using Presets
-Bootstrap quickly using predefined configuration profiles:
-
-```bash
+# Or use a preset
 rekeens create my_app --preset=mobile
+
+# Or use CLI flags
+rekeens create my_app --state-management=riverpod --router=go_router --networking=dio --localization
 ```
 
-Available presets:
-| Preset | Platforms | State Management | Router | Network | Localization | Theme |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `minimal` | `android,ios` | None | None | None | No | Material 3 |
-| `mobile` | `android,ios` | Riverpod | GoRouter | Dio | Yes | Material 3 |
-| `full` | `android,ios,windows,linux,macos,web` | Riverpod | GoRouter | Dio | Yes | Material 3 |
+#### Presets
 
-### 3. Non-Interactive / Flags
-Specify custom parameters directly:
+| Preset | Platforms | State | Router | Network | Localization | Codegen |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **`minimal`** | `android, ios` | None | None | None | No | No |
+| **`mobile`** | `android, ios` | Riverpod | GoRouter | Dio | Yes | No |
+| **`full`** | `android, ios, windows, linux, macos, web` | Riverpod | GoRouter | Dio | Yes | Yes (`freezed`, `json_serializable`) |
+
+---
+
+### 2. Generate Components
+
+Inside your project directory, scaffold modular code using `rekeens generate` (or `rekeens g`):
 
 ```bash
-rekeens create my_app \
-  --platforms=android,ios,windows \
-  --state-management=riverpod \
-  --router=go_router \
-  --networking=dio \
-  --localization \
-  --theme=material3
+# Generate a complete feature structure
+rekeens g feature auth
+
+# Generate a typed model with JSON serialization
+rekeens g model auth user id:string name:string email:string? age:int createdAt:datetime
+
+# Generate screen, repository, service, and state provider
+rekeens g screen auth login
+rekeens g repository auth user
+rekeens g service auth api
+rekeens g provider auth session
+```
+
+*The provider generator automatically detects whether your project uses **Riverpod** (generates Provider) or **BLoC** (generates Cubit + State).*
+
+---
+
+## Architecture
+
+Generated projects follow a modular **Feature-First Clean Architecture**:
+
+```text
+lib/
+├── app/                  # Application bootstrap, routing and theme
+├── core/                 # Shared network client, storage, error models, utils
+├── features/             # Business modules
+│   └── <feature_name>/
+│       ├── data/         # Models (with JSON mapping), datasources, repositories
+│       ├── domain/       # Entities, repository interfaces, use cases
+│       └── presentation/ # UI pages, state providers (Riverpod/Bloc), widgets
+├── shared/               # Reusable presentation widgets and design tokens
+├── l10n/                 # Localization catalogs (.arb files)
+└── main.dart             # Application entrypoint
 ```
 
 ---
 
 ## Command Reference
 
-### `rekeens create <project_name> [options]`
+| Command | Description | Example |
+| :--- | :--- | :--- |
+| `rekeens doctor` | Inspects local development toolchain | `rekeens doctor` |
+| `rekeens create <name>` | Scaffolds a new Flutter application | `rekeens create my_app --preset=mobile` |
+| `rekeens list` | Lists all available presets and generators | `rekeens list` |
+| `rekeens g feature <name>` | Scaffolds feature layers (`data`, `domain`, `presentation`) | `rekeens g feature profile` |
+| `rekeens g screen <feature> <name>` | Creates a screen widget inside a feature | `rekeens g screen profile settings` |
+| `rekeens g model <feature> <name> [fields]` | Creates a typed model with `fromJson` and `toJson` | `rekeens g model profile user name:string age:int` |
+| `rekeens g repository <feature> <name>` | Creates a repository inside a feature | `rekeens g repository profile user` |
+| `rekeens g service <feature> <name>` | Creates an API service inside a feature | `rekeens g service profile user_api` |
+| `rekeens g provider <feature> <name>` | Creates a Riverpod provider or BLoC Cubit | `rekeens g provider profile profile_state` |
+| `rekeens config init` | Generates a `rekeens.yaml` default configuration file | `rekeens config init` |
 
-| Flag / Option | Allowed Values | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `--preset` | `minimal`, `mobile`, `full` | &mdash; | Uses a preset profile |
-| `--platforms` | `android,ios,windows,linux,macos,web` | `android,ios,windows,linux` | Target platforms (comma-separated) |
-| `--state-management` | `riverpod`, `bloc`, `none` | `riverpod` | State management solution |
-| `--router` | `go_router`, `none` | `go_router` | Routing solution |
-| `--networking` | `dio`, `http`, `none` | `dio` | HTTP client library |
-| `--localization` | `--localization`, `--no-localization` | `false` (interactive: `true`) | Enables localization support |
-| `--theme` | `material3`, `material2` | `material3` | Theme system |
-| `-n, --dry-run` | &mdash; | `false` | Previews actions without modifying disk |
-| `-v, --verbose` | &mdash; | `false` | Enables verbose diagnostic output |
-
----
-
-### `rekeens generate <type> [args]` (alias: `rekeens g`)
-
-Generate isolated modules or components within an existing project:
-
-```bash
-# Generate a complete feature structure
-rekeens generate feature auth
-
-# Generate specific components inside a feature
-rekeens generate screen auth login
-rekeens generate model auth user
-rekeens generate repository auth user
-rekeens generate service auth api
-rekeens generate provider auth auth_state
-```
-
-#### Generator Flags:
-- `-f, --force` &mdash; Overwrite existing files.
-- `-n, --dry-run` &mdash; Preview generated files without writing to disk.
+*Pass `-f, --force` to overwrite existing files, or `-n, --dry-run` to preview actions without writing to disk.*
 
 ---
 
-### `rekeens doctor`
+## Configuration (`rekeens.yaml`)
 
-Inspects your local environment for required tools and versions:
-
-```bash
-rekeens doctor
-```
-
-Output:
-```text
-Rekeens CLI Doctor
-
-✓ Dart 3.x
-✓ Flutter 3.x
-✓ Git 2.x
-
-Environment is ready.
-```
-
----
-
-## Project Structure
-
-Projects generated by Rekeens CLI adhere to a strict **Feature-First** layout:
-
-```text
-lib/
-├── app/                  # App setup, global routing, theme definitions
-│   ├── app.dart
-│   ├── router.dart
-│   └── theme/
-│       ├── app_colors.dart
-│       ├── app_theme.dart
-│       └── app_typography.dart
-├── core/                 # Shared infrastructure, base clients, error models
-│   ├── config/
-│   ├── constants/
-│   ├── errors/
-│   ├── extensions/
-│   ├── network/
-│   ├── storage/
-│   └── utils/
-├── features/             # Business modules
-│   └── <feature_name>/
-│       ├── data/         # Data sources, models, repository implementations
-│       ├── domain/       # Entities, domain repositories, use cases
-│       └── presentation/ # UI pages, state providers/blocs, local widgets
-└── main.dart             # Application entrypoint
-```
-
----
-
-## Configuration File (`rekeens.yaml`)
-
-Define shared defaults for your team by placing a `rekeens.yaml` file in your root workspace:
+Define shared team defaults in `rekeens.yaml`:
 
 ```yaml
 defaults:
-  platforms:
-    - android
-    - ios
-    - windows
+  platforms: [android, ios, windows]
   architecture: feature-first
   state_management: riverpod
   router: go_router
   networking: dio
   localization: true
   theme: material3
+  codegen: false
 ```
 
 ---
 
-## Roadmap
+## Documentation
 
-### Current
+For full guides on:
+- Architecture layer responsibilities and data flow
+- Advanced CLI flags and CI/CD integration
+- Model generator field types and nullability rules
+- Overriding templates via `~/.rekeens/templates/` or `./.rekeens/templates/`
+- Local development and testing
 
-* [x] CLI foundation
-* [x] Project creation
-* [x] Interactive mode
-* [x] Non-interactive mode (flags)
-* [x] Template system
-* [x] Feature generator
-* [x] Screen generator
-* [x] Model generator
-* [x] Repository generator
-* [x] Service generator
-* [x] Provider generator
-* [x] Doctor command
-* [x] Basic dependency management
-* [x] Dry-run mode
-* [x] Unit tests for core logic
-* [x] CI (GitHub Actions) for analyze and tests
-
-### Planned
-
-* [ ] Presets (minimal/mobile/full)
-* [ ] Configuration file (`rekeens.yaml`)
-* [ ] Dynamic dependency management based on options
-* [ ] More generators
-* [ ] Improved validation
-* [ ] Automated tests for generated projects
+See the [Technical Documentation (DOCUMENTATION.md)](DOCUMENTATION.md).
 
 ---
 
-## Author
-=======
 ## License & Author
 
-Developed by **Igor Smoleac** for **Rekeens**.
-Repository: [github.com/igorsmoleac/rekeens_flutter_cli](https://github.com/igorsmoleac/rekeens_flutter_cli)
+Developed by **Igor Smoleac** for **Rekeens**.  
+Released under the [MIT License](LICENSE).
