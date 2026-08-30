@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.0
+
+- Pin dependency versions in `DependencyResolver` (e.g. `flutter_bloc:^9.1.1`, `dio:^5.11.0`) so generated projects get reproducible, compatible package versions
+- Add `--codegen` flag to install `build_runner`, `freezed`, and `json_serializable` as dev_dependencies
+- `codegen` option is now part of interactive prompts, presets (`full` preset enables it), config file, and dry-run output
+- Fix version conflict between `freezed` and `build_runner` by using compatible pinned versions (`build_runner:^2.15.1`, `freezed:^3.2.5`, `json_serializable:^6.14.0`)
+
+## 0.3.0
+
+- Add BLoC support in templates: `main.dart` wraps the app in `BlocProvider` with an `AppCubit` when `state_management: bloc` is selected
+- `generate provider` now auto-detects the project's state management from `pubspec.yaml` and generates a Cubit + State (sealed class) for BLoC projects, or a Riverpod provider otherwise
+- New `cubit` template (`{{provider_name}}_cubit.dart` + `{{provider_name}}_state.dart`)
+
 ## 0.2.0
 
 - Add real localization support (l10n.yaml, ARB, flutter_localizations, flutter gen-l10n)

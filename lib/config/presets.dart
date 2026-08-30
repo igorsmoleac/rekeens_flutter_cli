@@ -7,6 +7,7 @@ class Preset {
   final String networking;
   final bool localization;
   final String theme;
+  final bool codegen;
 
   const Preset({
     required this.name,
@@ -17,6 +18,7 @@ class Preset {
     required this.networking,
     required this.localization,
     required this.theme,
+    this.codegen = false,
   });
 
   Map<String, dynamic> toOptions() {
@@ -28,6 +30,7 @@ class Preset {
       'networking': networking,
       'localization': localization,
       'theme': theme,
+      'codegen': codegen,
     };
   }
 }
@@ -62,5 +65,6 @@ const presets = <String, Preset>{
     networking: 'dio',
     localization: true,
     theme: 'material3',
+    codegen: true,
   ),
 };

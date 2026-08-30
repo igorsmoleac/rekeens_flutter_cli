@@ -33,6 +33,11 @@ class CreateCommand extends Command<void> {
       help: 'Show what would be done without making changes.',
       defaultsTo: false,
     );
+    argParser.addFlag(
+      'codegen',
+      help: 'Add build_runner, freezed, json_serializable as dev dependencies.',
+      defaultsTo: false,
+    );
     argParser.addOption(
       'platforms',
       help: 'Comma-separated list: android,ios,windows,linux,macos,web',
@@ -99,12 +104,18 @@ class CreateCommand extends Command<void> {
 
     if (argResults!['dry-run'] as bool) {
       final dependencies = DependencyResolver.resolve(options);
+      final devDependencies = DependencyResolver.resolveDevDependencies(
+        includeCodegen: options['codegen'] as bool? ?? false,
+      );
       print('\nDry run: no changes will be made.');
       print('Would create project "$projectName" with the above options.');
       if (dependencies.isNotEmpty) {
         print('Would add dependencies: ${dependencies.join(', ')}');
       } else {
         print('Would not add any dependencies.');
+      }
+      if (devDependencies.isNotEmpty) {
+        print('Would add dev_dependencies: ${devDependencies.join(', ')}');
       }
       return;
     }
@@ -124,6 +135,15 @@ class CreateCommand extends Command<void> {
     print('Adding dependencies...');
     final dependencies = DependencyResolver.resolve(options);
     await _addDependencies(projectName, dependencies);
+
+    final codegen = options['codegen'] as bool? ?? false;
+    if (codegen) {
+      print('Adding dev_dependencies...');
+      final devDependencies = DependencyResolver.resolveDevDependencies(
+        includeCodegen: true,
+      );
+      await _addDependencies(projectName, devDependencies, dev: true);
+    }
 
     if (options['localization'] == true) {
       print('Adding flutter_localizations...');
@@ -170,7 +190,8 @@ class CreateCommand extends Command<void> {
         args.wasParsed('router') ||
         args.wasParsed('networking') ||
         args.wasParsed('localization') ||
-        args.wasParsed('theme');
+        args.wasParsed('theme') ||
+        args.wasParsed('codegen');
   }
 
   Map<String, dynamic> _collectOptionsFromFlags() {
@@ -205,6 +226,9 @@ class CreateCommand extends Command<void> {
     if (args.wasParsed('theme')) {
       result['theme'] = args['theme'];
     }
+    if (args.wasParsed('codegen')) {
+      result['codegen'] = args['codegen'];
+    }
 
     return result;
   }
@@ -237,6 +261,11 @@ class CreateCommand extends Command<void> {
       'none',
     ], defaultValue: 'dio');
 
+    final codegen = _prompter.askYesNo(
+      'Add code generation tools (build_runner, freezed, json_serializable)?',
+      defaultValue: false,
+    );
+
     final localization = _prompter.askYesNo('Localization', defaultValue: true);
     final theme = _prompter.askChoice('Theme', [
       'material3',
@@ -251,6 +280,7 @@ class CreateCommand extends Command<void> {
       'networking': networking,
       'localization': localization,
       'theme': theme,
+      'codegen': codegen,
     };
   }
 
@@ -269,10 +299,11 @@ class CreateCommand extends Command<void> {
 
   Future<void> _addDependencies(
     String projectName,
-    List<String> packages,
-  ) async {
+    List<String> packages, {
+    bool dev = false,
+  }) async {
     if (packages.isEmpty) return;
-    final args = ['pub', 'add', ...packages];
+    final args = ['pub', 'add', if (dev) '--dev', ...packages];
     await _runProcess('flutter', args, workingDirectory: projectName);
   }
 
@@ -374,6 +405,7 @@ class CreateCommand extends Command<void> {
       'networking': partial['networking'] ?? 'dio',
       'localization': partial['localization'] ?? false,
       'theme': partial['theme'] ?? 'material3',
+      'codegen': partial['codegen'] ?? false,
     };
   }
 
@@ -408,6 +440,9 @@ class CreateCommand extends Command<void> {
     }
     if (args.wasParsed('theme')) {
       options['theme'] = args['theme'];
+    }
+    if (args.wasParsed('codegen')) {
+      options['codegen'] = args['codegen'];
     }
 
     return options;
