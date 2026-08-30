@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1
+
+- Check `flutter create` exit code and abort subsequent steps (template, dependencies, codegen) on failure with a clear error message
+- Clean up partially created project directory when `flutter create` fails
+- Verify project directory exists after `flutter create` succeeds
+- Flush stderr before `exit(64)` in `main()` so error messages are not lost on Windows
+
 ## 0.4.0
 
 - Pin dependency versions in `DependencyResolver` (e.g. `flutter_bloc:^9.1.1`, `dio:^5.11.0`) so generated projects get reproducible, compatible package versions
