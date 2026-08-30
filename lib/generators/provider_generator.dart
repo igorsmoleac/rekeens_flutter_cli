@@ -13,6 +13,7 @@ class ProviderGenerator extends BaseGenerator {
     String providerName, {
     bool force = false,
     bool dryRun = false,
+    String? stateManagement,
   }) async {
     if (featureName.isEmpty || providerName.isEmpty) {
       throw Exception('Feature name and provider name are required.');
@@ -21,13 +22,28 @@ class ProviderGenerator extends BaseGenerator {
       throw Exception('Names must be in snake_case.');
     }
 
+    final sm = stateManagement ?? detectStateManagement();
+    final useBloc = sm == 'bloc';
+
     final featureDir = getFeatureDir(featureName);
     final providersDir = p.join(featureDir, 'presentation', 'providers');
-    final targetPath = p.join(providersDir, '${providerName}_provider.dart');
-    checkFileExists(targetPath, 'Provider "$providerName"', force: force);
+    final targetPath = p.join(
+      providersDir,
+      useBloc ? '${providerName}_cubit.dart' : '${providerName}_provider.dart',
+    );
+    checkFileExists(
+      targetPath,
+      useBloc ? 'Cubit "$providerName"' : 'Provider "$providerName"',
+      force: force,
+    );
 
     if (dryRun) {
-      logDryRun('create provider "$providerName"', targetPath);
+      logDryRun(
+        useBloc
+            ? 'create cubit "$providerName"'
+            : 'create provider "$providerName"',
+        targetPath,
+      );
       return;
     }
 
@@ -35,11 +51,15 @@ class ProviderGenerator extends BaseGenerator {
 
     final className = toPascalCase(providerName);
     await copyTemplate(
-      templateSubPath: 'provider',
+      templateSubPath: useBloc ? 'cubit' : 'provider',
       targetDir: providersDir,
       variables: {'provider_name': providerName, 'class_name': className},
     );
 
-    print('Provider "$providerName" created in feature "$featureName".');
+    print(
+      useBloc
+          ? 'Cubit "$providerName" created in feature "$featureName".'
+          : 'Provider "$providerName" created in feature "$featureName".',
+    );
   }
 }

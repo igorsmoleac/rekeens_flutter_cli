@@ -29,6 +29,16 @@ abstract class BaseGenerator {
         .join();
   }
 
+  String detectStateManagement() {
+    final pubspecFile = File(p.join(_projectDir, 'pubspec.yaml'));
+    if (!pubspecFile.existsSync()) return 'riverpod';
+
+    final content = pubspecFile.readAsStringSync();
+    if (content.contains('flutter_bloc')) return 'bloc';
+    if (content.contains('flutter_riverpod')) return 'riverpod';
+    return 'riverpod';
+  }
+
   String getFeatureDir(String featureName) {
     final dir = Directory(p.join(_projectDir, 'lib', 'features', featureName));
     if (!dir.existsSync()) {
@@ -53,8 +63,6 @@ abstract class BaseGenerator {
     }
   }
 
-  /// Prints a planned [action] targeting [path] without touching the
-  /// filesystem. Used by generators when `dryRun` is enabled.
   void logDryRun(String action, String path) {
     print('DRY RUN: would $action -> $path');
   }

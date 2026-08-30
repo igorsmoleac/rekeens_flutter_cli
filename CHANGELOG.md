@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+- Add BLoC support in templates: `main.dart` wraps the app in `BlocProvider` with an `AppCubit` when `state_management: bloc` is selected
+- `generate provider` now auto-detects the project's state management from `pubspec.yaml` and generates a Cubit + State (sealed class) for BLoC projects, or a Riverpod provider otherwise
+- New `cubit` template (`{{provider_name}}_cubit.dart` + `{{provider_name}}_state.dart`)
+
 ## 0.2.0
 
 - Add real localization support (l10n.yaml, ARB, flutter_localizations, flutter gen-l10n)

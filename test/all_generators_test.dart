@@ -29,9 +29,6 @@ void main() {
     }
   });
 
-  /// Creates the "auth" feature inside [tempProject] and runs [body].
-  /// All generators are scoped to [tempProject] via `workingDirectory`, so no
-  /// global `Directory.current` mutation is needed (parallel-safe).
   Future<void> withAuthFeature(Future<void> Function() body) async {
     final featureGen = FeatureGenerator(
       workingDirectory: tempProject.path,
@@ -303,6 +300,119 @@ void main() {
         templatesRootOverride: projectRoot,
       );
       expect(() => gen.generate('missing', 'auth'), throwsA(isA<Exception>()));
+    });
+  });
+
+  group('ProviderGenerator (bloc)', () {
+    test(
+      'creates auth_cubit.dart and auth_state.dart when stateManagement=bloc',
+      () async {
+        await withAuthFeature(() async {
+          final gen = ProviderGenerator(
+            workingDirectory: tempProject.path,
+            templatesRootOverride: projectRoot,
+          );
+          await gen.generate('auth', 'auth', stateManagement: 'bloc');
+
+          final cubitFile = File(
+            p.join(
+              tempProject.path,
+              'lib',
+              'features',
+              'auth',
+              'presentation',
+              'providers',
+              'auth_cubit.dart',
+            ),
+          );
+          final stateFile = File(
+            p.join(
+              tempProject.path,
+              'lib',
+              'features',
+              'auth',
+              'presentation',
+              'providers',
+              'auth_state.dart',
+            ),
+          );
+          expect(cubitFile.existsSync(), isTrue);
+          expect(stateFile.existsSync(), isTrue);
+          final cubitContent = cubitFile.readAsStringSync();
+          expect(cubitContent.contains('class AuthCubit'), isTrue);
+          expect(cubitContent.contains('import \'auth_state.dart\''), isTrue);
+          final stateContent = stateFile.readAsStringSync();
+          expect(stateContent.contains('sealed class AuthState'), isTrue);
+          expect(stateContent.contains('class AuthInitial'), isTrue);
+        });
+      },
+    );
+
+    test('auto-detects bloc from pubspec.yaml', () async {
+      await withAuthFeature(() async {
+        // Simulate a project that uses flutter_bloc.
+        File(p.join(tempProject.path, 'pubspec.yaml')).writeAsStringSync(
+          'name: test\n'
+          'dependencies:\n'
+          '  flutter_bloc: ^8.1.0\n',
+        );
+
+        final gen = ProviderGenerator(
+          workingDirectory: tempProject.path,
+          templatesRootOverride: projectRoot,
+        );
+        await gen.generate('auth', 'auth');
+
+        final cubitFile = File(
+          p.join(
+            tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'presentation',
+            'providers',
+            'auth_cubit.dart',
+          ),
+        );
+        expect(cubitFile.existsSync(), isTrue);
+        expect(
+          cubitFile.readAsStringSync().contains('class AuthCubit'),
+          isTrue,
+        );
+      });
+    });
+
+    test('auto-detects riverpod from pubspec.yaml', () async {
+      await withAuthFeature(() async {
+        File(p.join(tempProject.path, 'pubspec.yaml')).writeAsStringSync(
+          'name: test\n'
+          'dependencies:\n'
+          '  flutter_riverpod: ^2.4.0\n',
+        );
+
+        final gen = ProviderGenerator(
+          workingDirectory: tempProject.path,
+          templatesRootOverride: projectRoot,
+        );
+        await gen.generate('auth', 'auth');
+
+        final providerFile = File(
+          p.join(
+            tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'presentation',
+            'providers',
+            'auth_provider.dart',
+          ),
+        );
+        expect(providerFile.existsSync(), isTrue);
+        expect(
+          providerFile.readAsStringSync().contains('class AuthProvider'),
+          isTrue,
+        );
+      });
     });
   });
 }

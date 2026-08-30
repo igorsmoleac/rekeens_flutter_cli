@@ -13,6 +13,9 @@ class ProjectFileWriter {
     final localization = options['localization'] as bool? ?? false;
 
     await _writeMainDart(projectName, stateManagement: stateManagement);
+    if (stateManagement == 'bloc') {
+      await _writeAppCubit(projectName);
+    }
     await _writeAppDart(
       projectName,
       title: projectName,
@@ -33,6 +36,7 @@ class ProjectFileWriter {
   }) async {
     final mainFile = File(p.join(projectName, 'lib', 'main.dart'));
     final useRiverpod = stateManagement == 'riverpod';
+    final useBloc = stateManagement == 'bloc';
     final buffer = StringBuffer();
 
     buffer.writeln("import 'package:flutter/material.dart';");
@@ -40,18 +44,40 @@ class ProjectFileWriter {
       buffer.writeln(
         "import 'package:flutter_riverpod/flutter_riverpod.dart';",
       );
+    } else if (useBloc) {
+      buffer.writeln("import 'package:flutter_bloc/flutter_bloc.dart';");
+      buffer.writeln("import 'app/app_cubit.dart';");
     }
     buffer.writeln("import 'app/app.dart';");
     buffer.writeln();
     buffer.writeln('void main() {');
     if (useRiverpod) {
       buffer.writeln('  runApp(const ProviderScope(child: App()));');
+    } else if (useBloc) {
+      buffer.writeln(
+        '  runApp(BlocProvider<AppCubit>(create: (_) => AppCubit(), child: const App()));',
+      );
     } else {
       buffer.writeln('  runApp(const App());');
     }
     buffer.writeln('}');
 
     await mainFile.writeAsString(buffer.toString());
+  }
+
+  Future<void> _writeAppCubit(String projectName) async {
+    final cubitFile = File(p.join(projectName, 'lib', 'app', 'app_cubit.dart'));
+    await cubitFile.writeAsString('''
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class AppState {
+  const AppState();
+}
+
+class AppCubit extends Cubit<AppState> {
+  AppCubit() : super(const AppState());
+}
+''');
   }
 
   Future<void> _writeAppDart(
