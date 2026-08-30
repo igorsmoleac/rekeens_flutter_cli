@@ -272,13 +272,15 @@ full
 * [x] Provider generator
 * [x] Doctor command
 * [x] Basic dependency management
+* [x] Dry-run mode
+* [x] Unit tests for core logic
+* [x] CI (GitHub Actions) for analyze and tests
 
 ### Planned
 
 * [ ] Presets (minimal/mobile/full)
 * [ ] Configuration file (`rekeens.yaml`)
 * [ ] Dynamic dependency management based on options
-* [ ] Dry-run mode
 * [ ] More generators
 * [ ] Improved validation
 * [ ] Automated tests for generated projects
