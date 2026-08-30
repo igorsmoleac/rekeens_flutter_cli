@@ -2,18 +2,21 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/services/template_service.dart';
-import 'package:rekeens_flutter_cli/utils/project_paths.dart';
+import 'package:rekeens_flutter_cli/utils/template_resolver.dart';
 
 abstract class BaseGenerator {
   final TemplateService _templateService;
+  final TemplateResolver _templateResolver;
   final String? templatesRootOverride;
   final String? workingDirectory;
 
   BaseGenerator({
     TemplateService templateService = const TemplateService(),
+    TemplateResolver templateResolver = const TemplateResolver(),
     this.templatesRootOverride,
     this.workingDirectory,
-  }) : _templateService = templateService;
+  }) : _templateService = templateService,
+       _templateResolver = templateResolver;
 
   String get _projectDir => workingDirectory ?? Directory.current.path;
 
@@ -72,8 +75,12 @@ abstract class BaseGenerator {
     required String targetDir,
     required Map<String, String> variables,
   }) async {
-    final root = templatesRootOverride ?? await getPackageRoot();
-    final sourceDir = p.join(root, 'templates', 'features', templateSubPath);
+    final sourceDir = await _templateResolver.resolve(
+      category: 'features',
+      subPath: templateSubPath,
+      workingDirectory: workingDirectory,
+      packageRootOverride: templatesRootOverride,
+    );
     await _templateService.copyTemplate(
       sourceDir: sourceDir,
       targetDir: targetDir,

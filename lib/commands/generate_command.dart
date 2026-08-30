@@ -71,11 +71,12 @@ class GenerateCommand extends Command<void> {
         _validateLength(
           rest,
           3,
-          'rekeens generate model <feature_name> <model_name>',
+          'rekeens generate model <feature_name> <model_name> [field:type ...]',
         );
         await _modelGenerator.generate(
           rest[1],
           rest[2],
+          fields: rest.length > 3 ? rest.sublist(3) : null,
           force: force,
           dryRun: dryRun,
         );

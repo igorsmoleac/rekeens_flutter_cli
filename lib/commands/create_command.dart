@@ -2,17 +2,17 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/services/prompter_service.dart';
 import 'package:rekeens_flutter_cli/services/template_service.dart';
 import 'package:rekeens_flutter_cli/services/project_file_writer.dart';
-import 'package:rekeens_flutter_cli/utils/project_paths.dart';
+import 'package:rekeens_flutter_cli/utils/template_resolver.dart';
 import 'package:rekeens_flutter_cli/utils/dependency_resolver.dart';
 import 'package:rekeens_flutter_cli/config/presets.dart';
 import 'package:rekeens_flutter_cli/config/config_loader.dart';
 
 class CreateCommand extends Command<void> {
   final _templateService = const TemplateService();
+  final _templateResolver = const TemplateResolver();
   final _prompter = const PrompterService();
   final _projectFileWriter = ProjectFileWriter();
 
@@ -285,7 +285,7 @@ class CreateCommand extends Command<void> {
   }
 
   Future<void> _applyTemplate(String projectName) async {
-    final templateDir = p.join(await getPackageRoot(), 'templates', 'base');
+    final templateDir = await _templateResolver.resolve(category: 'base');
     final targetDir = projectName;
 
     final variables = <String, String>{'project_name': projectName};

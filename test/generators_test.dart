@@ -105,4 +105,150 @@ void main() {
     final content = modelFile.readAsStringSync();
     expect(content.contains('class UserModel'), isTrue);
   });
+
+  test('ModelGenerator generates fields from arguments', () async {
+    final featureGen = FeatureGenerator(
+      workingDirectory: tempProject.path,
+      templatesRootOverride: projectRoot,
+    );
+    await featureGen.generate('auth');
+
+    final modelGen = ModelGenerator(
+      workingDirectory: tempProject.path,
+      templatesRootOverride: projectRoot,
+    );
+    await modelGen.generate(
+      'auth',
+      'user',
+      fields: ['name:string', 'age:int', 'price:double', 'active:bool'],
+    );
+
+    final modelFile = File(
+      p.join(
+        tempProject.path,
+        'lib',
+        'features',
+        'auth',
+        'data',
+        'models',
+        'user_model.dart',
+      ),
+    );
+    expect(modelFile.existsSync(), isTrue);
+    final content = modelFile.readAsStringSync();
+    expect(content.contains('class UserModel'), isTrue);
+    expect(content.contains('final String name;'), isTrue);
+    expect(content.contains('final int age;'), isTrue);
+    expect(content.contains('final double price;'), isTrue);
+    expect(content.contains('final bool active;'), isTrue);
+    expect(content.contains('required this.name,'), isTrue);
+    expect(content.contains('required this.age,'), isTrue);
+    expect(content.contains("name: json['name'] as String,"), isTrue);
+    expect(content.contains("age: json['age'] as int,"), isTrue);
+    expect(
+      content.contains("price: (json['price'] as num).toDouble(),"),
+      isTrue,
+    );
+    expect(content.contains("'name': name,"), isTrue);
+    expect(content.contains("'age': age,"), isTrue);
+  });
+
+  test('ModelGenerator generates DateTime and List fields', () async {
+    final featureGen = FeatureGenerator(
+      workingDirectory: tempProject.path,
+      templatesRootOverride: projectRoot,
+    );
+    await featureGen.generate('auth');
+
+    final modelGen = ModelGenerator(
+      workingDirectory: tempProject.path,
+      templatesRootOverride: projectRoot,
+    );
+    await modelGen.generate(
+      'auth',
+      'user',
+      fields: ['createdAt:DateTime', 'tags:List<String>'],
+    );
+
+    final modelFile = File(
+      p.join(
+        tempProject.path,
+        'lib',
+        'features',
+        'auth',
+        'data',
+        'models',
+        'user_model.dart',
+      ),
+    );
+    final content = modelFile.readAsStringSync();
+    expect(content.contains('final DateTime createdAt;'), isTrue);
+    expect(content.contains('final List<String> tags;'), isTrue);
+    expect(
+      content.contains(
+        "createdAt: DateTime.parse(json['createdAt'] as String),",
+      ),
+      isTrue,
+    );
+    expect(
+      content.contains("tags: (json['tags'] as List).cast<String>(),"),
+      isTrue,
+    );
+    expect(content.contains('createdAt.toIso8601String()'), isTrue);
+    expect(content.contains("'tags': tags,"), isTrue);
+  });
+
+  test('ModelGenerator generates nullable fields', () async {
+    final featureGen = FeatureGenerator(
+      workingDirectory: tempProject.path,
+      templatesRootOverride: projectRoot,
+    );
+    await featureGen.generate('auth');
+
+    final modelGen = ModelGenerator(
+      workingDirectory: tempProject.path,
+      templatesRootOverride: projectRoot,
+    );
+    await modelGen.generate(
+      'auth',
+      'user',
+      fields: ['name:string', 'age:int?'],
+    );
+
+    final modelFile = File(
+      p.join(
+        tempProject.path,
+        'lib',
+        'features',
+        'auth',
+        'data',
+        'models',
+        'user_model.dart',
+      ),
+    );
+    final content = modelFile.readAsStringSync();
+    expect(content.contains('final String name;'), isTrue);
+    expect(content.contains('final int? age;'), isTrue);
+    expect(content.contains('required this.name,'), isTrue);
+    expect(content.contains('this.age,'), isTrue);
+    expect(content.contains("age: json['age'] as int?,"), isTrue);
+  });
+
+  test('ModelGenerator throws on invalid field format', () async {
+    final featureGen = FeatureGenerator(
+      workingDirectory: tempProject.path,
+      templatesRootOverride: projectRoot,
+    );
+    await featureGen.generate('auth');
+
+    final modelGen = ModelGenerator(
+      workingDirectory: tempProject.path,
+      templatesRootOverride: projectRoot,
+    );
+
+    expect(
+      () => modelGen.generate('auth', 'user', fields: ['badformat']),
+      throwsA(isA<FormatException>()),
+    );
+  });
 }
