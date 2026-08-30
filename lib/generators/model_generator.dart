@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
+import 'package:rekeens_flutter_cli/utils/logger.dart';
 import 'package:rekeens_flutter_cli/utils/model_fields.dart';
 
 class ModelGenerator extends BaseGenerator {
@@ -53,7 +54,7 @@ class ModelGenerator extends BaseGenerator {
           .writeAsStringSync(content);
     }
 
-    print('Model "$modelName" created in feature "$featureName".');
+    logger.success('Model "$modelName" created in feature "$featureName".');
   }
 
   String generateSourceForTest(String className, List<ModelField> fields) =>

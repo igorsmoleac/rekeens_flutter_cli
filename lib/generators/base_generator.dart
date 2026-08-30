@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/services/template_service.dart';
+import 'package:rekeens_flutter_cli/utils/logger.dart';
 import 'package:rekeens_flutter_cli/utils/template_resolver.dart';
 
 abstract class BaseGenerator {
@@ -67,7 +68,7 @@ abstract class BaseGenerator {
   }
 
   void logDryRun(String action, String path) {
-    print('DRY RUN: would $action -> $path');
+    logger.warn('DRY RUN: would $action -> $path');
   }
 
   Future<void> copyTemplate({

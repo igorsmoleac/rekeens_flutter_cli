@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:meta/meta.dart';
+import 'package:rekeens_flutter_cli/utils/logger.dart';
 
 class DoctorCommand extends Command<void> {
   @override
@@ -12,7 +13,8 @@ class DoctorCommand extends Command<void> {
 
   @override
   Future<void> run() async {
-    print('Rekeens CLI Doctor\n');
+    logger.info('Rekeens CLI Doctor');
+    logger.info('');
 
     var allGood = true;
 
@@ -21,9 +23,11 @@ class DoctorCommand extends Command<void> {
     allGood = await _checkTool('Git', ['--version']) && allGood;
 
     if (allGood) {
-      print('\nEnvironment is ready.');
+      logger.info('');
+      logger.success('Environment is ready.');
     } else {
-      print('\nSome tools are missing or not in PATH.');
+      logger.info('');
+      logger.err('Some tools are missing or not in PATH.');
       exitCode = 1;
     }
   }
@@ -35,14 +39,14 @@ class DoctorCommand extends Command<void> {
 
       final result = await Process.run(executable, fullArgs);
       if (result.exitCode != 0) {
-        print('✗ $name: failed to run');
+        logger.err('$name: failed to run');
         return false;
       }
       final version = extractVersion(name, result.stdout.toString());
-      print('✓ $name $version');
+      logger.success('$name $version');
       return true;
     } on ProcessException {
-      print('✗ $name: not found');
+      logger.err('$name: not found');
       return false;
     }
   }

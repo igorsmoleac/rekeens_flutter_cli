@@ -1,5 +1,6 @@
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
+import 'package:rekeens_flutter_cli/utils/logger.dart';
 
 class ScreenGenerator extends BaseGenerator {
   ScreenGenerator({
@@ -40,6 +41,6 @@ class ScreenGenerator extends BaseGenerator {
       variables: {'screen_name': screenName, 'class_name': className},
     );
 
-    print('Screen "$screenName" created in feature "$featureName".');
+    logger.success('Screen "$screenName" created in feature "$featureName".');
   }
 }

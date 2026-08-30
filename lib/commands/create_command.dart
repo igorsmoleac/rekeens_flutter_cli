@@ -9,6 +9,7 @@ import 'package:rekeens_flutter_cli/utils/template_resolver.dart';
 import 'package:rekeens_flutter_cli/utils/dependency_resolver.dart';
 import 'package:rekeens_flutter_cli/config/presets.dart';
 import 'package:rekeens_flutter_cli/config/config_loader.dart';
+import 'package:rekeens_flutter_cli/utils/logger.dart';
 
 class CreateCommand extends Command<void> {
   final _templateService = const TemplateService();
@@ -94,51 +95,56 @@ class CreateCommand extends Command<void> {
 
     final verbose = argResults!['verbose'] as bool;
     if (verbose) {
-      print('Verbose mode enabled.');
+      logger.detail('Verbose mode enabled.');
     }
 
     final options = _resolveOptions();
 
-    print('Selected options:');
-    options.forEach((key, value) => print('  $key: $value'));
+    logger.info('Selected options:');
+    options.forEach((key, value) => logger.detail('  $key: $value'));
 
     if (argResults!['dry-run'] as bool) {
       final dependencies = DependencyResolver.resolve(options);
       final devDependencies = DependencyResolver.resolveDevDependencies(
         includeCodegen: options['codegen'] as bool? ?? false,
       );
-      print('\nDry run: no changes will be made.');
-      print('Would create project "$projectName" with the above options.');
+      logger.info('');
+      logger.info('Dry run: no changes will be made.');
+      logger.info(
+        'Would create project "$projectName" with the above options.',
+      );
       if (dependencies.isNotEmpty) {
-        print('Would add dependencies: ${dependencies.join(', ')}');
+        logger.info('Would add dependencies: ${dependencies.join(', ')}');
       } else {
-        print('Would not add any dependencies.');
+        logger.info('Would not add any dependencies.');
       }
       if (devDependencies.isNotEmpty) {
-        print('Would add dev_dependencies: ${devDependencies.join(', ')}');
+        logger.info(
+          'Would add dev_dependencies: ${devDependencies.join(', ')}',
+        );
       }
       return;
     }
 
-    print('Creating Flutter project "$projectName"...');
+    logger.info('Creating Flutter project "$projectName"...');
     await _runFlutterCreate(
       projectName,
       platforms: options['platforms'] as List<String>,
     );
 
-    print('Applying custom template...');
+    logger.info('Applying custom template...');
     await _applyTemplate(projectName);
 
-    print('Configuring project files...');
+    logger.info('Configuring project files...');
     await _projectFileWriter.configureProjectFiles(projectName, options);
 
-    print('Adding dependencies...');
+    logger.info('Adding dependencies...');
     final dependencies = DependencyResolver.resolve(options);
     await _addDependencies(projectName, dependencies);
 
     final codegen = options['codegen'] as bool? ?? false;
     if (codegen) {
-      print('Adding dev_dependencies...');
+      logger.info('Adding dev_dependencies...');
       final devDependencies = DependencyResolver.resolveDevDependencies(
         includeCodegen: true,
       );
@@ -146,7 +152,7 @@ class CreateCommand extends Command<void> {
     }
 
     if (options['localization'] == true) {
-      print('Adding flutter_localizations...');
+      logger.info('Adding flutter_localizations...');
       await _runProcess('flutter', [
         'pub',
         'add',
@@ -154,32 +160,32 @@ class CreateCommand extends Command<void> {
         '--sdk=flutter',
       ], workingDirectory: projectName);
 
-      print('Enabling Flutter localization generation...');
+      logger.info('Enabling Flutter localization generation...');
       await _projectFileWriter.enableFlutterGenerate(projectName);
 
-      print('Running pub get...');
+      logger.info('Running pub get...');
       await _runProcess('flutter', [
         'pub',
         'get',
       ], workingDirectory: projectName);
 
-      print('Generating localizations...');
+      logger.info('Generating localizations...');
       await _runProcess('flutter', ['gen-l10n'], workingDirectory: projectName);
 
-      print('Running pub get after gen-l10n...');
+      logger.info('Running pub get after gen-l10n...');
       await _runProcess('flutter', [
         'pub',
         'get',
       ], workingDirectory: projectName);
     }
 
-    print('Formatting code...');
+    logger.info('Formatting code...');
     await _runProcess('dart', ['format', '.'], workingDirectory: projectName);
 
-    print('Running analyzer...');
+    logger.info('Running analyzer...');
     await _runProcess('flutter', ['analyze'], workingDirectory: projectName);
 
-    print('Project created successfully.');
+    logger.success('Project created successfully.');
   }
 
   bool _hasAnyCreateFlag() {

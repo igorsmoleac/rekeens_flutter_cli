@@ -1,5 +1,6 @@
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
+import 'package:rekeens_flutter_cli/utils/logger.dart';
 
 class ProviderGenerator extends BaseGenerator {
   ProviderGenerator({
@@ -56,7 +57,7 @@ class ProviderGenerator extends BaseGenerator {
       variables: {'provider_name': providerName, 'class_name': className},
     );
 
-    print(
+    logger.success(
       useBloc
           ? 'Cubit "$providerName" created in feature "$featureName".'
           : 'Provider "$providerName" created in feature "$featureName".',

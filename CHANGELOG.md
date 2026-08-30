@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0
+
+- Replace all `print()` calls with colored terminal output via `mason_logger` (`logger.info`, `logger.success`, `logger.warn`, `logger.err`, `logger.detail`)
+- New shared `logger` instance in `lib/utils/logger.dart`
+- `doctor` command now reports tool checks with green success / red error styling instead of plain `✓`/`✗` bullets
+- `create` command step messages use `logger.info`, verbose output uses `logger.detail`, and the final result uses `logger.success`
+- Generator success messages (`feature`, `screen`, `model`, `repository`, `service`, `provider`) and dry-run notices now go through the shared logger
+- Errors in `main()` are reported via `logger.err` instead of writing to `stderr` directly
+
 ## 0.6.3
 
 - Extract shared generator test setup (temp project creation, `setUpAll`/`setUp`/`tearDown`, `withAuthFeature`) into `test/helpers/generator_test_helper.dart`
