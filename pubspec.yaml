@@ -1,6 +1,6 @@
 name: rekeens_flutter_cli
 description: A CLI tool for generating Flutter projects with custom architecture, presets, and feature generators.
-version: 0.7.1
+version: 0.7.2
 repository: https://github.com/igorsmoleac/rekeens_flutter_cli
 
 environment:
