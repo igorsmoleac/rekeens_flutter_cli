@@ -1,5 +1,6 @@
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
+import 'package:rekeens_flutter_cli/utils/logger.dart';
 
 class RepositoryGenerator extends BaseGenerator {
   RepositoryGenerator({
@@ -43,6 +44,8 @@ class RepositoryGenerator extends BaseGenerator {
       variables: {'repository_name': repositoryName, 'class_name': className},
     );
 
-    print('Repository "$repositoryName" created in feature "$featureName".');
+    logger.success(
+      'Repository "$repositoryName" created in feature "$featureName".',
+    );
   }
 }

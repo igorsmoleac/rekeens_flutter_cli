@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
+import 'package:rekeens_flutter_cli/utils/logger.dart';
 
 class FeatureGenerator extends BaseGenerator {
   FeatureGenerator({
@@ -45,6 +46,6 @@ class FeatureGenerator extends BaseGenerator {
       variables: variables,
     );
 
-    print('Feature "$featureName" created successfully.');
+    logger.success('Feature "$featureName" created successfully.');
   }
 }

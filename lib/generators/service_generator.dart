@@ -1,5 +1,6 @@
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
+import 'package:rekeens_flutter_cli/utils/logger.dart';
 
 class ServiceGenerator extends BaseGenerator {
   ServiceGenerator({
@@ -40,6 +41,6 @@ class ServiceGenerator extends BaseGenerator {
       variables: {'service_name': serviceName, 'class_name': className},
     );
 
-    print('Service "$serviceName" created in feature "$featureName".');
+    logger.success('Service "$serviceName" created in feature "$featureName".');
   }
 }
