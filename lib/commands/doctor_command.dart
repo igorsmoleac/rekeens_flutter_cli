@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:meta/meta.dart';
 
 class DoctorCommand extends Command<void> {
   @override
@@ -37,7 +38,7 @@ class DoctorCommand extends Command<void> {
         print('✗ $name: failed to run');
         return false;
       }
-      final version = _extractVersion(name, result.stdout.toString());
+      final version = extractVersion(name, result.stdout.toString());
       print('✓ $name $version');
       return true;
     } on ProcessException {
@@ -46,7 +47,8 @@ class DoctorCommand extends Command<void> {
     }
   }
 
-  String _extractVersion(String tool, String output) {
+  @visibleForTesting
+  String extractVersion(String tool, String output) {
     final lines = output.trim().split('\n');
     if (lines.isEmpty) return '';
 

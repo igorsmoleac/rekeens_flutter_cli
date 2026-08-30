@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.1
+
+- Unit tests for `DoctorCommand` covering version-string extraction for Dart, Flutter, Git, and edge cases (empty input, non-ASCII bullet stripping, multiline output)
+- Unit tests for `GenerateCommand` covering argument validation, unknown-type rejection, missing-name detection for all sub-generators, and `--force`/`--dry-run` flag parsing
+- `DoctorCommand.extractVersion` exposed as `@visibleForTesting` to enable pure-logic testing without spawning real processes
+- `TemplateResolver.resolve` no longer throws when the built-in package root cannot be located if a matching home or local template is found first
+
 ## 0.6.0
 
 - Custom templates support: CLI now resolves templates by searching `~/.rekeens/templates/` (user-global), then `.rekeens/templates/` in the current project (local), and finally the built-in `templates/` shipped with the package
