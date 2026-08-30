@@ -1,55 +1,28 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:rekeens_flutter_cli/generators/feature_generator.dart';
 import 'package:rekeens_flutter_cli/generators/provider_generator.dart';
 import 'package:rekeens_flutter_cli/generators/repository_generator.dart';
 import 'package:rekeens_flutter_cli/generators/service_generator.dart';
 import 'package:test/test.dart';
 
+import 'helpers/generator_test_helper.dart';
+
 void main() {
-  late Directory tempProject;
-  late String projectRoot;
-
-  setUpAll(() {
-    projectRoot = Directory.current.path;
-  });
-
-  setUp(() {
-    tempProject = Directory.systemTemp.createTempSync('gen_test_');
-    Directory(p.join(tempProject.path, 'lib', 'features'))
-        .createSync(recursive: true);
-    File(p.join(tempProject.path, 'pubspec.yaml'))
-        .writeAsStringSync('name: test\n');
-  });
-
-  tearDown(() {
-    if (tempProject.existsSync()) {
-      tempProject.deleteSync(recursive: true);
-    }
-  });
-
-  Future<void> withAuthFeature(Future<void> Function() body) async {
-    final featureGen = FeatureGenerator(
-      workingDirectory: tempProject.path,
-      templatesRootOverride: projectRoot,
-    );
-    await featureGen.generate('auth');
-    await body();
-  }
+  final h = GeneratorTestHelper()..register();
 
   group('RepositoryGenerator', () {
     test('creates user_repository.dart with UserRepository class', () async {
-      await withAuthFeature(() async {
+      await h.withAuthFeature(() async {
         final gen = RepositoryGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         await gen.generate('auth', 'user');
 
         final file = File(
           p.join(
-            tempProject.path,
+            h.tempProject.path,
             'lib',
             'features',
             'auth',
@@ -65,10 +38,10 @@ void main() {
     });
 
     test('throws when file exists and force=false', () async {
-      await withAuthFeature(() async {
+      await h.withAuthFeature(() async {
         final gen = RepositoryGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         await gen.generate('auth', 'user');
 
@@ -77,10 +50,10 @@ void main() {
     });
 
     test('overwrites when file exists and force=true', () async {
-      await withAuthFeature(() async {
+      await h.withAuthFeature(() async {
         final gen = RepositoryGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         await gen.generate('auth', 'user');
 
@@ -88,7 +61,7 @@ void main() {
 
         final file = File(
           p.join(
-            tempProject.path,
+            h.tempProject.path,
             'lib',
             'features',
             'auth',
@@ -106,10 +79,10 @@ void main() {
     });
 
     test('throws on invalid name (UserProfile)', () async {
-      await withAuthFeature(() async {
+      await h.withAuthFeature(() async {
         final gen = RepositoryGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         expect(
           () => gen.generate('auth', 'UserProfile'),
@@ -118,10 +91,10 @@ void main() {
       });
     });
 
-    test('throws when feature does not exist', () async {
+    test('throws when feature does not exist', () {
       final gen = RepositoryGenerator(
-        workingDirectory: tempProject.path,
-        templatesRootOverride: projectRoot,
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
       );
       expect(() => gen.generate('missing', 'user'), throwsA(isA<Exception>()));
     });
@@ -129,16 +102,16 @@ void main() {
 
   group('ServiceGenerator', () {
     test('creates auth_service.dart with AuthService class', () async {
-      await withAuthFeature(() async {
+      await h.withAuthFeature(() async {
         final gen = ServiceGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         await gen.generate('auth', 'auth');
 
         final file = File(
           p.join(
-            tempProject.path,
+            h.tempProject.path,
             'lib',
             'features',
             'auth',
@@ -154,10 +127,10 @@ void main() {
     });
 
     test('throws when file exists and force=false', () async {
-      await withAuthFeature(() async {
+      await h.withAuthFeature(() async {
         final gen = ServiceGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         await gen.generate('auth', 'auth');
 
@@ -166,10 +139,10 @@ void main() {
     });
 
     test('overwrites when file exists and force=true', () async {
-      await withAuthFeature(() async {
+      await h.withAuthFeature(() async {
         final gen = ServiceGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         await gen.generate('auth', 'auth');
 
@@ -177,7 +150,7 @@ void main() {
 
         final file = File(
           p.join(
-            tempProject.path,
+            h.tempProject.path,
             'lib',
             'features',
             'auth',
@@ -192,10 +165,10 @@ void main() {
     });
 
     test('throws on invalid name (UserProfile)', () async {
-      await withAuthFeature(() async {
+      await h.withAuthFeature(() async {
         final gen = ServiceGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         expect(
           () => gen.generate('auth', 'UserProfile'),
@@ -204,10 +177,10 @@ void main() {
       });
     });
 
-    test('throws when feature does not exist', () async {
+    test('throws when feature does not exist', () {
       final gen = ServiceGenerator(
-        workingDirectory: tempProject.path,
-        templatesRootOverride: projectRoot,
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
       );
       expect(() => gen.generate('missing', 'auth'), throwsA(isA<Exception>()));
     });
@@ -217,16 +190,16 @@ void main() {
     test(
       'creates auth_provider.dart with AuthProvider class and authProvider',
       () async {
-        await withAuthFeature(() async {
+        await h.withAuthFeature(() async {
           final gen = ProviderGenerator(
-            workingDirectory: tempProject.path,
-            templatesRootOverride: projectRoot,
+            workingDirectory: h.tempProject.path,
+            templatesRootOverride: h.projectRoot,
           );
           await gen.generate('auth', 'auth');
 
           final file = File(
             p.join(
-              tempProject.path,
+              h.tempProject.path,
               'lib',
               'features',
               'auth',
@@ -244,10 +217,10 @@ void main() {
     );
 
     test('throws when file exists and force=false', () async {
-      await withAuthFeature(() async {
+      await h.withAuthFeature(() async {
         final gen = ProviderGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         await gen.generate('auth', 'auth');
 
@@ -256,10 +229,10 @@ void main() {
     });
 
     test('overwrites when file exists and force=true', () async {
-      await withAuthFeature(() async {
+      await h.withAuthFeature(() async {
         final gen = ProviderGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         await gen.generate('auth', 'auth');
 
@@ -267,7 +240,7 @@ void main() {
 
         final file = File(
           p.join(
-            tempProject.path,
+            h.tempProject.path,
             'lib',
             'features',
             'auth',
@@ -282,10 +255,10 @@ void main() {
     });
 
     test('throws on invalid name (UserProfile)', () async {
-      await withAuthFeature(() async {
+      await h.withAuthFeature(() async {
         final gen = ProviderGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         expect(
           () => gen.generate('auth', 'UserProfile'),
@@ -294,10 +267,10 @@ void main() {
       });
     });
 
-    test('throws when feature does not exist', () async {
+    test('throws when feature does not exist', () {
       final gen = ProviderGenerator(
-        workingDirectory: tempProject.path,
-        templatesRootOverride: projectRoot,
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
       );
       expect(() => gen.generate('missing', 'auth'), throwsA(isA<Exception>()));
     });
@@ -307,16 +280,16 @@ void main() {
     test(
       'creates auth_cubit.dart and auth_state.dart when stateManagement=bloc',
       () async {
-        await withAuthFeature(() async {
+        await h.withAuthFeature(() async {
           final gen = ProviderGenerator(
-            workingDirectory: tempProject.path,
-            templatesRootOverride: projectRoot,
+            workingDirectory: h.tempProject.path,
+            templatesRootOverride: h.projectRoot,
           );
           await gen.generate('auth', 'auth', stateManagement: 'bloc');
 
           final cubitFile = File(
             p.join(
-              tempProject.path,
+              h.tempProject.path,
               'lib',
               'features',
               'auth',
@@ -327,7 +300,7 @@ void main() {
           );
           final stateFile = File(
             p.join(
-              tempProject.path,
+              h.tempProject.path,
               'lib',
               'features',
               'auth',
@@ -349,23 +322,22 @@ void main() {
     );
 
     test('auto-detects bloc from pubspec.yaml', () async {
-      await withAuthFeature(() async {
-        // Simulate a project that uses flutter_bloc.
-        File(p.join(tempProject.path, 'pubspec.yaml')).writeAsStringSync(
+      await h.withAuthFeature(() async {
+        File(p.join(h.tempProject.path, 'pubspec.yaml')).writeAsStringSync(
           'name: test\n'
           'dependencies:\n'
           '  flutter_bloc: ^8.1.0\n',
         );
 
         final gen = ProviderGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         await gen.generate('auth', 'auth');
 
         final cubitFile = File(
           p.join(
-            tempProject.path,
+            h.tempProject.path,
             'lib',
             'features',
             'auth',
@@ -383,22 +355,22 @@ void main() {
     });
 
     test('auto-detects riverpod from pubspec.yaml', () async {
-      await withAuthFeature(() async {
-        File(p.join(tempProject.path, 'pubspec.yaml')).writeAsStringSync(
+      await h.withAuthFeature(() async {
+        File(p.join(h.tempProject.path, 'pubspec.yaml')).writeAsStringSync(
           'name: test\n'
           'dependencies:\n'
           '  flutter_riverpod: ^2.4.0\n',
         );
 
         final gen = ProviderGenerator(
-          workingDirectory: tempProject.path,
-          templatesRootOverride: projectRoot,
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
         );
         await gen.generate('auth', 'auth');
 
         final providerFile = File(
           p.join(
-            tempProject.path,
+            h.tempProject.path,
             'lib',
             'features',
             'auth',

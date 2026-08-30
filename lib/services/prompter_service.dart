@@ -1,12 +1,17 @@
 import 'dart:io';
 
 class PrompterService {
-  const PrompterService();
+  final StringSink output;
+  final String? Function() readLine;
+
+  PrompterService({StringSink? output, String? Function()? readLine})
+    : output = output ?? stdout,
+      readLine = readLine ?? stdin.readLineSync;
 
   String askString(String question, {String? defaultValue}) {
     final hint = defaultValue != null ? ' [$defaultValue]' : '';
-    stdout.write('$question$hint: ');
-    final input = stdin.readLineSync()?.trim() ?? '';
+    output.write('$question$hint: ');
+    final input = readLine()?.trim() ?? '';
     if (input.isEmpty && defaultValue != null) {
       return defaultValue;
     }
@@ -16,12 +21,12 @@ class PrompterService {
   bool askYesNo(String question, {bool defaultValue = false}) {
     final hint = defaultValue ? '[Y/n]' : '[y/N]';
     while (true) {
-      stdout.write('$question $hint: ');
-      final input = stdin.readLineSync()?.trim().toLowerCase() ?? '';
+      output.write('$question $hint: ');
+      final input = readLine()?.trim().toLowerCase() ?? '';
       if (input.isEmpty) return defaultValue;
       if (input == 'y' || input == 'yes') return true;
       if (input == 'n' || input == 'no') return false;
-      print('Please answer y or n.');
+      output.write('Please answer y or n.\n');
     }
   }
 
@@ -35,16 +40,16 @@ class PrompterService {
       defaults = const [];
     }
 
-    print('\n$question');
+    output.write('\n$question\n');
     for (var i = 0; i < options.length; i++) {
       final marker = defaults.contains(options[i]) ? 'x' : ' ';
-      print('  [$marker] ${i + 1}. ${options[i]}');
+      output.write('  [$marker] ${i + 1}. ${options[i]}\n');
     }
 
-    stdout.write(
+    output.write(
       'Enter numbers separated by comma (default: ${defaults.isEmpty ? "none" : defaults.join(", ")}): ',
     );
-    final input = stdin.readLineSync()?.trim() ?? '';
+    final input = readLine()?.trim() ?? '';
 
     if (input.isEmpty) {
       return defaults;
@@ -74,18 +79,18 @@ class PrompterService {
     String? defaultValue,
   }) {
     if (options.isEmpty) return '';
-    print('\n$question');
+    output.write('\n$question\n');
     for (var i = 0; i < options.length; i++) {
       final marker = options[i] == defaultValue ? '*' : ' ';
-      print('  $marker ${i + 1}. ${options[i]}');
+      output.write('  $marker ${i + 1}. ${options[i]}\n');
     }
 
     while (true) {
       final hint = defaultValue != null
           ? ' [${options.indexOf(defaultValue) + 1}]'
           : '';
-      stdout.write('Enter number$hint: ');
-      final input = stdin.readLineSync()?.trim() ?? '';
+      output.write('Enter number$hint: ');
+      final input = readLine()?.trim() ?? '';
       if (input.isEmpty && defaultValue != null) {
         return defaultValue;
       }
@@ -93,7 +98,7 @@ class PrompterService {
       if (index != null && index >= 1 && index <= options.length) {
         return options[index - 1];
       }
-      print('Invalid choice. Try again.');
+      output.write('Invalid choice. Try again.\n');
     }
   }
 }

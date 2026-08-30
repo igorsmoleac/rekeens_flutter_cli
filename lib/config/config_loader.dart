@@ -4,8 +4,14 @@ import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 
 class ConfigLoader {
-  static Map<String, dynamic>? load() {
-    final configFile = _findConfigFile();
+  static Map<String, dynamic>? load({
+    String? workingDirectory,
+    String? homeDirectory,
+  }) {
+    final configFile = _findConfigFile(
+      workingDirectory: workingDirectory,
+      homeDirectory: homeDirectory,
+    );
     if (configFile == null) return null;
 
     try {
@@ -23,15 +29,19 @@ class ConfigLoader {
     }
   }
 
-  static String? _findConfigFile() {
-    final currentDir = Directory.current.path;
+  static String? _findConfigFile({
+    String? workingDirectory,
+    String? homeDirectory,
+  }) {
+    final currentDir = workingDirectory ?? Directory.current.path;
     final localConfig = p.join(currentDir, 'rekeens.yaml');
     if (File(localConfig).existsSync()) {
       return localConfig;
     }
 
     final home =
-        Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
+        homeDirectory ??
+        (Platform.environment['USERPROFILE'] ?? Platform.environment['HOME']);
     if (home != null) {
       final homeConfig = p.join(home, 'rekeens.yaml');
       if (File(homeConfig).existsSync()) {

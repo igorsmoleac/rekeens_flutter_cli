@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.3
+
+- Extract shared generator test setup (temp project creation, `setUpAll`/`setUp`/`tearDown`, `withAuthFeature`) into `test/helpers/generator_test_helper.dart`
+- Refactor `generators_test.dart` and `all_generators_test.dart` to use `GeneratorTestHelper`, removing duplicated boilerplate
+
+## 0.6.2
+
+- Unit tests for `ConfigLoader` covering local/home config loading, precedence, invalid YAML, missing defaults section, list conversion, and boolean values
+- Unit tests for `presets` covering all three presets (minimal, mobile, full) and `Preset.toOptions()`
+- Extended `ProjectFileWriter` tests covering go_router vs none router, material3 vs material2 theme, localization file generation, and `enableFlutterGenerate` (insert, dedup, append, missing pubspec)
+- Extended `TemplateService` tests covering binary files, missing source, nested directories, .gitkeep, multiple variables, and unreplaced placeholders
+- Unit tests for `PrompterService` covering `askString`, `askYesNo`, `askChoice`, `askMultipleChoice` with mocked stdin/stdout
+- `ConfigLoader.load` now accepts optional `workingDirectory` and `homeDirectory` parameters for testability
+- `PrompterService` now accepts injectable `output` (StringSink) and `readLine` callback for testability
+
 ## 0.6.1
 
 - Unit tests for `DoctorCommand` covering version-string extraction for Dart, Flutter, Git, and edge cases (empty input, non-ASCII bullet stripping, multiline output)
