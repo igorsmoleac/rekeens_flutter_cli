@@ -316,7 +316,40 @@ class CreateCommand extends Command<void> {
       args.add('--platforms=${platforms.join(',')}');
     }
     args.add(projectName);
-    await _runProcess('flutter', args);
+
+    try {
+      await _runProcess('flutter', args);
+    } on Exception catch (e) {
+      try {
+        final projectDir = Directory(projectName);
+        if (projectDir.existsSync()) {
+          projectDir.deleteSync(recursive: true);
+        }
+      } catch (_) {}
+      throw Exception(
+        'Failed to create Flutter project "$projectName".\n'
+        'Subsequent steps (template, dependencies, codegen) were skipped.\n'
+        'Underlying error: $e',
+      );
+    }
+
+    final projectDir = Directory(projectName);
+    bool dirExists;
+    try {
+      dirExists = projectDir.existsSync();
+    } catch (e) {
+      throw Exception(
+        'flutter create exited successfully but the project directory '
+        '"$projectName" could not be accessed.\n'
+        'Underlying error: $e',
+      );
+    }
+    if (!dirExists) {
+      throw Exception(
+        'flutter create exited successfully but the project directory '
+        '"$projectName" was not created. Aborting.',
+      );
+    }
   }
 
   Future<void> _runProcess(

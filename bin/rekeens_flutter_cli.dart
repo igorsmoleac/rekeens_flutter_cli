@@ -6,7 +6,7 @@ import 'package:rekeens_flutter_cli/commands/doctor_command.dart';
 import 'package:rekeens_flutter_cli/commands/generate_command.dart';
 import 'package:rekeens_flutter_cli/utils/app_version.dart';
 
-void main(List<String> args) {
+void main(List<String> args) async {
   if (args.contains('--version') || args.contains('-v')) {
     print(getAppVersion());
     exit(0);
@@ -25,8 +25,11 @@ void main(List<String> args) {
         ..addCommand(DoctorCommand())
         ..addCommand(GenerateCommand());
 
-  runner.run(args).catchError((error) {
-    stderr.writeln(error);
+  try {
+    await runner.run(args);
+  } catch (e) {
+    stderr.writeln(e);
+    await stderr.flush();
     exit(64);
-  });
+  }
 }
