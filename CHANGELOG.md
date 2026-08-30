@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2
+
+- Make `getPackageRoot()` reliable under `dart pub global activate` by resolving the package URI via `Isolate.resolvePackageUri` instead of walking up from `Platform.script` (which points at the Pub cache snapshot)
+- Fall back to walking up from `Platform.script` and `Platform.resolvedExecutable`, matching the package by `name` in `pubspec.yaml`
+- Throw a clear `StateError` when the package root cannot be located instead of silently returning an incorrect path
+
 ## 0.4.1
 
 - Check `flutter create` exit code and abort subsequent steps (template, dependencies, codegen) on failure with a clear error message

@@ -72,7 +72,7 @@ abstract class BaseGenerator {
     required String targetDir,
     required Map<String, String> variables,
   }) async {
-    final root = templatesRootOverride ?? getPackageRoot();
+    final root = templatesRootOverride ?? await getPackageRoot();
     final sourceDir = p.join(root, 'templates', 'features', templateSubPath);
     await _templateService.copyTemplate(
       sourceDir: sourceDir,

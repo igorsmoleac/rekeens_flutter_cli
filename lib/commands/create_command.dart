@@ -285,7 +285,7 @@ class CreateCommand extends Command<void> {
   }
 
   Future<void> _applyTemplate(String projectName) async {
-    final templateDir = p.join(getPackageRoot(), 'templates', 'base');
+    final templateDir = p.join(await getPackageRoot(), 'templates', 'base');
     final targetDir = projectName;
 
     final variables = <String, String>{'project_name': projectName};
