@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0
+
+- Custom templates support: CLI now resolves templates by searching `~/.rekeens/templates/` (user-global), then `.rekeens/templates/` in the current project (local), and finally the built-in `templates/` shipped with the package
+- New `TemplateResolver` utility drives both `create` (base template) and `generate` (feature/screen/model/repository/service/provider templates), so any template can be overridden or new generator types added without modifying CLI source
+- Throws a clear `StateError` listing every searched path when a template cannot be found in any location
+- Unit tests for `TemplateResolver` covering home > local > built-in precedence and the not-found case
+
 ## 0.5.0
 
 - Parameterized model generation: `rekeens g model auth user name:string age:int` generates fields, constructor, `fromJson`, and `toJson` from `name:type` arguments
