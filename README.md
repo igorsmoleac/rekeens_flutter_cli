@@ -180,6 +180,40 @@ defaults:
 
 ---
 
+## Roadmap
+
+### Current
+
+* [x] CLI foundation
+* [x] Project creation
+* [x] Interactive mode
+* [x] Non-interactive mode (flags)
+* [x] Template system
+* [x] Feature generator
+* [x] Screen generator
+* [x] Model generator
+* [x] Repository generator
+* [x] Service generator
+* [x] Provider generator
+* [x] Doctor command
+* [x] Basic dependency management
+* [x] Dry-run mode
+* [x] Unit tests for core logic
+* [x] CI (GitHub Actions) for analyze and tests
+
+### Planned
+
+* [ ] Presets (minimal/mobile/full)
+* [ ] Configuration file (`rekeens.yaml`)
+* [ ] Dynamic dependency management based on options
+* [ ] More generators
+* [ ] Improved validation
+* [ ] Automated tests for generated projects
+
+---
+
+## Author
+=======
 ## License & Author
 
 Developed by **Igor Smoleac** for **Rekeens**.

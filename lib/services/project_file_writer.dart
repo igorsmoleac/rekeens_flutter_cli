@@ -10,6 +10,7 @@ class ProjectFileWriter {
     final stateManagement = options['state_management'] as String;
     final router = options['router'] as String;
     final theme = options['theme'] as String;
+    final localization = options['localization'] as bool? ?? false;
 
     await _writeMainDart(projectName, stateManagement: stateManagement);
     await _writeAppDart(
@@ -17,8 +18,13 @@ class ProjectFileWriter {
       title: projectName,
       useGoRouter: router == 'go_router',
       useMaterial3: theme == 'material3',
+      useLocalization: localization,
     );
     await _writeRouterDart(projectName, useGoRouter: router == 'go_router');
+
+    if (localization) {
+      await _configureLocalization(projectName);
+    }
   }
 
   Future<void> _writeMainDart(
@@ -53,6 +59,7 @@ class ProjectFileWriter {
     required String title,
     required bool useGoRouter,
     required bool useMaterial3,
+    required bool useLocalization,
   }) async {
     final appFile = File(p.join(projectName, 'lib', 'app', 'app.dart'));
     final buffer = StringBuffer();
@@ -64,6 +71,9 @@ class ProjectFileWriter {
       buffer.writeln(
         "import '../features/home/presentation/pages/home_page.dart';",
       );
+    }
+    if (useLocalization) {
+      buffer.writeln("import '../l10n/app_localizations.dart';");
     }
     buffer.writeln();
     buffer.writeln('class App extends StatelessWidget {');
@@ -83,6 +93,14 @@ class ProjectFileWriter {
       buffer.writeln('        primarySwatch: Colors.blue,');
     }
     buffer.writeln('      ),');
+    if (useLocalization) {
+      buffer.writeln(
+        '      localizationsDelegates: AppLocalizations.localizationsDelegates,',
+      );
+      buffer.writeln(
+        '      supportedLocales: AppLocalizations.supportedLocales,',
+      );
+    }
     if (useGoRouter) {
       buffer.writeln('      routerConfig: appRouter,');
     } else {
@@ -123,5 +141,80 @@ class ProjectFileWriter {
     }
 
     await routerFile.writeAsString(buffer.toString());
+  }
+
+  Future<void> _configureLocalization(String projectName) async {
+    final l10nDir = Directory(p.join(projectName, 'lib', 'l10n'));
+    l10nDir.createSync(recursive: true);
+
+    final l10nYaml = File(p.join(projectName, 'l10n.yaml'));
+    await l10nYaml.writeAsString('''
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-dir: lib/l10n
+''');
+
+    final arbFile = File(p.join(l10nDir.path, 'app_en.arb'));
+    await arbFile.writeAsString('''
+{
+  "appTitle": "{{project_name}}",
+  "@appTitle": {
+    "description": "Application title"
+  }
+}
+''');
+    final arbContent = await arbFile.readAsString();
+    await arbFile.writeAsString(
+      arbContent.replaceAll('{{project_name}}', projectName),
+    );
+  }
+
+  Future<void> enableFlutterGenerate(String projectName) async {
+    final pubspecFile = File(p.join(projectName, 'pubspec.yaml'));
+    if (!pubspecFile.existsSync()) return;
+
+    final lines = await pubspecFile.readAsLines();
+
+    var inFlutterSection = false;
+    for (final line in lines) {
+      if (line == 'flutter:') {
+        inFlutterSection = true;
+        continue;
+      }
+      if (inFlutterSection) {
+        if (line.isNotEmpty &&
+            !line.startsWith(' ') &&
+            !line.startsWith('\t')) {
+          inFlutterSection = false;
+          continue;
+        }
+        final trimmed = line.trimLeft();
+        if (trimmed.startsWith('generate:') && trimmed.contains('true')) {
+          return;
+        }
+      }
+    }
+
+    final output = <String>[];
+    var inserted = false;
+
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      output.add(line);
+
+      if (!inserted && line == 'flutter:') {
+        output.add('  generate: true');
+        inserted = true;
+      }
+    }
+
+    if (!inserted) {
+      output.add('');
+      output.add('flutter:');
+      output.add('  generate: true');
+    }
+
+    await pubspecFile.writeAsString('${output.join('\n')}\n');
   }
 }

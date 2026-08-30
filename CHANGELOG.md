@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.0
+
+- Add real localization support (l10n.yaml, ARB, flutter_localizations, flutter gen-l10n)
+
 ## 0.1.1
 
 - Initial release
