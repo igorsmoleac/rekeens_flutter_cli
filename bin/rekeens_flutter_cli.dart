@@ -4,8 +4,14 @@ import 'package:args/command_runner.dart';
 import 'package:rekeens_flutter_cli/commands/create_command.dart';
 import 'package:rekeens_flutter_cli/commands/doctor_command.dart';
 import 'package:rekeens_flutter_cli/commands/generate_command.dart';
+import 'package:rekeens_flutter_cli/utils/app_version.dart';
 
 void main(List<String> args) {
+  if (args.contains('--version') || args.contains('-v')) {
+    print(getAppVersion());
+    exit(0);
+  }
+
   if (args.isNotEmpty && args.first == 'g') {
     args[0] = 'generate';
   }
