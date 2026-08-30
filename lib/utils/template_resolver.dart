@@ -26,8 +26,15 @@ class TemplateResolver {
     final cwd = workingDirectory ?? Directory.current.path;
     candidates.add(p.joinAll([cwd, '.rekeens', 'templates', ...segments]));
 
-    final root = packageRootOverride ?? await getPackageRoot();
-    candidates.add(p.joinAll([root, 'templates', ...segments]));
+    String? root;
+    try {
+      root = packageRootOverride ?? await getPackageRoot();
+    } catch (_) {
+      root = null;
+    }
+    if (root != null) {
+      candidates.add(p.joinAll([root, 'templates', ...segments]));
+    }
 
     for (final candidate in candidates) {
       if (Directory(candidate).existsSync()) return candidate;
