@@ -13,7 +13,7 @@ import 'package:rekeens_flutter_cli/config/config_loader.dart';
 class CreateCommand extends Command<void> {
   final _templateService = const TemplateService();
   final _templateResolver = const TemplateResolver();
-  final _prompter = const PrompterService();
+  final _prompter = PrompterService();
   final _projectFileWriter = ProjectFileWriter();
 
   CreateCommand() {
