@@ -8,7 +8,7 @@ import 'package:rekeens_flutter_cli/utils/app_version.dart';
 
 void main(List<String> args) async {
   if (args.contains('--version') || args.contains('-v')) {
-    print(getAppVersion());
+    print(await getAppVersion());
     exit(0);
   }
 
