@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0
+
+- Parameterized model generation: `rekeens g model auth user name:string age:int` generates fields, constructor, `fromJson`, and `toJson` from `name:type` arguments
+- Supported types: `String`, `int`, `double`, `bool`, `DateTime`, `List<String>`, `List<int>`, `List<double>`, `List<bool>` (and nullable variants with `?`)
+- Type aliases: case-insensitive (`string` → `String`, `datetime`/`date` → `DateTime`), and `[]` array syntax (`string[]` → `List<String>`) for Windows shells where `<>` are metacharacters
+- When no fields are provided, falls back to the default template (`id:int`, `name:String`)
+- Rejects invalid field formats, unsupported types, and duplicate field names with clear `FormatException` messages
+
 ## 0.4.2
 
 - Make `getPackageRoot()` reliable under `dart pub global activate` by resolving the package URI via `Isolate.resolvePackageUri` instead of walking up from `Platform.script` (which points at the Pub cache snapshot)
