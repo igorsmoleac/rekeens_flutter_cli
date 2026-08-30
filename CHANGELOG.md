@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.1
+
+- New `rekeens config init` command generates a `rekeens.yaml` with default settings in the current directory
+- Supports `--force`/`-f` to overwrite an existing config and `--dry-run`/`-n` to preview the action without writing
+- Generated config is loadable by `ConfigLoader` and matches the CLI defaults (platforms, architecture, state management, router, networking, localization, theme, codegen)
+- `ConfigInitCommand` accepts an injectable `workingDirectory` for testability
+- Unit tests for `ConfigInitCommand` covering creation, overwrite protection, `--force`, `--dry-run` (long and short forms), `ConfigLoader` round-trip, and missing-subcommand handling
+
 ## 0.7.0
 
 - Replace all `print()` calls with colored terminal output via `mason_logger` (`logger.info`, `logger.success`, `logger.warn`, `logger.err`, `logger.detail`)
