@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.8.0
+
+- `rekeens doctor` now checks additional tools beyond Dart/Flutter/Git:
+  - **Android SDK**: resolves via `ANDROID_HOME` / `ANDROID_SDK_ROOT` env vars and verifies the directory exists; reports presence of `platform-tools`
+  - **Xcode**: runs `xcodebuild -version` on macOS only; skipped on other platforms
+  - **Chrome**: tries `google-chrome`/`chromium`/`chrome --version` (Linux), `/Applications/Google Chrome.app` (macOS), `chrome --version` (Windows), and falls back to scanning standard install paths on disk
+- Core tools (Dart/Flutter/Git) and optional tools (Android SDK/Xcode/Chrome) are reported in separate sections with distinct summary lines
+- `exitCode=1` is set only when a core tool is missing; missing optional tools produce a warning instead
+- `DoctorCommand` now accepts injectable `processRunner` and `environment` for testability
+- `extractVersion` handles `Xcode` (`Xcode <version>`) and `Chrome` (`<major>.<minor>.<build>.<patch>`) outputs
+- Fixed duplicate tool name in doctor output (`Dart Dart 3.5.0` → `Dart 3.5.0`) since `extractVersion` already includes the tool name
+- Unit tests for new `extractVersion` cases (Xcode, Chrome, Chromium) and process-runner-injected `run()` covering core-tool success/failure, Android SDK present/missing, and Chrome found/not-found
+
 ## 0.7.2
 
 - New `rekeens list` command shows all available presets and generators
