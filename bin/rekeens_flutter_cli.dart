@@ -5,6 +5,7 @@ import 'package:rekeens_flutter_cli/commands/config_command.dart';
 import 'package:rekeens_flutter_cli/commands/create_command.dart';
 import 'package:rekeens_flutter_cli/commands/doctor_command.dart';
 import 'package:rekeens_flutter_cli/commands/generate_command.dart';
+import 'package:rekeens_flutter_cli/commands/list_command.dart';
 import 'package:rekeens_flutter_cli/utils/app_version.dart';
 import 'package:rekeens_flutter_cli/utils/logger.dart';
 
@@ -26,7 +27,8 @@ void main(List<String> args) async {
         ..addCommand(CreateCommand())
         ..addCommand(DoctorCommand())
         ..addCommand(GenerateCommand())
-        ..addCommand(ConfigCommand());
+        ..addCommand(ConfigCommand())
+        ..addCommand(ListCommand());
 
   try {
     await runner.run(args);

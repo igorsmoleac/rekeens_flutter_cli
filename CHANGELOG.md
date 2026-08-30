@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.2
+
+- New `rekeens list` command shows all available presets and generators
+- Presets section lists `minimal`, `mobile`, `full` with their configuration (platforms, state management, router, networking, theme, localization, codegen)
+- Generators section lists `feature`, `screen`, `model`, `repository`, `service`, `provider` with descriptions and usage examples
+- Output uses colored styling via `mason_logger` (yellow section headers, cyan names)
+- `ListCommand` accepts an injectable `Logger` for testability
+- Unit tests for `ListCommand` covering preset/generator listing, example output, and generator-type consistency with the `generate` command
+
 ## 0.7.1
 
 - New `rekeens config init` command generates a `rekeens.yaml` with default settings in the current directory
