@@ -125,6 +125,34 @@ class CreateCommand extends Command<void> {
     final dependencies = DependencyResolver.resolve(options);
     await _addDependencies(projectName, dependencies);
 
+    if (options['localization'] == true) {
+      print('Adding flutter_localizations...');
+      await _runProcess('flutter', [
+        'pub',
+        'add',
+        'flutter_localizations',
+        '--sdk=flutter',
+      ], workingDirectory: projectName);
+
+      print('Enabling Flutter localization generation...');
+      await _projectFileWriter.enableFlutterGenerate(projectName);
+
+      print('Running pub get...');
+      await _runProcess('flutter', [
+        'pub',
+        'get',
+      ], workingDirectory: projectName);
+
+      print('Generating localizations...');
+      await _runProcess('flutter', ['gen-l10n'], workingDirectory: projectName);
+
+      print('Running pub get after gen-l10n...');
+      await _runProcess('flutter', [
+        'pub',
+        'get',
+      ], workingDirectory: projectName);
+    }
+
     print('Formatting code...');
     await _runProcess('dart', ['format', '.'], workingDirectory: projectName);
 
