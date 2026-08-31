@@ -1,10 +1,14 @@
 name: E2E Smoke
 
 # End-to-end smoke test of the full `rekeens create` pipeline.
-# Scaffolds a real Flutter project with the `full` preset (every platform,
-# riverpod, go_router, dio, localization, codegen), then runs `flutter analyze`
-# and `flutter test` inside the generated project. This protects the templates
-# from silent degradation when dependencies or templates are updated.
+# Scaffolds a real Flutter project for EVERY preset (minimal, mobile, full),
+# then runs `flutter analyze` and `flutter test` inside each generated project.
+#
+# Each preset exercises a different combination of conditional template blocks
+# ({{#if}} / {{#unless}} on state_management, router, networking, localization,
+# codegen). A bug in the `none` branches — only hit by the `minimal` preset —
+# would go unnoticed if only `--preset=full` were tested, so all three presets
+# are covered as a matrix.
 
 on:
   push:
@@ -15,9 +19,13 @@ on:
 
 jobs:
   smoke:
-    name: create (full) + analyze + test
+    name: create (${{ matrix.preset }}) + analyze + test
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [minimal, mobile, full]
 
     steps:
       - uses: actions/checkout@v4
@@ -48,8 +56,8 @@ jobs:
       - name: Verify CLI is on PATH
         run: rekeens --version
 
-      - name: Scaffold project with --preset=full
-        run: rekeens create smoke_app --preset=full
+      - name: Scaffold project with --preset=${{ matrix.preset }}
+        run: rekeens create smoke_app --preset=${{ matrix.preset }}
 
       - name: Flutter analyze (generated project)
         working-directory: smoke_app

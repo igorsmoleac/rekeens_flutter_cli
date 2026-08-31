@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.8
+
+- E2E smoke workflow (`.github/workflows/e2e_smoke.yml`) now scaffolds and validates all three presets (`minimal`, `mobile`, `full`) via a `strategy.matrix` instead of only `--preset=full`
+- Each preset exercises a different combination of conditional template blocks (`{{#if}}`/`{{#unless}}` on `state_management`, `router`, `networking`, `localization`, `codegen`); the `minimal` preset is the only one that hits the `none` branches for state/router/networking, so a regression there previously went undetected
+- `fail-fast: false` ensures all preset jobs run to completion, surfacing every failing preset in a single push rather than aborting on the first failure
+- Job name reflects the preset: `create (<preset>) + analyze + test`
+
 ## 0.11.7
 
 - `ConfigLoader.load` now logs a `warning` when `rekeens.yaml` fails to parse instead of silently swallowing the error via `catch (_) { return null; }`
