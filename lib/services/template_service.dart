@@ -8,6 +8,7 @@ class TemplateService {
     required String targetDir,
     required Map<String, String> variables,
     Map<String, bool>? conditions,
+    Map<String, List<Map<String, String>>>? lists,
   }) async {
     final source = Directory(sourceDir);
     if (!source.existsSync()) {
@@ -37,7 +38,12 @@ class TemplateService {
         final file = entity;
         if (_isTextFile(file.path)) {
           var content = await file.readAsString();
-          content = renderContent(content, variables, conditions: conditions);
+          content = renderContent(
+            content,
+            variables,
+            conditions: conditions,
+            lists: lists,
+          );
           await File(targetPath).writeAsString(content);
         } else {
           await file.copy(targetPath);
@@ -51,6 +57,7 @@ class TemplateService {
     required String targetPath,
     required Map<String, String> variables,
     Map<String, bool>? conditions,
+    Map<String, List<Map<String, String>>>? lists,
   }) async {
     final sourceFile = File(sourcePath);
     if (!sourceFile.existsSync()) {
@@ -58,7 +65,12 @@ class TemplateService {
     }
 
     var content = await sourceFile.readAsString();
-    content = renderContent(content, variables, conditions: conditions);
+    content = renderContent(
+      content,
+      variables,
+      conditions: conditions,
+      lists: lists,
+    );
 
     final targetFile = File(targetPath);
     final targetParent = targetFile.parent;
@@ -72,11 +84,39 @@ class TemplateService {
     String content,
     Map<String, String> variables, {
     Map<String, bool>? conditions,
+    Map<String, List<Map<String, String>>>? lists,
   }) {
-    var result = _processConditionals(content, conditions ?? const {});
+    var result = _processLoops(content, lists ?? const {});
+    result = _processConditionals(result, conditions ?? const {});
     variables.forEach((key, value) {
       result = result.replaceAll('{{$key}}', value);
     });
+    return result;
+  }
+
+  String _processLoops(
+    String content,
+    Map<String, List<Map<String, String>>> lists,
+  ) {
+    var result = content;
+    while (true) {
+      final match = _loopRegex.firstMatch(result);
+      if (match == null) break;
+
+      final listName = match.group(1)!;
+      final inner = match.group(2)!;
+      final items = lists[listName] ?? const [];
+
+      final rendered = items.map((item) {
+        var s = inner;
+        item.forEach((key, value) {
+          s = s.replaceAll('{{$key}}', value);
+        });
+        return s;
+      }).join();
+
+      result = result.replaceRange(match.start, match.end, rendered);
+    }
     return result;
   }
 
@@ -104,6 +144,11 @@ class TemplateService {
 
   static final _conditionalRegex = RegExp(
     r'\{\{#(if|unless)\s+(\w+)\}\}((?:(?!\{\{#(?:if|unless)).)*?)\{\{/\1\}\}',
+    dotAll: true,
+  );
+
+  static final _loopRegex = RegExp(
+    r'\{\{#each\s+(\w+)\}\}((?:(?!\{\{#each).)*?)\{\{/each\}\}',
     dotAll: true,
   );
 

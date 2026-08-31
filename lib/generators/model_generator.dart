@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
 import 'package:rekeens_flutter_cli/utils/logger.dart';
@@ -49,59 +47,32 @@ class ModelGenerator extends BaseGenerator {
         variables: {'model_name': modelName, 'class_name': className},
       );
     } else {
-      final content = _generateModelSource('${className}Model', parsedFields);
-      File(p.join(modelsDir, '${modelName}_model.dart'))
-          .writeAsStringSync(content);
+      await copyTemplate(
+        templateSubPath: 'model_with_fields',
+        targetDir: modelsDir,
+        variables: {'model_name': modelName, 'class_name': className},
+        lists: {'fields': _buildFieldVariables(parsedFields)},
+      );
     }
 
     logger.success('Model "$modelName" created in feature "$featureName".');
   }
 
-  String generateSourceForTest(String className, List<ModelField> fields) =>
-      _generateModelSource(className, fields);
-
-  String _generateModelSource(String className, List<ModelField> fields) {
-    final buf = StringBuffer();
-
-    buf.writeln('class $className {');
-    for (final f in fields) {
-      buf.writeln('  final ${f.dartType} ${f.name};');
-    }
-    buf.writeln();
-
-    buf.writeln('  const $className({');
-    for (final f in fields) {
-      buf.writeln('    ${f.isNullable ? '' : 'required '}this.${f.name},');
-    }
-    buf.writeln('  });');
-    buf.writeln();
-
-    buf.writeln('  factory $className.fromJson(Map<String, dynamic> json) {');
-    buf.writeln('    return $className(');
-    for (final f in fields) {
-      buf.writeln('      ${f.name}: ${_fromJsonExpr(f)},');
-    }
-    buf.writeln('    );');
-    buf.writeln('  }');
-    buf.writeln();
-
-    buf.writeln('  Map<String, dynamic> toJson() {');
-    buf.writeln('    return {');
-    for (final f in fields) {
-      buf.writeln('      ${_jsonKey(f.name)}: ${_toJsonExpr(f)},');
-    }
-    buf.writeln('    };');
-    buf.writeln('  }');
-
-    buf.writeln('}');
-
-    return buf.toString();
+  List<Map<String, String>> _buildFieldVariables(List<ModelField> fields) {
+    return fields.map((f) {
+      return <String, String>{
+        'dart_type': f.dartType,
+        'name': f.name,
+        'required_prefix': f.isNullable ? '' : 'required ',
+        'from_json_expr': _fromJsonExpr(f),
+        'json_key': "'${f.name}'",
+        'to_json_expr': _toJsonExpr(f),
+      };
+    }).toList();
   }
 
-  String _jsonKey(String name) => "'$name'";
-
   String _fromJsonExpr(ModelField f) {
-    final key = _jsonKey(f.name);
+    final key = "'${f.name}'";
     switch (f.baseType) {
       case 'String':
       case 'bool':

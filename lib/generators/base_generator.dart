@@ -73,6 +73,7 @@ abstract class BaseGenerator {
     required String templateSubPath,
     required String targetDir,
     required Map<String, String> variables,
+    Map<String, List<Map<String, String>>>? lists,
   }) async {
     final sourceDir = await _templateResolver.resolve(
       category: 'features',
@@ -84,6 +85,7 @@ abstract class BaseGenerator {
       sourceDir: sourceDir,
       targetDir: targetDir,
       variables: variables,
+      lists: lists,
     );
   }
 }

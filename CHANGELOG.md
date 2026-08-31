@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.11.9
+
+- Unified model generation on the template system: `ModelGenerator` no longer uses `StringBuffer` to build model source for `--fields` — it now renders a `model_with_fields` template via `copyTemplate`, matching the approach used for all other generators and bootstrap files
+- Extended `TemplateService` with `{{#each list}}...{{/each}}` loop support: `renderContent`, `copyTemplate`, and `renderFile` accept an optional `lists` parameter (`Map<String, List<Map<String, String>>>`); each block's inner content is repeated per item with item-specific variable substitution
+- New template `templates/features/model_with_fields/{{model_name}}_model.dart` contains the class skeleton with four `{{#each fields}}` sections (field declarations, constructor params, fromJson lines, toJson lines)
+- Per-field expressions that involve type-specific logic (`fromJson` casts, `DateTime` parsing, nullable handling) are pre-computed in Dart (`_buildFieldVariables`) and passed as string variables to the template — the template handles structure and iteration, Dart handles type dispatch
+- Removed `_generateModelSource`, `_jsonKey`, and unused `generateSourceForTest` from `ModelGenerator`; removed unused `dart:io` import
+- `BaseGenerator.copyTemplate` now accepts and forwards an optional `lists` parameter
+- 6 new `template_service_test.dart` tests covering `{{#each}}` iteration, empty/missing lists, multiple blocks, combination with top-level variables, and `copyTemplate` integration
+
 ## 0.11.8
 
 - E2E smoke workflow (`.github/workflows/e2e_smoke.yml`) now scaffolds and validates all three presets (`minimal`, `mobile`, `full`) via a `strategy.matrix` instead of only `--preset=full`
