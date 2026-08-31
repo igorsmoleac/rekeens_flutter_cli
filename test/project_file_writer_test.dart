@@ -7,12 +7,17 @@ import 'package:test/test.dart';
 void main() {
   late Directory tempProject;
   late ProjectFileWriter writer;
+  late String projectRoot;
+
+  setUpAll(() {
+    projectRoot = Directory.current.path;
+  });
 
   setUp(() {
     tempProject = Directory.systemTemp.createTempSync('pfw_test_');
     Directory(p.join(tempProject.path, 'lib', 'app'))
         .createSync(recursive: true);
-    writer = ProjectFileWriter();
+    writer = ProjectFileWriter(templatesRootOverride: projectRoot);
   });
 
   tearDown(() {

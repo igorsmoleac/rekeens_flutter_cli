@@ -7,6 +7,7 @@ class TemplateService {
     required String sourceDir,
     required String targetDir,
     required Map<String, String> variables,
+    Map<String, bool>? conditions,
   }) async {
     final source = Directory(sourceDir);
     if (!source.existsSync()) {
@@ -36,9 +37,7 @@ class TemplateService {
         final file = entity;
         if (_isTextFile(file.path)) {
           var content = await file.readAsString();
-          variables.forEach((key, value) {
-            content = content.replaceAll('{{$key}}', value);
-          });
+          content = renderContent(content, variables, conditions: conditions);
           await File(targetPath).writeAsString(content);
         } else {
           await file.copy(targetPath);
@@ -46,6 +45,67 @@ class TemplateService {
       }
     }
   }
+
+  Future<void> renderFile({
+    required String sourcePath,
+    required String targetPath,
+    required Map<String, String> variables,
+    Map<String, bool>? conditions,
+  }) async {
+    final sourceFile = File(sourcePath);
+    if (!sourceFile.existsSync()) {
+      throw Exception('Template file not found: $sourcePath');
+    }
+
+    var content = await sourceFile.readAsString();
+    content = renderContent(content, variables, conditions: conditions);
+
+    final targetFile = File(targetPath);
+    final targetParent = targetFile.parent;
+    if (!targetParent.existsSync()) {
+      targetParent.createSync(recursive: true);
+    }
+    await targetFile.writeAsString(content);
+  }
+
+  String renderContent(
+    String content,
+    Map<String, String> variables, {
+    Map<String, bool>? conditions,
+  }) {
+    var result = _processConditionals(content, conditions ?? const {});
+    variables.forEach((key, value) {
+      result = result.replaceAll('{{$key}}', value);
+    });
+    return result;
+  }
+
+  String _processConditionals(String content, Map<String, bool> conditions) {
+    var result = content;
+    while (true) {
+      final match = _conditionalRegex.firstMatch(result);
+      if (match == null) break;
+
+      final type = match.group(1)!;
+      final cond = match.group(2)!;
+      final inner = match.group(3)!;
+
+      final condValue = conditions[cond] ?? false;
+      final include = type == 'if' ? condValue : !condValue;
+
+      result = result.replaceRange(
+        match.start,
+        match.end,
+        include ? inner : '',
+      );
+    }
+    return result;
+  }
+
+  static final _conditionalRegex = RegExp(
+    r'\{\{#(if|unless)\s+(\w+)\}\}((?:(?!\{\{#(?:if|unless)).)*?)\{\{/\1\}\}',
+    dotAll: true,
+  );
 
   bool _isTextFile(String path) {
     const textExtensions = [

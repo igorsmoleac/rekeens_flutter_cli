@@ -13,6 +13,12 @@ void main() {
   late Directory fakeHome;
   late List<String> calls;
   late Directory projectDir;
+  late String projectPath;
+  late String projectRoot;
+
+  setUpAll(() {
+    projectRoot = Directory.current.path;
+  });
 
   ScaffoldProcessRunner makeRunner({
     bool failFlutterCreate = false,
@@ -48,8 +54,12 @@ void main() {
     return ProjectScaffolder(
       templateService: const TemplateService(),
       templateResolver: TemplateResolver(homeDirectoryOverride: fakeHome.path),
-      projectFileWriter: ProjectFileWriter(),
+      projectFileWriter: ProjectFileWriter(
+        templatesRootOverride: projectRoot,
+        workingDirectory: workingDir.path,
+      ),
       processRunner: runner,
+      workingDirectory: workingDir.path,
     );
   }
 
@@ -59,11 +69,10 @@ void main() {
     fakeHome = Directory(p.join(tempRoot.path, 'home'))..createSync();
     calls = <String>[];
     projectDir = Directory(p.join(workingDir.path, 'my_app'));
-    Directory.current = workingDir.path;
+    projectPath = projectDir.path;
   });
 
   tearDown(() {
-    Directory.current = Directory.systemTemp.path;
     if (tempRoot.existsSync()) {
       tempRoot.deleteSync(recursive: true);
     }
@@ -111,14 +120,14 @@ void main() {
       // Localization pipeline.
       expect(
         calls[3],
-        'flutter pub add flutter_localizations --sdk=flutter (cwd=my_app)',
+        'flutter pub add flutter_localizations --sdk=flutter (cwd=$projectPath)',
       );
-      expect(calls[4], 'flutter pub get (cwd=my_app)');
-      expect(calls[5], 'flutter gen-l10n (cwd=my_app)');
-      expect(calls[6], 'flutter pub get (cwd=my_app)');
+      expect(calls[4], 'flutter pub get (cwd=$projectPath)');
+      expect(calls[5], 'flutter gen-l10n (cwd=$projectPath)');
+      expect(calls[6], 'flutter pub get (cwd=$projectPath)');
       // Format + analyze.
-      expect(calls[7], 'dart format . (cwd=my_app)');
-      expect(calls[8], 'flutter analyze (cwd=my_app)');
+      expect(calls[7], 'dart format . (cwd=$projectPath)');
+      expect(calls[8], 'flutter analyze (cwd=$projectPath)');
 
       // Template was copied.
       expect(File(p.join(projectDir.path, 'marker.txt')).existsSync(), isTrue);
@@ -147,8 +156,8 @@ void main() {
       // Only create + format + analyze (no pub add, no l10n, no dev deps).
       expect(calls, [
         startsWith('flutter create --platforms=android my_app'),
-        'dart format . (cwd=my_app)',
-        'flutter analyze (cwd=my_app)',
+        'dart format . (cwd=$projectPath)',
+        'flutter analyze (cwd=$projectPath)',
       ]);
     });
 

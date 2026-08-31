@@ -34,14 +34,17 @@ void main() {
     inputs = [];
     inputIndex = 0;
     prompter = makePrompter();
-    resolver = OptionsResolver(prompter: prompter);
+    // Point the resolver at an empty temp dir (no rekeens.yaml) instead of
+    // mutating the global Directory.current, which would break parallel tests.
+    resolver = OptionsResolver(
+      prompter: prompter,
+      workingDirectory: tempDir.path,
+      homeDirectory: tempDir.path,
+    );
     command = CreateCommand(optionsResolver: resolver);
-    // Run from a clean temp dir so no rekeens.yaml is picked up.
-    Directory.current = tempDir.path;
   });
 
   tearDown(() {
-    Directory.current = Directory.systemTemp.path;
     if (tempDir.existsSync()) {
       tempDir.deleteSync(recursive: true);
     }

@@ -1,10 +1,20 @@
 # Changelog
 
+## 0.10.0
+
+- Bootstrap files (`main.dart`, `app.dart`, `router.dart`, `app_cubit.dart`, `l10n.yaml`, `app_en.arb`) are now generated from templates in `templates/bootstrap/` instead of imperative `StringBuffer` code in `ProjectFileWriter`
+- `TemplateService` extended with conditional rendering (`{{#if cond}}...{{/if}}`, `{{#unless cond}}...{{/unless}}`) and a `renderFile` method for single-file rendering with variables and conditions
+- `ProjectFileWriter` rewritten to use `TemplateService` + `TemplateResolver` (same resolution chain as feature generators: home → local → built-in); accepts injectable `templateService`, `templateResolver`, `workingDirectory`, and `templatesRootOverride`
+- Static `main.dart`, `app.dart`, `router.dart` removed from `templates/base/` (now generated from `templates/bootstrap/` based on selected options)
+- Users can now override bootstrap templates by placing files in `~/.rekeens/templates/bootstrap/` (home) or `./.rekeens/templates/bootstrap/` (local project)
+- `ProjectScaffolder` now propagates `workingDirectory` to the default `ProjectFileWriter`
+- No user-facing behavior changes; generated project files are identical to the previous `StringBuffer` output
+
 ## 0.9.0
 
 - Refactor `CreateCommand` into a thin controller following SRP: orchestration and option resolution extracted into dedicated services
-- New `OptionsResolver` (`lib/services/options_resolver.dart`) handles preset/flag/config/interactive resolution (`_resolveOptions`, `_mergePresetWithFlags`, `_collectOptionsFromFlags`, `_fillDefaults`, `_collectOptions`) — accepts an injectable `PrompterService` for testing
-- New `ProjectScaffolder` (`lib/services/project_scaffolder.dart`) runs the creation pipeline: `flutter create` → template copy → file configuration → dependencies → dev dependencies → localization → `dart format` → `flutter analyze`; accepts injectable `processRunner`, `TemplateService`, `TemplateResolver`, `ProjectFileWriter`, and `Logger` for testing
+- New `OptionsResolver` (`lib/services/options_resolver.dart`) handles preset/flag/config/interactive resolution (`_resolveOptions`, `_mergePresetWithFlags`, `_collectOptionsFromFlags`, `_fillDefaults`, `_collectOptions`) — accepts injectable `PrompterService`, `workingDirectory`, and `homeDirectory` for testing
+- New `ProjectScaffolder` (`lib/services/project_scaffolder.dart`) runs the creation pipeline: `flutter create` → template copy → file configuration → dependencies → dev dependencies → localization → `dart format` → `flutter analyze`; accepts injectable `processRunner`, `TemplateService`, `TemplateResolver`, `ProjectFileWriter`, `Logger`, and `workingDirectory` for testing
 - `CreateCommand.run()` reduced to argument validation, option resolution delegation, dry-run preview, and scaffolder invocation
 - Unit tests for `OptionsResolver` (preset resolution, flag overrides, config file merge, defaults, interactive prompt, unknown preset error) and `ProjectScaffolder` (full pipeline order, codegen/localization skipping, empty platforms, `flutter create` failure cleanup)
 - No user-facing behavior changes; CLI flags and output are unchanged
