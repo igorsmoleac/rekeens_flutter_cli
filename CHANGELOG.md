@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.12.0
+
+- Add validation for enum-like options (state-management, router, networking, theme, architecture, platforms) with clear error messages
+- Log warning when `rekeens.yaml` parsing fails instead of silently ignoring
+- Expand e2e smoke test to cover all presets (`minimal`, `mobile`, `full`) using matrix strategy
+- Add unit tests for invalid option values
+- Unify model generation with explicit fields through template system with `{{#each}}` support
+- Add Windows CI matrix to run unit tests on Windows, covering Windows-specific process handling
+
 ## 0.11.10
 
 - `Dart CI` workflow (`.github/workflows/dart.yml`) now runs `dart analyze` + `dart test` on both `ubuntu-latest` and `windows-latest` via an OS matrix, instead of only Ubuntu
