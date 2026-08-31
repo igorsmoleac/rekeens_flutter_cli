@@ -6,3 +6,4 @@ build/
 .idea/
 .vscode/
 test_*/
+STYLE.md
