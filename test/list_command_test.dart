@@ -117,5 +117,5 @@ class _MemoryStdout implements Stdout {
   bool get supportsAnsiEscapes => false;
 
   @override
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

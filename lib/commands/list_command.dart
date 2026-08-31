@@ -4,9 +4,8 @@ import 'package:rekeens_flutter_cli/config/presets.dart';
 import 'package:rekeens_flutter_cli/utils/logger.dart';
 
 class ListCommand extends Command<void> {
-  final Logger log;
-
   ListCommand({Logger? log}) : log = log ?? logger;
+  final Logger log;
 
   @override
   String get name => 'list';
@@ -49,15 +48,14 @@ class ListCommand extends Command<void> {
 }
 
 class GeneratorInfo {
-  final String name;
-  final String description;
-  final String example;
-
   const GeneratorInfo({
     required this.name,
     required this.description,
     required this.example,
   });
+  final String name;
+  final String description;
+  final String example;
 }
 
 const generators = <GeneratorInfo>[

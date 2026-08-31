@@ -7,13 +7,6 @@ import 'package:rekeens_flutter_cli/generators/screen_generator.dart';
 import 'package:rekeens_flutter_cli/generators/service_generator.dart';
 
 class GenerateCommand extends Command<void> {
-  final _featureGenerator = FeatureGenerator();
-  final _screenGenerator = ScreenGenerator();
-  final _modelGenerator = ModelGenerator();
-  final _repositoryGenerator = RepositoryGenerator();
-  final _serviceGenerator = ServiceGenerator();
-  final _providerGenerator = ProviderGenerator();
-
   GenerateCommand() {
     argParser.addFlag(
       'force',
@@ -29,6 +22,12 @@ class GenerateCommand extends Command<void> {
       negatable: false,
     );
   }
+  final _featureGenerator = FeatureGenerator();
+  final _screenGenerator = ScreenGenerator();
+  final _modelGenerator = ModelGenerator();
+  final _repositoryGenerator = RepositoryGenerator();
+  final _serviceGenerator = ServiceGenerator();
+  final _providerGenerator = ProviderGenerator();
 
   @override
   String get name => 'generate';

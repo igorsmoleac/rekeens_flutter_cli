@@ -25,12 +25,7 @@ void main() {
 
   Directory builtIn(String category, [String? sub]) {
     final dir = Directory(
-      p.joinAll([
-        fakePackageRoot.path,
-        'templates',
-        category,
-        if (sub != null) sub,
-      ]),
+      p.joinAll([fakePackageRoot.path, 'templates', category, ?sub]),
     )..createSync(recursive: true);
     File(p.join(dir.path, 'built_in.txt')).writeAsStringSync('builtin');
     return dir;
@@ -38,13 +33,7 @@ void main() {
 
   Directory local(String category, [String? sub]) {
     final dir = Directory(
-      p.joinAll([
-        workingDir.path,
-        '.rekeens',
-        'templates',
-        category,
-        if (sub != null) sub,
-      ]),
+      p.joinAll([workingDir.path, '.rekeens', 'templates', category, ?sub]),
     )..createSync(recursive: true);
     File(p.join(dir.path, 'local.txt')).writeAsStringSync('local');
     return dir;
@@ -52,13 +41,7 @@ void main() {
 
   Directory home(String category, [String? sub]) {
     final dir = Directory(
-      p.joinAll([
-        fakeHome.path,
-        '.rekeens',
-        'templates',
-        category,
-        if (sub != null) sub,
-      ]),
+      p.joinAll([fakeHome.path, '.rekeens', 'templates', category, ?sub]),
     )..createSync(recursive: true);
     File(p.join(dir.path, 'home.txt')).writeAsStringSync('home');
     return dir;
