@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -12,6 +13,7 @@ void main() {
   late Directory workingDir;
   late Directory fakeHome;
   late List<String> calls;
+  late List<Duration?> timeoutCalls;
   late Directory projectDir;
   late String projectPath;
   late String projectRoot;
@@ -24,11 +26,12 @@ void main() {
     bool failFlutterCreate = false,
     bool createThenFail = false,
   }) {
-    return (executable, args, {workingDirectory}) async {
+    return (executable, args, {workingDirectory, timeout}) async {
       final cmd =
           '$executable ${args.join(' ')}'
           '${workingDirectory != null ? ' (cwd=$workingDirectory)' : ''}';
       calls.add(cmd);
+      timeoutCalls.add(timeout);
 
       if (executable == 'flutter' && args.first == 'create') {
         if (createThenFail) {
@@ -68,6 +71,7 @@ void main() {
     workingDir = Directory(p.join(tempRoot.path, 'project'))..createSync();
     fakeHome = Directory(p.join(tempRoot.path, 'home'))..createSync();
     calls = <String>[];
+    timeoutCalls = <Duration?>[];
     projectDir = Directory(p.join(workingDir.path, 'my_app'));
     projectPath = projectDir.path;
   });
@@ -108,15 +112,15 @@ void main() {
       );
       // Dependencies are added in a single pub add call.
       expect(calls[1], startsWith('flutter pub add '));
-      expect(calls[1], contains('flutter_riverpod:'));
-      expect(calls[1], contains('go_router:'));
-      expect(calls[1], contains('dio:'));
-      expect(calls[1], contains('intl:'));
+      expect(calls[1], contains('flutter_riverpod'));
+      expect(calls[1], contains('go_router'));
+      expect(calls[1], contains('dio'));
+      expect(calls[1], contains('intl'));
       expect(calls[1], isNot(contains('--dev')));
       // Dev dependencies.
-      expect(calls[2], startsWith('flutter pub add --dev build_runner:'));
-      expect(calls[2], contains('freezed:'));
-      expect(calls[2], contains('json_serializable:'));
+      expect(calls[2], startsWith('flutter pub add --dev build_runner'));
+      expect(calls[2], contains('freezed'));
+      expect(calls[2], contains('json_serializable'));
       // Localization pipeline.
       expect(
         calls[3],
@@ -224,5 +228,82 @@ void main() {
       // The partial project dir should have been removed.
       expect(projectDir.existsSync(), isFalse);
     });
+  });
+
+  group('ProjectScaffolder.scaffold — timeouts', () {
+    test('passes correct timeout for each process call', () async {
+      createBaseTemplate();
+      final scaffolder = makeScaffolder(makeRunner());
+
+      await scaffolder.scaffold('my_app', {
+        'platforms': ['android', 'ios'],
+        'architecture': 'feature-first',
+        'state_management': 'riverpod',
+        'router': 'go_router',
+        'networking': 'dio',
+        'localization': true,
+        'theme': 'material3',
+        'codegen': true,
+      });
+
+      expect(timeoutCalls.length, 9);
+      expect(timeoutCalls[0], ProcessTimeouts.create);
+      expect(timeoutCalls[1], ProcessTimeouts.pub);
+      expect(timeoutCalls[2], ProcessTimeouts.pub);
+      expect(timeoutCalls[3], ProcessTimeouts.pub);
+      expect(timeoutCalls[4], ProcessTimeouts.pub);
+      expect(timeoutCalls[5], ProcessTimeouts.genL10n);
+      expect(timeoutCalls[6], ProcessTimeouts.pub);
+      expect(timeoutCalls[7], ProcessTimeouts.format);
+      expect(timeoutCalls[8], ProcessTimeouts.analyze);
+    });
+
+    test(
+      'passes timeouts even when localization and codegen are disabled',
+      () async {
+        createBaseTemplate();
+        final scaffolder = makeScaffolder(makeRunner());
+
+        await scaffolder.scaffold('my_app', {
+          'platforms': ['android'],
+          'architecture': 'feature-first',
+          'state_management': 'none',
+          'router': 'none',
+          'networking': 'none',
+          'localization': false,
+          'theme': 'material3',
+          'codegen': false,
+        });
+
+        expect(timeoutCalls.length, 3);
+        expect(timeoutCalls[0], ProcessTimeouts.create);
+        expect(timeoutCalls[1], ProcessTimeouts.format);
+        expect(timeoutCalls[2], ProcessTimeouts.analyze);
+      },
+    );
+  });
+
+  group('defaultScaffoldProcessRunner — timeout', () {
+    // Run sequentially: defaultScaffoldProcessRunner pipes to global
+    // stdout/stderr which cannot be called concurrently.
+    test(
+      'timeout behavior: kills on timeout, completes when within bounds',
+      () async {
+        await expectLater(
+          defaultScaffoldProcessRunner(
+            Platform.isWindows ? 'ping' : 'sleep',
+            Platform.isWindows ? ['-t', 'localhost'] : ['30'],
+            timeout: const Duration(milliseconds: 200),
+          ),
+          throwsA(isA<TimeoutException>()),
+        );
+
+        await defaultScaffoldProcessRunner('echo', [
+          'hello',
+        ], timeout: const Duration(seconds: 10));
+
+        await defaultScaffoldProcessRunner('echo', ['no-timeout']);
+      },
+    );
   });
 }

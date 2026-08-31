@@ -10,6 +10,7 @@
   <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.13+-blue.svg" alt="Dart SDK Version"></a>
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.x-02569B.svg" alt="Flutter"></a>
   <a href="https://github.com/igorsmoleac/rekeens_flutter_cli/actions"><img src="https://img.shields.io/github/actions/workflow/status/igorsmoleac/rekeens_flutter_cli/dart.yml?branch=main" alt="CI Status"></a>
+  <a href="https://github.com/igorsmoleac/rekeens_flutter_cli/actions"><img src="https://img.shields.io/github/actions/workflow/status/igorsmoleac/rekeens_flutter_cli/e2e_smoke.yml?branch=main" alt="E2E Smoke"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"></a>
 </p>
 
@@ -109,6 +110,8 @@ lib/
 ├── l10n/                 # Localization catalogs (.arb files)
 └── main.dart             # Application entrypoint
 ```
+
+> **Note:** Currently, only `feature-first` architecture is supported. Additional architecture patterns are planned for future releases.
 
 ---
 

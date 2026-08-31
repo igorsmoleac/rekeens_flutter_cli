@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.11.5
+
+- Clarify documentation: `--architecture` currently supports only `feature-first`; other patterns are planned
+
+## 0.11.4
+
+- Removed hardcoded `packageVersions` map from `DependencyResolver` — dependency versions are no longer pinned in CLI source code
+- `flutter pub add` now receives bare package names (e.g. `flutter_riverpod` instead of `flutter_riverpod:^3.4.2`) and resolves the latest compatible version automatically at project creation time
+- Eliminates version staleness: the CLI no longer ships outdated constraints that drift behind upstream releases between CLI updates
+- Generated projects get the latest stable versions with caret constraints (`^x.y.z`) written by `flutter pub add`, with exact versions pinned in `pubspec.lock` as usual
+- The E2E smoke test workflow (`e2e_smoke.yml`) serves as the safety net: it scaffolds a `--preset=full` project and runs `flutter analyze` + `flutter test`, catching any breakage from upstream dependency changes
+- Updated `dependency_resolver_test.dart` and `project_scaffolder_test.dart` to expect bare package names instead of `package:version` strings
+
+## 0.11.3
+
+- New E2E smoke test workflow (`.github/workflows/e2e_smoke.yml`) that runs the full `rekeens create` pipeline end-to-end in CI: installs Flutter SDK, activates the CLI globally, scaffolds a project with `--preset=full`, then runs `flutter analyze` and `flutter test` inside the generated project
+- Protects templates from silent degradation when dependencies or templates are updated (regressions in generated `main.dart`, `app.dart`, `router.dart`, `l10n`, or the `full` preset dependency set surface as CI failures)
+- Triggered on `push`/`pull_request` to `main`/`dev` and via `workflow_dispatch`; runs as a separate job alongside `dart.yml` to keep the heavy Flutter-SDK step isolated from the fast unit-test CI
+
+## 0.11.2
+
+- Add timeouts for all external process invocations (`flutter create`, `flutter pub add`, `flutter pub get`, `flutter gen-l10n`, `dart format`, `flutter analyze`) to prevent the CLI from hanging indefinitely without feedback
+- New `ProcessTimeouts` class with conservative per-command timeout constants: `create` (5 min), `pub` (3 min), `genL10n` (2 min), `format` (2 min), `analyze` (5 min)
+- `ScaffoldProcessRunner` typedef extended with optional `timeout` parameter
+- `defaultScaffoldProcessRunner` rewritten to use `listen`/`Completer` instead of `addStream` (avoids "StreamSink is already bound" errors when called sequentially), kills the process tree on timeout (`taskkill /F /T` on Windows, `SIGKILL` on Unix), and throws a descriptive `TimeoutException`
+- `ProjectScaffolder` passes the appropriate `ProcessTimeouts.*` constant to every `_runProcess` call
+- 3 new tests: timeout propagation through the scaffold pipeline (full and minimal), and `defaultScaffoldProcessRunner` timeout behavior (kills on timeout, completes within bounds, null timeout works)
+
 ## 0.11.1
 
 - Fix: `AppCubit` and `AppState` are now generated in `lib/core/state/` instead of `lib/app/`, matching the project's layered architecture convention (state management belongs in `core/`, not the app shell)

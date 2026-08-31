@@ -201,7 +201,7 @@ rekeens create my_app \
 | :--- | :--- | :--- | :--- |
 | `--preset` | `minimal`, `mobile`, `full` | &mdash; | Uses a preset profile |
 | `--platforms` | `android,ios,windows,linux,macos,web` | `android,ios,windows,linux` | Comma-separated list of target platforms |
-| `--architecture` | `feature-first` | `feature-first` | Project architecture type |
+| `--architecture` | `feature-first` | `feature-first` | Project architecture type. **Supported values:** `feature-first` (currently the only option). Other architecture patterns are on the roadmap. |
 | `--state-management` | `riverpod`, `bloc`, `none` | `riverpod` | State management solution |
 | `--router` | `go_router`, `none` | `go_router` | Application router |
 | `--networking` | `dio`, `http`, `none` | `dio` | HTTP client library |
@@ -445,6 +445,11 @@ dart format --output=none --set-exit-if-changed .
 # Static analysis
 dart analyze --fatal-infos
 ```
+
+CI runs two workflows on every push and pull request to `main`/`dev`:
+
+- **`dart.yml`** — unit tests, format verification, and static analysis of the CLI itself.
+- **`e2e_smoke.yml`** — end-to-end smoke test that activates the CLI globally, scaffolds a project with `--preset=full` (all platforms, riverpod, go_router, dio, localization, codegen), then runs `flutter analyze` and `flutter test` inside the generated project. This guards the templates against silent degradation when dependencies or templates are updated.
 
 ---
 

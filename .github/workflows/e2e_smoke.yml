@@ -1,0 +1,60 @@
+name: E2E Smoke
+
+# End-to-end smoke test of the full `rekeens create` pipeline.
+# Scaffolds a real Flutter project with the `full` preset (every platform,
+# riverpod, go_router, dio, localization, codegen), then runs `flutter analyze`
+# and `flutter test` inside the generated project. This protects the templates
+# from silent degradation when dependencies or templates are updated.
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: create (full) + analyze + test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Cache Pub dependencies (CLI)
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-cli-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-cli-
+
+      - name: Install CLI dependencies
+        run: dart pub get
+
+      - name: Activate CLI globally
+        run: dart pub global activate --source path .
+
+      - name: Verify CLI is on PATH
+        run: rekeens --version
+
+      - name: Scaffold project with --preset=full
+        run: rekeens create smoke_app --preset=full
+
+      - name: Flutter analyze (generated project)
+        working-directory: smoke_app
+        run: flutter analyze
+
+      - name: Flutter test (generated project)
+        working-directory: smoke_app
+        run: flutter test
