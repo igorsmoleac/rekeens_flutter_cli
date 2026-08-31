@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.5
+
+- Clarify documentation: `--architecture` currently supports only `feature-first`; other patterns are planned
+
 ## 0.11.4
 
 - Removed hardcoded `packageVersions` map from `DependencyResolver` — dependency versions are no longer pinned in CLI source code
