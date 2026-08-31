@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 {{#if riverpod}}import 'package:flutter_riverpod/flutter_riverpod.dart';
 {{/if}}{{#if bloc}}import 'package:flutter_bloc/flutter_bloc.dart';
-import 'app/app_cubit.dart';
+import 'core/state/app_cubit.dart';
 {{/if}}import 'app/app.dart';
 
 void main() {

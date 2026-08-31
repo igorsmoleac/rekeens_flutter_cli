@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/services/project_file_writer.dart';
 import 'package:test/test.dart';
+import 'package:yaml/yaml.dart';
 
 void main() {
   late Directory tempProject;
@@ -42,13 +43,13 @@ void main() {
         content.contains("import 'package:flutter_bloc/flutter_bloc.dart'"),
         isTrue,
       );
-      expect(content.contains("import 'app/app_cubit.dart'"), isTrue);
+      expect(content.contains("import 'core/state/app_cubit.dart'"), isTrue);
       expect(content.contains('BlocProvider<AppCubit>'), isTrue);
       expect(content.contains('AppCubit()'), isTrue);
     });
 
     test(
-      'creates app_cubit.dart with AppCubit and AppState when bloc',
+      'creates app_cubit.dart and app_state.dart in core/state when bloc',
       () async {
         await writer.configureProjectFiles(tempProject.path, {
           'state_management': 'bloc',
@@ -58,13 +59,21 @@ void main() {
         });
 
         final cubitFile = File(
-          p.join(tempProject.path, 'lib', 'app', 'app_cubit.dart'),
+          p.join(tempProject.path, 'lib', 'core', 'state', 'app_cubit.dart'),
         );
         expect(cubitFile.existsSync(), isTrue);
-        final content = cubitFile.readAsStringSync();
-        expect(content.contains('class AppCubit'), isTrue);
-        expect(content.contains('class AppState'), isTrue);
-        expect(content.contains('Cubit<AppState>'), isTrue);
+        final cubitContent = cubitFile.readAsStringSync();
+        expect(cubitContent.contains('class AppCubit'), isTrue);
+        expect(cubitContent.contains('Cubit<AppState>'), isTrue);
+        expect(cubitContent.contains("import 'app_state.dart'"), isTrue);
+
+        final stateFile = File(
+          p.join(tempProject.path, 'lib', 'core', 'state', 'app_state.dart'),
+        );
+        expect(stateFile.existsSync(), isTrue);
+        final stateContent = stateFile.readAsStringSync();
+        expect(stateContent.contains('class AppState'), isTrue);
+        expect(stateContent.contains('copyWith'), isTrue);
       },
     );
 
@@ -87,7 +96,7 @@ void main() {
       );
       expect(content.contains('ProviderScope'), isTrue);
       expect(
-        File(p.join(tempProject.path, 'lib', 'app', 'app_cubit.dart'))
+        File(p.join(tempProject.path, 'lib', 'core', 'state', 'app_cubit.dart'))
             .existsSync(),
         isFalse,
       );
@@ -376,6 +385,116 @@ environment:
       expect(content.contains('name: my_app'), isTrue);
       expect(content.contains('description: A test app'), isTrue);
       expect(content.contains('sdk: ^3.0.0'), isTrue);
+    });
+
+    test('handles CRLF line endings', () async {
+      final pubspec = File(p.join(tempProject.path, 'pubspec.yaml'));
+      pubspec.writeAsStringSync(
+        'name: my_app\r\nenvironment:\r\n  sdk: ^3.0.0\r\n\r\n'
+        'flutter:\r\n  uses-material-design: true\r\n',
+      );
+
+      await writer.enableFlutterGenerate(tempProject.path);
+
+      final content = pubspec.readAsStringSync();
+      expect(content.contains('generate: true'), isTrue);
+      // Re-parse to verify the YAML is valid
+      final reparsed = loadYaml(content) as YamlMap;
+      expect(reparsed['flutter']['generate'], isTrue);
+    });
+
+    test('ignores generate in comments', () async {
+      final pubspec = File(p.join(tempProject.path, 'pubspec.yaml'));
+      pubspec.writeAsStringSync('''
+name: my_app
+
+flutter:
+  # generate: true
+  uses-material-design: true
+''');
+
+      await writer.enableFlutterGenerate(tempProject.path);
+
+      final content = pubspec.readAsStringSync();
+      final reparsed = loadYaml(content) as YamlMap;
+      expect(reparsed['flutter']['generate'], isTrue);
+      // Should have exactly one actual generate: true key (not the comment)
+      final generateCount = RegExp(
+        r'^  generate: true$',
+        multiLine: true,
+      ).allMatches(content).length;
+      expect(generateCount, 1);
+    });
+
+    test('preserves comments in pubspec', () async {
+      final pubspec = File(p.join(tempProject.path, 'pubspec.yaml'));
+      pubspec.writeAsStringSync('''
+# This is a comment
+name: my_app
+
+flutter:
+  # Another comment
+  uses-material-design: true
+''');
+
+      await writer.enableFlutterGenerate(tempProject.path);
+
+      final content = pubspec.readAsStringSync();
+      expect(content.contains('# This is a comment'), isTrue);
+      expect(content.contains('# Another comment'), isTrue);
+      expect(content.contains('generate: true'), isTrue);
+    });
+
+    test('handles flutter section with only generate already true', () async {
+      final pubspec = File(p.join(tempProject.path, 'pubspec.yaml'));
+      pubspec.writeAsStringSync('''
+name: my_app
+flutter:
+  generate: true
+  uses-material-design: true
+''');
+
+      final original = pubspec.readAsStringSync();
+      await writer.enableFlutterGenerate(tempProject.path);
+
+      final content = pubspec.readAsStringSync();
+      // Should be unchanged
+      expect(content, original);
+    });
+
+    test('handles real flutter create pubspec format', () async {
+      final pubspec = File(p.join(tempProject.path, 'pubspec.yaml'));
+      pubspec.writeAsStringSync('''
+name: myapp
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+''');
+
+      await writer.enableFlutterGenerate(tempProject.path);
+
+      final content = pubspec.readAsStringSync();
+      final reparsed = loadYaml(content) as YamlMap;
+      expect(reparsed['flutter']['generate'], isTrue);
+      expect(reparsed['flutter']['uses-material-design'], isTrue);
+      expect(reparsed['name'], 'myapp');
+      expect(reparsed['dependencies']['flutter']['sdk'], 'flutter');
     });
   });
 }

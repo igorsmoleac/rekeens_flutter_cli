@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/services/template_service.dart';
 import 'package:rekeens_flutter_cli/utils/template_resolver.dart';
+import 'package:yaml/yaml.dart';
+import 'package:yaml_edit/yaml_edit.dart';
 
 class ProjectFileWriter {
   ProjectFileWriter({
@@ -54,8 +56,28 @@ class ProjectFileWriter {
     if (stateManagement == 'bloc') {
       await _renderBootstrapFile(
         bootstrapDir: bootstrapDir,
+        fileName: 'app_state.dart',
+        targetPath: p.join(
+          projectName,
+          'lib',
+          'core',
+          'state',
+          'app_state.dart',
+        ),
+        variables: variables,
+        conditions: conditions,
+      );
+
+      await _renderBootstrapFile(
+        bootstrapDir: bootstrapDir,
         fileName: 'app_cubit.dart',
-        targetPath: p.join(projectName, 'lib', 'app', 'app_cubit.dart'),
+        targetPath: p.join(
+          projectName,
+          'lib',
+          'core',
+          'state',
+          'app_cubit.dart',
+        ),
         variables: variables,
         conditions: conditions,
       );
@@ -116,47 +138,19 @@ class ProjectFileWriter {
     final pubspecFile = File(p.join(projectName, 'pubspec.yaml'));
     if (!pubspecFile.existsSync()) return;
 
-    final lines = await pubspecFile.readAsLines();
+    final content = await pubspecFile.readAsString();
+    final yaml = loadYaml(content) as YamlMap;
 
-    var inFlutterSection = false;
-    for (final line in lines) {
-      if (line == 'flutter:') {
-        inFlutterSection = true;
-        continue;
-      }
-      if (inFlutterSection) {
-        if (line.isNotEmpty &&
-            !line.startsWith(' ') &&
-            !line.startsWith('\t')) {
-          inFlutterSection = false;
-          continue;
-        }
-        final trimmed = line.trimLeft();
-        if (trimmed.startsWith('generate:') && trimmed.contains('true')) {
-          return;
-        }
-      }
+    final flutter = yaml['flutter'];
+    if (flutter is YamlMap && flutter['generate'] == true) return;
+
+    final editor = YamlEditor(content);
+    if (flutter is YamlMap) {
+      editor.update(['flutter', 'generate'], true);
+    } else {
+      editor.update(['flutter'], {'generate': true});
     }
 
-    final output = <String>[];
-    var inserted = false;
-
-    for (var i = 0; i < lines.length; i++) {
-      final line = lines[i];
-      output.add(line);
-
-      if (!inserted && line == 'flutter:') {
-        output.add('  generate: true');
-        inserted = true;
-      }
-    }
-
-    if (!inserted) {
-      output.add('');
-      output.add('flutter:');
-      output.add('  generate: true');
-    }
-
-    await pubspecFile.writeAsString('${output.join('\n')}\n');
+    await pubspecFile.writeAsString(editor.toString());
   }
 }

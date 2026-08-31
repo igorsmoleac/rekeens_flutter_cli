@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.11.1
+
+- Fix: `AppCubit` and `AppState` are now generated in `lib/core/state/` instead of `lib/app/`, matching the project's layered architecture convention (state management belongs in `core/`, not the app shell)
+- `AppState` extracted into its own `app_state.dart` file (was previously inlined in `app_cubit.dart`) with `isLoading` field and `copyWith` for immutable state updates
+- `AppCubit` now imports `app_state.dart` and exposes a `setLoading(bool)` method
+- `main.dart` import path updated to `core/state/app_cubit.dart`
+- New bootstrap template `templates/bootstrap/app_state.dart`
+- Updated `project_file_writer_test.dart` to verify the new file locations and `AppState` separation
+
+## 0.11.0
+
+- `ProjectFileWriter.enableFlutterGenerate` rewritten to use `yaml` (parsing) + `yaml_edit` (targeted editing) instead of fragile line-by-line `StringBuffer` manipulation
+- Fixes edge cases that could break the old implementation: CRLF line endings, `generate:` inside comments, mixed indentation, `flutter:` section absent
+- Comments and original formatting are now preserved (YamlEditor performs string-level edits, not full regeneration)
+- Added `yaml_edit: ^2.2.4` dependency (official Dart team package for YAML manipulation with comment/whitespace preservation)
+- 5 new edge-case tests: CRLF line endings, `generate:` in comments, comment preservation, already-true no-op, real `flutter create` pubspec format
+
 ## 0.10.0
 
 - Bootstrap files (`main.dart`, `app.dart`, `router.dart`, `app_cubit.dart`, `l10n.yaml`, `app_en.arb`) are now generated from templates in `templates/bootstrap/` instead of imperative `StringBuffer` code in `ProjectFileWriter`
