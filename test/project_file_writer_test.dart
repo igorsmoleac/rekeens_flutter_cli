@@ -398,7 +398,6 @@ environment:
 
       final content = pubspec.readAsStringSync();
       expect(content.contains('generate: true'), isTrue);
-      // Re-parse to verify the YAML is valid
       final reparsed = loadYaml(content) as YamlMap;
       expect(reparsed['flutter']['generate'], isTrue);
     });
@@ -418,7 +417,6 @@ flutter:
       final content = pubspec.readAsStringSync();
       final reparsed = loadYaml(content) as YamlMap;
       expect(reparsed['flutter']['generate'], isTrue);
-      // Should have exactly one actual generate: true key (not the comment)
       final generateCount = RegExp(
         r'^  generate: true$',
         multiLine: true,
@@ -458,7 +456,6 @@ flutter:
       await writer.enableFlutterGenerate(tempProject.path);
 
       final content = pubspec.readAsStringSync();
-      // Should be unchanged
       expect(content, original);
     });
 
