@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/config/config_loader.dart';
 import 'package:test/test.dart';
@@ -17,6 +19,16 @@ void main() {
     if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
     if (fakeHome.existsSync()) fakeHome.deleteSync(recursive: true);
   });
+
+  Future<String> captureOutput(Future<void> Function() body) async {
+    final bytes = <int>[];
+    await IOOverrides.runZoned(
+      () async => await body(),
+      stdout: () => _MemoryStdout(bytes),
+      stderr: () => _MemoryStdout(bytes),
+    );
+    return utf8.decode(bytes);
+  }
 
   group('ConfigLoader.load', () {
     test('returns null when no config file exists', () {
@@ -110,6 +122,75 @@ some_other_key: value
       expect(result, isNull);
     });
 
+    test('logs a warning when YAML is invalid', () async {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+not: [valid: yaml
+''');
+      final log = Logger(level: Level.verbose);
+
+      final output = await captureOutput(() async {
+        ConfigLoader.load(
+          workingDirectory: tempDir.path,
+          homeDirectory: fakeHome.path,
+          log: log,
+        );
+      });
+
+      expect(output, contains('Failed to parse rekeens.yaml'));
+      expect(output, contains('flow sequence'));
+      expect(output, contains('falling back to defaults'));
+    });
+
+    test('warning includes the resolved config file path', () async {
+      final configPath = p.join(tempDir.path, 'rekeens.yaml');
+      File(configPath).writeAsStringSync('not: [valid: yaml');
+      final log = Logger(level: Level.verbose);
+
+      final output = await captureOutput(() async {
+        ConfigLoader.load(
+          workingDirectory: tempDir.path,
+          homeDirectory: fakeHome.path,
+          log: log,
+        );
+      });
+
+      expect(output, contains(configPath));
+    });
+
+    test('does not warn when config file is absent', () async {
+      final log = Logger(level: Level.verbose);
+
+      final output = await captureOutput(() async {
+        ConfigLoader.load(
+          workingDirectory: tempDir.path,
+          homeDirectory: fakeHome.path,
+          log: log,
+        );
+      });
+
+      expect(output, '');
+    });
+
+    test(
+      'does not warn when YAML is valid but has no defaults section',
+      () async {
+        File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+some_other_key: value
+''');
+        final log = Logger(level: Level.verbose);
+
+        final output = await captureOutput(() async {
+          ConfigLoader.load(
+            workingDirectory: tempDir.path,
+            homeDirectory: fakeHome.path,
+            log: log,
+          );
+        });
+
+        expect(output, '');
+      },
+    );
+
     test('returns null when config file is empty', () {
       File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('');
 
@@ -182,4 +263,31 @@ defaults:
       expect(result, isNull);
     });
   });
+}
+
+class _MemoryStdout implements Stdout {
+  _MemoryStdout(this._bytes);
+
+  final List<int> _bytes;
+
+  @override
+  void write(object) {
+    if (object is List<int>) {
+      _bytes.addAll(object);
+    } else {
+      _bytes.addAll(utf8.encode('$object'));
+    }
+  }
+
+  @override
+  void writeln([object = '']) {
+    write(object);
+    _bytes.add(10);
+  }
+
+  @override
+  bool get supportsAnsiEscapes => false;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

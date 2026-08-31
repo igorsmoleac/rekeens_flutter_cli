@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.7
+
+- `ConfigLoader.load` now logs a `warning` when `rekeens.yaml` fails to parse instead of silently swallowing the error via `catch (_) { return null; }`
+- The warning includes the resolved config file path, the parse error message, and notes that the CLI is falling back to defaults
+- `ConfigLoader.load` accepts an optional `Logger? log` parameter (defaults to the global `logger`) for testability, mirroring the `ListCommand({Logger? log})` injection pattern
+- New tests verify the warning is emitted for malformed YAML (unclosed flow sequences) and that no warning is logged when the config file is absent or valid but lacks a `defaults` section
+
 ## 0.11.6
 
 - Validate enum-like options (`--state-management`, `--router`, `--networking`, `--theme`, `--architecture`) against their allowed values in `OptionsResolver._applyFlags` and when loading defaults from `rekeens.yaml`

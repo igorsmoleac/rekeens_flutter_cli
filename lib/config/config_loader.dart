@@ -1,13 +1,17 @@
 import 'dart:io';
 
+import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as p;
+import 'package:rekeens_flutter_cli/utils/logger.dart';
 import 'package:yaml/yaml.dart';
 
 class ConfigLoader {
   static Map<String, dynamic>? load({
     String? workingDirectory,
     String? homeDirectory,
+    Logger? log,
   }) {
+    final effectiveLog = log ?? logger;
     final configFile = _findConfigFile(
       workingDirectory: workingDirectory,
       homeDirectory: homeDirectory,
@@ -24,7 +28,11 @@ class ConfigLoader {
         return _convertYamlMap(defaults);
       }
       return null;
-    } catch (_) {
+    } catch (error) {
+      effectiveLog.warn(
+        'Failed to parse rekeens.yaml at "$configFile": $error. '
+        'Ignoring config and falling back to defaults.',
+      );
       return null;
     }
   }
