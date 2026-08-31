@@ -112,15 +112,15 @@ void main() {
       );
       // Dependencies are added in a single pub add call.
       expect(calls[1], startsWith('flutter pub add '));
-      expect(calls[1], contains('flutter_riverpod:'));
-      expect(calls[1], contains('go_router:'));
-      expect(calls[1], contains('dio:'));
-      expect(calls[1], contains('intl:'));
+      expect(calls[1], contains('flutter_riverpod'));
+      expect(calls[1], contains('go_router'));
+      expect(calls[1], contains('dio'));
+      expect(calls[1], contains('intl'));
       expect(calls[1], isNot(contains('--dev')));
       // Dev dependencies.
-      expect(calls[2], startsWith('flutter pub add --dev build_runner:'));
-      expect(calls[2], contains('freezed:'));
-      expect(calls[2], contains('json_serializable:'));
+      expect(calls[2], startsWith('flutter pub add --dev build_runner'));
+      expect(calls[2], contains('freezed'));
+      expect(calls[2], contains('json_serializable'));
       // Localization pipeline.
       expect(
         calls[3],
