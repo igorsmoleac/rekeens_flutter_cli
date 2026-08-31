@@ -1,9 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AppState {
-  const AppState();
-}
+import 'app_state.dart';
 
 class AppCubit extends Cubit<AppState> {
   AppCubit() : super(const AppState());
+
+  void setLoading(bool value) {
+    emit(state.copyWith(isLoading: value));
+  }
 }
