@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.11.4
+
+- Removed hardcoded `packageVersions` map from `DependencyResolver` — dependency versions are no longer pinned in CLI source code
+- `flutter pub add` now receives bare package names (e.g. `flutter_riverpod` instead of `flutter_riverpod:^3.4.2`) and resolves the latest compatible version automatically at project creation time
+- Eliminates version staleness: the CLI no longer ships outdated constraints that drift behind upstream releases between CLI updates
+- Generated projects get the latest stable versions with caret constraints (`^x.y.z`) written by `flutter pub add`, with exact versions pinned in `pubspec.lock` as usual
+- The E2E smoke test workflow (`e2e_smoke.yml`) serves as the safety net: it scaffolds a `--preset=full` project and runs `flutter analyze` + `flutter test`, catching any breakage from upstream dependency changes
+- Updated `dependency_resolver_test.dart` and `project_scaffolder_test.dart` to expect bare package names instead of `package:version` strings
+
 ## 0.11.3
 
 - New E2E smoke test workflow (`.github/workflows/e2e_smoke.yml`) that runs the full `rekeens create` pipeline end-to-end in CI: installs Flutter SDK, activates the CLI globally, scaffolds a project with `--preset=full`, then runs `flutter analyze` and `flutter test` inside the generated project
