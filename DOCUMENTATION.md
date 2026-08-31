@@ -201,7 +201,7 @@ rekeens create my_app \
 | :--- | :--- | :--- | :--- |
 | `--preset` | `minimal`, `mobile`, `full` | &mdash; | Uses a preset profile |
 | `--platforms` | `android,ios,windows,linux,macos,web` | `android,ios,windows,linux` | Comma-separated list of target platforms |
-| `--architecture` | `feature-first` | `feature-first` | Project architecture type |
+| `--architecture` | `feature-first` | `feature-first` | Project architecture type. **Supported values:** `feature-first` (currently the only option). Other architecture patterns are on the roadmap. |
 | `--state-management` | `riverpod`, `bloc`, `none` | `riverpod` | State management solution |
 | `--router` | `go_router`, `none` | `go_router` | Application router |
 | `--networking` | `dio`, `http`, `none` | `dio` | HTTP client library |

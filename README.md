@@ -111,6 +111,8 @@ lib/
 └── main.dart             # Application entrypoint
 ```
 
+> **Note:** Currently, only `feature-first` architecture is supported. Additional architecture patterns are planned for future releases.
+
 ---
 
 ## Command Reference
