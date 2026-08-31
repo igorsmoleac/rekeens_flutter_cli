@@ -35,8 +35,10 @@ void main() {
 
     test('returns default when input is empty', () {
       inputs = [''];
-      expect(prompter.askString('Name', defaultValue: 'default_val'),
-          'default_val');
+      expect(
+        prompter.askString('Name', defaultValue: 'default_val'),
+        'default_val',
+      );
       expect(output.toString(), contains('[default_val]'));
     });
 
@@ -47,10 +49,7 @@ void main() {
 
     test('returns default when input is whitespace only', () {
       inputs = ['   '];
-      expect(
-        prompter.askString('Name', defaultValue: 'def'),
-        'def',
-      );
+      expect(prompter.askString('Name', defaultValue: 'def'), 'def');
     });
 
     test('trims user input', () {
@@ -122,10 +121,7 @@ void main() {
   group('askChoice', () {
     test('returns selected option by number', () {
       inputs = ['2'];
-      expect(
-        prompter.askChoice('Pick', ['a', 'b', 'c']),
-        'b',
-      );
+      expect(prompter.askChoice('Pick', ['a', 'b', 'c']), 'b');
     });
 
     test('returns default for empty input', () {
@@ -138,10 +134,7 @@ void main() {
 
     test('retries on invalid input then accepts valid', () {
       inputs = ['xyz', '0', '1'];
-      expect(
-        prompter.askChoice('Pick', ['a', 'b']),
-        'a',
-      );
+      expect(prompter.askChoice('Pick', ['a', 'b']), 'a');
       expect(output.toString(), contains('Invalid choice. Try again.'));
     });
 
@@ -177,52 +170,33 @@ void main() {
 
     test('parses comma-separated numbers', () {
       inputs = ['1,3'];
-      expect(
-        prompter.askMultipleChoice('Select', ['a', 'b', 'c']),
-        ['a', 'c'],
-      );
+      expect(prompter.askMultipleChoice('Select', ['a', 'b', 'c']), ['a', 'c']);
     });
 
     test('parses space-separated numbers', () {
       inputs = ['1 3'];
-      expect(
-        prompter.askMultipleChoice('Select', ['a', 'b', 'c']),
-        ['a', 'c'],
-      );
+      expect(prompter.askMultipleChoice('Select', ['a', 'b', 'c']), ['a', 'c']);
     });
 
     test('deduplicates selected options', () {
       inputs = ['1,1,2'];
-      expect(
-        prompter.askMultipleChoice('Select', ['a', 'b', 'c']),
-        ['a', 'b'],
-      );
+      expect(prompter.askMultipleChoice('Select', ['a', 'b', 'c']), ['a', 'b']);
     });
 
     test('ignores out-of-range numbers', () {
       inputs = ['1,5,2'];
-      expect(
-        prompter.askMultipleChoice('Select', ['a', 'b', 'c']),
-        ['a', 'b'],
-      );
+      expect(prompter.askMultipleChoice('Select', ['a', 'b', 'c']), ['a', 'b']);
     });
 
     test('ignores non-numeric input', () {
       inputs = ['abc,1,xyz'];
-      expect(
-        prompter.askMultipleChoice('Select', ['a', 'b', 'c']),
-        ['a'],
-      );
+      expect(prompter.askMultipleChoice('Select', ['a', 'b', 'c']), ['a']);
     });
 
     test('returns defaults when all parsed selections are invalid', () {
       inputs = ['xyz'];
       expect(
-        prompter.askMultipleChoice(
-          'Select',
-          ['a', 'b'],
-          defaults: ['a'],
-        ),
+        prompter.askMultipleChoice('Select', ['a', 'b'], defaults: ['a']),
         ['a'],
       );
     });
@@ -233,21 +207,14 @@ void main() {
 
     test('marks default options with x in display', () {
       inputs = [''];
-      prompter.askMultipleChoice(
-        'Select',
-        ['a', 'b', 'c'],
-        defaults: ['b'],
-      );
+      prompter.askMultipleChoice('Select', ['a', 'b', 'c'], defaults: ['b']);
       expect(output.toString(), contains('[x] 2. b'));
       expect(output.toString(), contains('[ ] 1. a'));
     });
 
     test('returns empty defaults when no defaults and empty input', () {
       inputs = [''];
-      expect(
-        prompter.askMultipleChoice('Select', ['a', 'b']),
-        [],
-      );
+      expect(prompter.askMultipleChoice('Select', ['a', 'b']), []);
     });
   });
 }

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.0
+
+- Refactor `CreateCommand` into a thin controller following SRP: orchestration and option resolution extracted into dedicated services
+- New `OptionsResolver` (`lib/services/options_resolver.dart`) handles preset/flag/config/interactive resolution (`_resolveOptions`, `_mergePresetWithFlags`, `_collectOptionsFromFlags`, `_fillDefaults`, `_collectOptions`) — accepts an injectable `PrompterService` for testing
+- New `ProjectScaffolder` (`lib/services/project_scaffolder.dart`) runs the creation pipeline: `flutter create` → template copy → file configuration → dependencies → dev dependencies → localization → `dart format` → `flutter analyze`; accepts injectable `processRunner`, `TemplateService`, `TemplateResolver`, `ProjectFileWriter`, and `Logger` for testing
+- `CreateCommand.run()` reduced to argument validation, option resolution delegation, dry-run preview, and scaffolder invocation
+- Unit tests for `OptionsResolver` (preset resolution, flag overrides, config file merge, defaults, interactive prompt, unknown preset error) and `ProjectScaffolder` (full pipeline order, codegen/localization skipping, empty platforms, `flutter create` failure cleanup)
+- No user-facing behavior changes; CLI flags and output are unchanged
+
 ## 0.8.0
 
 - `rekeens doctor` now checks additional tools beyond Dart/Flutter/Git:
