@@ -127,16 +127,19 @@ void main() {
     test('returns a map with all expected keys', () {
       final options = presets['mobile']!.toOptions();
 
-      expect(options.keys, containsAll([
-        'platforms',
-        'architecture',
-        'state_management',
-        'router',
-        'networking',
-        'localization',
-        'theme',
-        'codegen',
-      ]));
+      expect(
+        options.keys,
+        containsAll([
+          'platforms',
+          'architecture',
+          'state_management',
+          'router',
+          'networking',
+          'localization',
+          'theme',
+          'codegen',
+        ]),
+      );
     });
 
     test('platforms is a List', () {
