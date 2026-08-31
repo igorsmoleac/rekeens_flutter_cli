@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:mason_logger/mason_logger.dart';
+import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/services/project_file_writer.dart';
 import 'package:rekeens_flutter_cli/services/template_service.dart';
 import 'package:rekeens_flutter_cli/utils/dependency_resolver.dart';
@@ -21,6 +22,7 @@ class ProjectScaffolder {
     ProjectFileWriter? projectFileWriter,
     ScaffoldProcessRunner? processRunner,
     Logger? log,
+    this._workingDirectory,
   }) : _templateService = templateService ?? const TemplateService(),
        _templateResolver = templateResolver ?? const TemplateResolver(),
        _projectFileWriter = projectFileWriter ?? ProjectFileWriter(),
@@ -32,30 +34,43 @@ class ProjectScaffolder {
   final ProjectFileWriter _projectFileWriter;
   final ScaffoldProcessRunner _runProcess;
   final Logger _log;
+  final String? _workingDirectory;
 
   Future<void> scaffold(
     String projectName,
     Map<String, dynamic> options,
   ) async {
-    await _createProject(projectName, options['platforms'] as List<String>);
+    final projectPath = _resolveProjectPath(projectName);
+    await _createProject(
+      projectName,
+      projectPath,
+      options['platforms'] as List<String>,
+    );
     _log.info('Applying custom template...');
-    await _applyTemplate(projectName);
+    await _applyTemplate(projectName, projectPath);
     _log.info('Configuring project files...');
-    await _projectFileWriter.configureProjectFiles(projectName, options);
+    await _projectFileWriter.configureProjectFiles(projectPath, options);
     _log.info('Adding dependencies...');
-    await _addDependencies(projectName, DependencyResolver.resolve(options));
-    await _addDevDependencies(projectName, options);
+    await _addDependencies(projectPath, DependencyResolver.resolve(options));
+    await _addDevDependencies(projectPath, options);
     if (options['localization'] == true) {
-      await _setupLocalization(projectName);
+      await _setupLocalization(projectPath);
     }
     _log.info('Formatting code...');
-    await _runProcess('dart', ['format', '.'], workingDirectory: projectName);
+    await _runProcess('dart', ['format', '.'], workingDirectory: projectPath);
     _log.info('Running analyzer...');
-    await _runProcess('flutter', ['analyze'], workingDirectory: projectName);
+    await _runProcess('flutter', ['analyze'], workingDirectory: projectPath);
+  }
+
+  String _resolveProjectPath(String projectName) {
+    return _workingDirectory != null
+        ? p.join(_workingDirectory, projectName)
+        : projectName;
   }
 
   Future<void> _createProject(
     String projectName,
+    String projectPath,
     List<String> platforms,
   ) async {
     final args = ['create'];
@@ -68,7 +83,7 @@ class ProjectScaffolder {
       await _runProcess('flutter', args);
     } on Exception catch (e) {
       try {
-        final projectDir = Directory(projectName);
+        final projectDir = Directory(projectPath);
         if (projectDir.existsSync()) {
           projectDir.deleteSync(recursive: true);
         }
@@ -80,7 +95,7 @@ class ProjectScaffolder {
       );
     }
 
-    final projectDir = Directory(projectName);
+    final projectDir = Directory(projectPath);
     bool dirExists;
     try {
       dirExists = projectDir.existsSync();
@@ -99,11 +114,14 @@ class ProjectScaffolder {
     }
   }
 
-  Future<void> _applyTemplate(String projectName) async {
-    final templateDir = await _templateResolver.resolve(category: 'base');
+  Future<void> _applyTemplate(String projectName, String projectPath) async {
+    final templateDir = await _templateResolver.resolve(
+      category: 'base',
+      workingDirectory: _workingDirectory,
+    );
     await _templateService.copyTemplate(
       sourceDir: templateDir,
-      targetDir: projectName,
+      targetDir: projectPath,
       variables: <String, String>{'project_name': projectName},
     );
   }

@@ -5,10 +5,15 @@ import 'package:rekeens_flutter_cli/config/presets.dart';
 import 'package:rekeens_flutter_cli/services/prompter_service.dart';
 
 class OptionsResolver {
-  OptionsResolver({PrompterService? prompter})
-    : _prompter = prompter ?? PrompterService();
+  OptionsResolver({
+    PrompterService? prompter,
+    this._workingDirectory,
+    this._homeDirectory,
+  }) : _prompter = prompter ?? PrompterService();
 
   final PrompterService _prompter;
+  final String? _workingDirectory;
+  final String? _homeDirectory;
 
   Map<String, dynamic> resolve(ArgResults args, {required String usage}) {
     final presetName = args['preset'] as String?;
@@ -23,7 +28,10 @@ class OptionsResolver {
       return _mergePresetWithFlags(preset, args);
     }
 
-    final configOptions = ConfigLoader.load();
+    final configOptions = ConfigLoader.load(
+      workingDirectory: _workingDirectory,
+      homeDirectory: _homeDirectory,
+    );
     final hasFlags = _hasAnyCreateFlag(args);
 
     if (hasFlags) {
