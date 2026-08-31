@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.10
+
+- `Dart CI` workflow (`.github/workflows/dart.yml`) now runs `dart analyze` + `dart test` on both `ubuntu-latest` and `windows-latest` via an OS matrix, instead of only Ubuntu
+- Guarantees that Windows-specific code branches are actually executed in CI: `defaultScaffoldProcessRunner`'s `cmd /c` process spawn and `taskkill /F /T /PID` process-tree kill, `ConfigLoader`'s `USERPROFILE` fallback, `TemplateResolver`'s `USERPROFILE` home detection, and `DoctorCommand`'s Windows-only tool checks
+- The `defaultScaffoldProcessRunner` timeout test branches on `Platform.isWindows` (`ping -t localhost` vs `sleep 30`) — previously only the `sleep` path ran in CI, leaving the `taskkill` path untested
+- `fail-fast: false` ensures both OS jobs complete, surfacing failures on either platform in a single run
+- Cache key already used `${{ runner.os }}`, so pub caches remain per-OS without key collisions
+
 ## 0.11.9
 
 - Unified model generation on the template system: `ModelGenerator` no longer uses `StringBuffer` to build model source for `--fields` — it now renders a `model_with_fields` template via `copyTemplate`, matching the approach used for all other generators and bootstrap files
