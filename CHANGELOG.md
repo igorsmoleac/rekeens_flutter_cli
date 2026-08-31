@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.11.2
+
+- Add timeouts for all external process invocations (`flutter create`, `flutter pub add`, `flutter pub get`, `flutter gen-l10n`, `dart format`, `flutter analyze`) to prevent the CLI from hanging indefinitely without feedback
+- New `ProcessTimeouts` class with conservative per-command timeout constants: `create` (5 min), `pub` (3 min), `genL10n` (2 min), `format` (2 min), `analyze` (5 min)
+- `ScaffoldProcessRunner` typedef extended with optional `timeout` parameter
+- `defaultScaffoldProcessRunner` rewritten to use `listen`/`Completer` instead of `addStream` (avoids "StreamSink is already bound" errors when called sequentially), kills the process tree on timeout (`taskkill /F /T` on Windows, `SIGKILL` on Unix), and throws a descriptive `TimeoutException`
+- `ProjectScaffolder` passes the appropriate `ProcessTimeouts.*` constant to every `_runProcess` call
+- 3 new tests: timeout propagation through the scaffold pipeline (full and minimal), and `defaultScaffoldProcessRunner` timeout behavior (kills on timeout, completes within bounds, null timeout works)
+
 ## 0.11.1
 
 - Fix: `AppCubit` and `AppState` are now generated in `lib/core/state/` instead of `lib/app/`, matching the project's layered architecture convention (state management belongs in `core/`, not the app shell)

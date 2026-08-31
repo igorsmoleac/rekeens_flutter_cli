@@ -13,7 +13,28 @@ typedef ScaffoldProcessRunner = Future<void> Function(
   String executable,
   List<String> args, {
   String? workingDirectory,
+  Duration? timeout,
 });
+
+/// Timeout constants for external process invocations.
+///
+/// These are conservative upper bounds — under normal conditions the commands
+/// finish well within these limits. If a process exceeds its timeout it is
+/// forcefully terminated and a [TimeoutException] is thrown so the CLI does
+/// not hang indefinitely without feedback.
+class ProcessTimeouts {
+  ProcessTimeouts._();
+
+  static const create = Duration(minutes: 5);
+
+  static const pub = Duration(minutes: 3);
+
+  static const genL10n = Duration(minutes: 2);
+
+  static const format = Duration(minutes: 2);
+
+  static const analyze = Duration(minutes: 5);
+}
 
 class ProjectScaffolder {
   ProjectScaffolder({
@@ -60,9 +81,19 @@ class ProjectScaffolder {
       await _setupLocalization(projectPath);
     }
     _log.info('Formatting code...');
-    await _runProcess('dart', ['format', '.'], workingDirectory: projectPath);
+    await _runProcess(
+      'dart',
+      ['format', '.'],
+      workingDirectory: projectPath,
+      timeout: ProcessTimeouts.format,
+    );
     _log.info('Running analyzer...');
-    await _runProcess('flutter', ['analyze'], workingDirectory: projectPath);
+    await _runProcess(
+      'flutter',
+      ['analyze'],
+      workingDirectory: projectPath,
+      timeout: ProcessTimeouts.analyze,
+    );
   }
 
   String _resolveProjectPath(String projectName) {
@@ -83,7 +114,7 @@ class ProjectScaffolder {
     args.add(projectName);
 
     try {
-      await _runProcess('flutter', args);
+      await _runProcess('flutter', args, timeout: ProcessTimeouts.create);
     } on Exception catch (e) {
       try {
         final projectDir = Directory(projectPath);
@@ -136,7 +167,12 @@ class ProjectScaffolder {
   }) async {
     if (packages.isEmpty) return;
     final args = ['pub', 'add', if (dev) '--dev', ...packages];
-    await _runProcess('flutter', args, workingDirectory: projectName);
+    await _runProcess(
+      'flutter',
+      args,
+      workingDirectory: projectName,
+      timeout: ProcessTimeouts.pub,
+    );
   }
 
   Future<void> _addDevDependencies(
@@ -154,24 +190,39 @@ class ProjectScaffolder {
 
   Future<void> _setupLocalization(String projectName) async {
     _log.info('Adding flutter_localizations...');
-    await _runProcess('flutter', [
-      'pub',
-      'add',
-      'flutter_localizations',
-      '--sdk=flutter',
-    ], workingDirectory: projectName);
+    await _runProcess(
+      'flutter',
+      ['pub', 'add', 'flutter_localizations', '--sdk=flutter'],
+      workingDirectory: projectName,
+      timeout: ProcessTimeouts.pub,
+    );
 
     _log.info('Enabling Flutter localization generation...');
     await _projectFileWriter.enableFlutterGenerate(projectName);
 
     _log.info('Running pub get...');
-    await _runProcess('flutter', ['pub', 'get'], workingDirectory: projectName);
+    await _runProcess(
+      'flutter',
+      ['pub', 'get'],
+      workingDirectory: projectName,
+      timeout: ProcessTimeouts.pub,
+    );
 
     _log.info('Generating localizations...');
-    await _runProcess('flutter', ['gen-l10n'], workingDirectory: projectName);
+    await _runProcess(
+      'flutter',
+      ['gen-l10n'],
+      workingDirectory: projectName,
+      timeout: ProcessTimeouts.genL10n,
+    );
 
     _log.info('Running pub get after gen-l10n...');
-    await _runProcess('flutter', ['pub', 'get'], workingDirectory: projectName);
+    await _runProcess(
+      'flutter',
+      ['pub', 'get'],
+      workingDirectory: projectName,
+      timeout: ProcessTimeouts.pub,
+    );
   }
 }
 
@@ -179,6 +230,7 @@ Future<void> defaultScaffoldProcessRunner(
   String executable,
   List<String> args, {
   String? workingDirectory,
+  Duration? timeout,
 }) async {
   try {
     Process process;
@@ -196,16 +248,66 @@ Future<void> defaultScaffoldProcessRunner(
       );
     }
 
-    await Future.wait([
-      stdout.addStream(process.stdout),
-      stderr.addStream(process.stderr),
-    ]);
+    // listen + Completer instead of addStream: allows cancelling
+    // subscriptions on timeout to free stdout/stderr for subsequent calls.
+    final stdoutDone = Completer<void>();
+    final stderrDone = Completer<void>();
+    final stdoutSub = process.stdout.listen(
+      stdout.add,
+      onDone: stdoutDone.complete,
+    );
+    final stderrSub = process.stderr.listen(
+      stderr.add,
+      onDone: stderrDone.complete,
+    );
 
-    final exitCode = await process.exitCode;
-    if (exitCode != 0) {
-      throw Exception(
-        '$executable ${args.join(' ')} failed with exit code $exitCode',
+    Future<void> drainStreams() =>
+        Future.wait([stdoutDone.future, stderrDone.future]);
+
+    void killProcessTree() {
+      if (Platform.isWindows) {
+        // process.kill only kills cmd.exe, not child processes spawned by
+        // flutter.bat — taskkill /T kills the entire process tree.
+        try {
+          Process.runSync('taskkill', ['/F', '/T', '/PID', '${process.pid}']);
+        } catch (_) {
+          process.kill(ProcessSignal.sigkill);
+        }
+      } else {
+        process.kill(ProcessSignal.sigkill);
+      }
+    }
+
+    if (timeout != null) {
+      final exitCode = await process.exitCode.timeout(
+        timeout,
+        onTimeout: () {
+          killProcessTree();
+          return -1;
+        },
       );
+      if (exitCode == -1) {
+        stdoutSub.cancel();
+        stderrSub.cancel();
+        throw TimeoutException(
+          '$executable ${args.join(' ')} timed out after '
+          '${timeout.inSeconds} seconds and was terminated.',
+        );
+      }
+      await drainStreams();
+      if (exitCode != 0) {
+        throw Exception(
+          '$executable ${args.join(' ')} failed with exit code $exitCode',
+        );
+      }
+    } else {
+      await drainStreams();
+      final exitCode = await process.exitCode;
+      if (exitCode != 0) {
+        throw Exception(
+          '$executable ${args.join(' ')} failed with exit code $exitCode',
+        );
+      }
     }
   } on ProcessException catch (e) {
     throw Exception(
