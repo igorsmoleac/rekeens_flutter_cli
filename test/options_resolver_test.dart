@@ -102,6 +102,49 @@ void main() {
         'web',
       ]);
     });
+
+    test('throws UsageException for invalid flag overriding preset', () async {
+      await expectUsageException([
+        '--preset=minimal',
+        '--state-management=Riverpod',
+      ]);
+    });
+  });
+
+  group('OptionsResolver.resolve — enum flag validation', () {
+    test('throws UsageException for invalid state-management', () async {
+      await expectUsageException(['--state-management=Riverpod']);
+    });
+
+    test('throws UsageException for invalid router', () async {
+      await expectUsageException(['--router=auto_router']);
+    });
+
+    test('throws UsageException for invalid networking', () async {
+      await expectUsageException(['--networking=retrofit']);
+    });
+
+    test('throws UsageException for invalid theme', () async {
+      await expectUsageException(['--theme=cupertino']);
+    });
+
+    test('throws UsageException for unsupported architecture', () async {
+      await expectUsageException(['--architecture=clean-architecture']);
+    });
+
+    test('accepts all valid state-management values', () async {
+      for (final value in ['riverpod', 'bloc', 'none']) {
+        final options = await resolve(['--state-management=$value']);
+        expect(options['state_management'], value);
+      }
+    });
+
+    test('accepts all valid networking values', () async {
+      for (final value in ['dio', 'http', 'none']) {
+        final options = await resolve(['--networking=$value']);
+        expect(options['networking'], value);
+      }
+    });
   });
 
   group('OptionsResolver.resolve — flags only', () {
@@ -196,6 +239,60 @@ defaults:
       expect(options['router'], 'none');
       expect(options['theme'], 'material2');
     });
+
+    test(
+      'throws UsageException for invalid state_management in config',
+      () async {
+        File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: Riverpod
+  router: go_router
+  theme: material3
+  localization: false
+  codegen: false
+  platforms:
+    - android
+  architecture: feature-first
+  networking: dio
+''');
+        await expectUsageException(<String>[]);
+      },
+    );
+
+    test('throws UsageException for invalid theme in config', () async {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+  router: go_router
+  theme: cupertino
+  localization: false
+  codegen: false
+  platforms:
+    - android
+  architecture: feature-first
+  networking: dio
+''');
+      await expectUsageException(<String>[]);
+    });
+
+    test(
+      'throws UsageException for unsupported architecture in config',
+      () async {
+        File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+  router: go_router
+  theme: material3
+  localization: false
+  codegen: false
+  platforms:
+    - android
+  architecture: clean-architecture
+  networking: dio
+''');
+        await expectUsageException(<String>[]);
+      },
+    );
   });
 
   group('OptionsResolver.resolve — interactive prompt', () {

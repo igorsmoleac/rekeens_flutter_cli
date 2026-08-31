@@ -15,6 +15,12 @@ class OptionsResolver {
   final String? _workingDirectory;
   final String? _homeDirectory;
 
+  static const _allowedArchitecture = ['feature-first'];
+  static const _allowedStateManagement = ['riverpod', 'bloc', 'none'];
+  static const _allowedRouter = ['go_router', 'none'];
+  static const _allowedNetworking = ['dio', 'http', 'none'];
+  static const _allowedTheme = ['material3', 'material2'];
+
   Map<String, dynamic> resolve(ArgResults args, {required String usage}) {
     final presetName = args['preset'] as String?;
     if (presetName != null) {
@@ -25,17 +31,20 @@ class OptionsResolver {
           usage,
         );
       }
-      return _mergePresetWithFlags(preset, args);
+      return _mergePresetWithFlags(preset, args, usage: usage);
     }
 
     final configOptions = ConfigLoader.load(
       workingDirectory: _workingDirectory,
       homeDirectory: _homeDirectory,
     );
+    if (configOptions != null) {
+      _validateConfigOptions(configOptions, usage: usage);
+    }
     final hasFlags = _hasAnyCreateFlag(args);
 
     if (hasFlags) {
-      final flagOptions = _collectOptionsFromFlags(args);
+      final flagOptions = _collectOptionsFromFlags(args, usage: usage);
       if (configOptions != null) {
         return {...configOptions, ...flagOptions};
       }
@@ -60,18 +69,26 @@ class OptionsResolver {
         args.wasParsed('codegen');
   }
 
-  Map<String, dynamic> _collectOptionsFromFlags(ArgResults args) {
-    return _applyFlags(<String, dynamic>{}, args);
+  Map<String, dynamic> _collectOptionsFromFlags(
+    ArgResults args, {
+    required String usage,
+  }) {
+    return _applyFlags(<String, dynamic>{}, args, usage: usage);
   }
 
-  Map<String, dynamic> _mergePresetWithFlags(Preset preset, ArgResults args) {
-    return _applyFlags(preset.toOptions(), args);
+  Map<String, dynamic> _mergePresetWithFlags(
+    Preset preset,
+    ArgResults args, {
+    required String usage,
+  }) {
+    return _applyFlags(preset.toOptions(), args, usage: usage);
   }
 
   Map<String, dynamic> _applyFlags(
     Map<String, dynamic> options,
-    ArgResults args,
-  ) {
+    ArgResults args, {
+    required String usage,
+  }) {
     if (args.wasParsed('platforms')) {
       final platformsStr = args['platforms'] as String?;
       options['platforms'] = platformsStr != null
@@ -83,28 +100,94 @@ class OptionsResolver {
           : <String>[];
     }
     if (args.wasParsed('architecture')) {
-      options['architecture'] = args['architecture'];
+      final value = args['architecture'] as String?;
+      _validateEnumValue(
+        'architecture',
+        value,
+        _allowedArchitecture,
+        usage: usage,
+      );
+      options['architecture'] = value;
     }
     if (args.wasParsed('state-management')) {
-      options['state_management'] = args['state-management'];
+      final value = args['state-management'] as String?;
+      _validateEnumValue(
+        'state-management',
+        value,
+        _allowedStateManagement,
+        usage: usage,
+      );
+      options['state_management'] = value;
     }
     if (args.wasParsed('router')) {
-      options['router'] = args['router'];
+      final value = args['router'] as String?;
+      _validateEnumValue('router', value, _allowedRouter, usage: usage);
+      options['router'] = value;
     }
     if (args.wasParsed('networking')) {
-      options['networking'] = args['networking'];
+      final value = args['networking'] as String?;
+      _validateEnumValue('networking', value, _allowedNetworking, usage: usage);
+      options['networking'] = value;
     }
     if (args.wasParsed('localization')) {
       options['localization'] = args['localization'];
     }
     if (args.wasParsed('theme')) {
-      options['theme'] = args['theme'];
+      final value = args['theme'] as String?;
+      _validateEnumValue('theme', value, _allowedTheme, usage: usage);
+      options['theme'] = value;
     }
     if (args.wasParsed('codegen')) {
       options['codegen'] = args['codegen'];
     }
 
     return options;
+  }
+
+  void _validateEnumValue(
+    String label,
+    Object? value,
+    List<String> allowed, {
+    required String usage,
+  }) {
+    if (value == null) return;
+    if (!allowed.contains(value)) {
+      throw UsageException(
+        'Invalid value "$value" for $label. Available: ${allowed.join(', ')}',
+        usage,
+      );
+    }
+  }
+
+  void _validateConfigOptions(
+    Map<String, dynamic> options, {
+    required String usage,
+  }) {
+    _validateEnumValue(
+      'architecture',
+      options['architecture'],
+      _allowedArchitecture,
+      usage: usage,
+    );
+    _validateEnumValue(
+      'state_management',
+      options['state_management'],
+      _allowedStateManagement,
+      usage: usage,
+    );
+    _validateEnumValue(
+      'router',
+      options['router'],
+      _allowedRouter,
+      usage: usage,
+    );
+    _validateEnumValue(
+      'networking',
+      options['networking'],
+      _allowedNetworking,
+      usage: usage,
+    );
+    _validateEnumValue('theme', options['theme'], _allowedTheme, usage: usage);
   }
 
   Map<String, dynamic> _fillDefaults(Map<String, dynamic> partial) {

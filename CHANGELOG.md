@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.6
+
+- Validate enum-like options (`--state-management`, `--router`, `--networking`, `--theme`, `--architecture`) against their allowed values in `OptionsResolver._applyFlags` and when loading defaults from `rekeens.yaml`
+- A typo such as `--state-management=Riverpod` now throws a `UsageException` listing the available values instead of silently producing a broken project (no dependency added, no template activated)
+- `architecture` currently accepts only `feature-first`; unsupported values are rejected with a clear message
+- New `_validateEnumValue`/`_validateConfigOptions` helpers mirror the existing preset validation
+
 ## 0.11.5
 
 - Clarify documentation: `--architecture` currently supports only `feature-first`; other patterns are planned
