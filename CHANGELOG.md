@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.10.0
+
+- Bootstrap files (`main.dart`, `app.dart`, `router.dart`, `app_cubit.dart`, `l10n.yaml`, `app_en.arb`) are now generated from templates in `templates/bootstrap/` instead of imperative `StringBuffer` code in `ProjectFileWriter`
+- `TemplateService` extended with conditional rendering (`{{#if cond}}...{{/if}}`, `{{#unless cond}}...{{/unless}}`) and a `renderFile` method for single-file rendering with variables and conditions
+- `ProjectFileWriter` rewritten to use `TemplateService` + `TemplateResolver` (same resolution chain as feature generators: home → local → built-in); accepts injectable `templateService`, `templateResolver`, `workingDirectory`, and `templatesRootOverride`
+- Static `main.dart`, `app.dart`, `router.dart` removed from `templates/base/` (now generated from `templates/bootstrap/` based on selected options)
+- Users can now override bootstrap templates by placing files in `~/.rekeens/templates/bootstrap/` (home) or `./.rekeens/templates/bootstrap/` (local project)
+- `ProjectScaffolder` now propagates `workingDirectory` to the default `ProjectFileWriter`
+- No user-facing behavior changes; generated project files are identical to the previous `StringBuffer` output
+
 ## 0.9.0
 
 - Refactor `CreateCommand` into a thin controller following SRP: orchestration and option resolution extracted into dedicated services

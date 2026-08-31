@@ -14,6 +14,11 @@ void main() {
   late List<String> calls;
   late Directory projectDir;
   late String projectPath;
+  late String projectRoot;
+
+  setUpAll(() {
+    projectRoot = Directory.current.path;
+  });
 
   ScaffoldProcessRunner makeRunner({
     bool failFlutterCreate = false,
@@ -49,7 +54,10 @@ void main() {
     return ProjectScaffolder(
       templateService: const TemplateService(),
       templateResolver: TemplateResolver(homeDirectoryOverride: fakeHome.path),
-      projectFileWriter: ProjectFileWriter(),
+      projectFileWriter: ProjectFileWriter(
+        templatesRootOverride: projectRoot,
+        workingDirectory: workingDir.path,
+      ),
       processRunner: runner,
       workingDirectory: workingDir.path,
     );

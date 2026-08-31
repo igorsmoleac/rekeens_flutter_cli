@@ -365,6 +365,14 @@ rekeens config init --force
 
 Rekeens supports custom template overrides. You can replace the default boilerplate templates with your own customized versions.
 
+### Template Categories
+
+| Category | Used by | Description |
+|----------|---------|-------------|
+| `base` | `rekeens create` | Project skeleton (directory structure, `home_page.dart`, theme files, READMEs) |
+| `bootstrap` | `rekeens create` | Entry-point files rendered with selected options (`main.dart`, `app.dart`, `router.dart`, `app_cubit.dart`, `l10n.yaml`, `app_en.arb`) |
+| `features` | `rekeens generate *` | Feature-scoped generators (feature, screen, model, repository, service, provider, cubit) |
+
 ### Template Resolution Hierarchy
 
 When scaffolding templates, Rekeens searches the following locations in order:
@@ -380,6 +388,37 @@ Templates utilize double-curly-brace placeholders:
 - `{{feature_name}}` &mdash; Feature name in snake_case.
 - `{{class_name}}` &mdash; PascalCase representation of the target entity.
 - `{{model_name}}`, `{{provider_name}}`, `{{screen_name}}`, `{{service_name}}`, `{{repository_name}}`.
+
+### Conditional Blocks (bootstrap templates)
+
+Bootstrap templates support conditional sections that are included or excluded based on the options selected during `rekeens create`:
+
+- `{{#if <condition>}}...{{/if}}` &mdash; rendered only when `<condition>` is true.
+- `{{#unless <condition>}}...{{/unless}}` &mdash; rendered only when `<condition>` is false.
+
+Available conditions:
+
+| Condition | True when |
+|-----------|-----------|
+| `riverpod` | `state_management == 'riverpod'` |
+| `bloc` | `state_management == 'bloc'` |
+| `none` | `state_management == 'none'` |
+| `go_router` | `router == 'go_router'` |
+| `material3` | `theme == 'material3'` |
+| `l10n` | `localization == true` |
+
+Example (`main.dart`):
+
+```dart
+import 'package:flutter/material.dart';
+{{#if riverpod}}import 'package:flutter_riverpod/flutter_riverpod.dart';
+{{/if}}import 'app/app.dart';
+
+void main() {
+{{#if riverpod}}  runApp(const ProviderScope(child: App()));
+{{/if}}{{#if none}}  runApp(const App());
+{{/if}}}
+```
 
 ---
 

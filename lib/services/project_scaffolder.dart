@@ -22,12 +22,15 @@ class ProjectScaffolder {
     ProjectFileWriter? projectFileWriter,
     ScaffoldProcessRunner? processRunner,
     Logger? log,
-    this._workingDirectory,
+    String? workingDirectory,
   }) : _templateService = templateService ?? const TemplateService(),
        _templateResolver = templateResolver ?? const TemplateResolver(),
-       _projectFileWriter = projectFileWriter ?? ProjectFileWriter(),
+       _projectFileWriter =
+           projectFileWriter ??
+           ProjectFileWriter(workingDirectory: workingDirectory),
        _runProcess = processRunner ?? defaultScaffoldProcessRunner,
-       _log = log ?? logger;
+       _log = log ?? logger,
+       _workingDirectory = workingDirectory;
 
   final TemplateService _templateService;
   final TemplateResolver _templateResolver;
