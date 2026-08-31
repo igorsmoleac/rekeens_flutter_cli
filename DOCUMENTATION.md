@@ -446,6 +446,11 @@ dart format --output=none --set-exit-if-changed .
 dart analyze --fatal-infos
 ```
 
+CI runs two workflows on every push and pull request to `main`/`dev`:
+
+- **`dart.yml`** — unit tests, format verification, and static analysis of the CLI itself.
+- **`e2e_smoke.yml`** — end-to-end smoke test that activates the CLI globally, scaffolds a project with `--preset=full` (all platforms, riverpod, go_router, dio, localization, codegen), then runs `flutter analyze` and `flutter test` inside the generated project. This guards the templates against silent degradation when dependencies or templates are updated.
+
 ---
 
 Developed by **Igor Smoleac** for **Rekeens** &bull; Released under the [MIT License](LICENSE).
