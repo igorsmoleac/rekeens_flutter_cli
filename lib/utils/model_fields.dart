@@ -1,8 +1,7 @@
 class ModelField {
+  const ModelField({required this.name, required this.dartType});
   final String name;
   final String dartType;
-
-  const ModelField({required this.name, required this.dartType});
 
   bool get isNullable => dartType.endsWith('?');
   String get baseType =>

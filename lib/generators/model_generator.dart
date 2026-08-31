@@ -106,31 +106,31 @@ class ModelGenerator extends BaseGenerator {
       case 'String':
       case 'bool':
       case 'int':
-        return "json[$key] as ${f.dartType}";
+        return 'json[$key] as ${f.dartType}';
       case 'double':
         return f.isNullable
-            ? "(json[$key] as num?)?.toDouble()"
-            : "(json[$key] as num).toDouble()";
+            ? '(json[$key] as num?)?.toDouble()'
+            : '(json[$key] as num).toDouble()';
       case 'DateTime':
         return f.isNullable
-            ? "json[$key] == null ? null : DateTime.parse(json[$key] as String)"
-            : "DateTime.parse(json[$key] as String)";
+            ? 'json[$key] == null ? null : DateTime.parse(json[$key] as String)'
+            : 'DateTime.parse(json[$key] as String)';
       case 'List<String>':
         return f.isNullable
-            ? "(json[$key] as List?)?.cast<String>()"
-            : "(json[$key] as List).cast<String>()";
+            ? '(json[$key] as List?)?.cast<String>()'
+            : '(json[$key] as List).cast<String>()';
       case 'List<int>':
         return f.isNullable
-            ? "(json[$key] as List?)?.cast<int>()"
-            : "(json[$key] as List).cast<int>()";
+            ? '(json[$key] as List?)?.cast<int>()'
+            : '(json[$key] as List).cast<int>()';
       case 'List<double>':
         return f.isNullable
-            ? "(json[$key] as List?)?.map((e) => (e as num).toDouble()).toList()"
-            : "(json[$key] as List).map((e) => (e as num).toDouble()).toList()";
+            ? '(json[$key] as List?)?.map((e) => (e as num).toDouble()).toList()'
+            : '(json[$key] as List).map((e) => (e as num).toDouble()).toList()';
       case 'List<bool>':
         return f.isNullable
-            ? "(json[$key] as List?)?.cast<bool>()"
-            : "(json[$key] as List).cast<bool>()";
+            ? '(json[$key] as List?)?.cast<bool>()'
+            : '(json[$key] as List).cast<bool>()';
       default:
         throw StateError('Unsupported type ${f.dartType}');
     }
@@ -140,8 +140,8 @@ class ModelGenerator extends BaseGenerator {
     switch (f.baseType) {
       case 'DateTime':
         return f.isNullable
-            ? "${f.name}?.toIso8601String()"
-            : "${f.name}.toIso8601String()";
+            ? '${f.name}?.toIso8601String()'
+            : '${f.name}.toIso8601String()';
       default:
         return f.name;
     }

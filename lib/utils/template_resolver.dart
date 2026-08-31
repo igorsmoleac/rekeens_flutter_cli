@@ -4,9 +4,8 @@ import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/utils/project_paths.dart';
 
 class TemplateResolver {
-  final String? homeDirectoryOverride;
-
   const TemplateResolver({this.homeDirectoryOverride});
+  final String? homeDirectoryOverride;
 
   Future<String> resolve({
     required String category,

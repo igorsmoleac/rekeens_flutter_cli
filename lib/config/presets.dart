@@ -1,14 +1,4 @@
 class Preset {
-  final String name;
-  final List<String> platforms;
-  final String architecture;
-  final String stateManagement;
-  final String router;
-  final String networking;
-  final bool localization;
-  final String theme;
-  final bool codegen;
-
   const Preset({
     required this.name,
     required this.platforms,
@@ -20,6 +10,15 @@ class Preset {
     required this.theme,
     this.codegen = false,
   });
+  final String name;
+  final List<String> platforms;
+  final String architecture;
+  final String stateManagement;
+  final String router;
+  final String networking;
+  final bool localization;
+  final String theme;
+  final bool codegen;
 
   Map<String, dynamic> toOptions() {
     return {

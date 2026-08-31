@@ -21,8 +21,6 @@ class ConfigCommand extends Command<void> {
 }
 
 class ConfigInitCommand extends Command<void> {
-  final String? workingDirectory;
-
   ConfigInitCommand({this.workingDirectory}) {
     argParser.addFlag(
       'force',
@@ -38,6 +36,7 @@ class ConfigInitCommand extends Command<void> {
       negatable: false,
     );
   }
+  final String? workingDirectory;
 
   @override
   String get name => 'init';

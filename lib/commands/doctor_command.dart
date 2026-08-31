@@ -12,14 +12,13 @@ typedef ProcessRunner = Future<ProcessResult> Function(
 });
 
 class DoctorCommand extends Command<void> {
-  final ProcessRunner processRunner;
-  final Map<String, String> environment;
-
   DoctorCommand({
     ProcessRunner? processRunner,
     Map<String, String>? environment,
   }) : processRunner = processRunner ?? _defaultProcessRunner,
        environment = environment ?? Platform.environment;
+  final ProcessRunner processRunner;
+  final Map<String, String> environment;
 
   @override
   String get name => 'doctor';
@@ -266,10 +265,9 @@ class DoctorCommand extends Command<void> {
 }
 
 class _CommandCandidate {
+  const _CommandCandidate(this.executable, this.args);
   final String executable;
   final List<String> args;
-
-  const _CommandCandidate(this.executable, this.args);
 }
 
 Future<ProcessResult> _defaultProcessRunner(

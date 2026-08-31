@@ -6,18 +6,16 @@ import 'package:rekeens_flutter_cli/utils/logger.dart';
 import 'package:rekeens_flutter_cli/utils/template_resolver.dart';
 
 abstract class BaseGenerator {
+  BaseGenerator({
+    this._templateService = const TemplateService(),
+    this._templateResolver = const TemplateResolver(),
+    this.templatesRootOverride,
+    this.workingDirectory,
+  });
   final TemplateService _templateService;
   final TemplateResolver _templateResolver;
   final String? templatesRootOverride;
   final String? workingDirectory;
-
-  BaseGenerator({
-    TemplateService templateService = const TemplateService(),
-    TemplateResolver templateResolver = const TemplateResolver(),
-    this.templatesRootOverride,
-    this.workingDirectory,
-  }) : _templateService = templateService,
-       _templateResolver = templateResolver;
 
   String get _projectDir => workingDirectory ?? Directory.current.path;
 

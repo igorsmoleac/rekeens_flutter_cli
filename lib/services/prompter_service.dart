@@ -1,12 +1,11 @@
 import 'dart:io';
 
 class PrompterService {
-  final StringSink output;
-  final String? Function() readLine;
-
   PrompterService({StringSink? output, String? Function()? readLine})
     : output = output ?? stdout,
       readLine = readLine ?? stdin.readLineSync;
+  final StringSink output;
+  final String? Function() readLine;
 
   String askString(String question, {String? defaultValue}) {
     final hint = defaultValue != null ? ' [$defaultValue]' : '';

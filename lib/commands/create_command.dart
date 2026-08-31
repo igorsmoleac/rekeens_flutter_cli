@@ -12,11 +12,6 @@ import 'package:rekeens_flutter_cli/config/config_loader.dart';
 import 'package:rekeens_flutter_cli/utils/logger.dart';
 
 class CreateCommand extends Command<void> {
-  final _templateService = const TemplateService();
-  final _templateResolver = const TemplateResolver();
-  final _prompter = PrompterService();
-  final _projectFileWriter = ProjectFileWriter();
-
   CreateCommand() {
     argParser.addOption(
       'preset',
@@ -60,6 +55,10 @@ class CreateCommand extends Command<void> {
     );
     argParser.addOption('theme', help: 'Theme (material3, material2)');
   }
+  final _templateService = const TemplateService();
+  final _templateResolver = const TemplateResolver();
+  final _prompter = PrompterService();
+  final _projectFileWriter = ProjectFileWriter();
 
   @override
   String get name => 'create';
