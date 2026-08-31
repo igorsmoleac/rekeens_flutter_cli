@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.3
+
+- New E2E smoke test workflow (`.github/workflows/e2e_smoke.yml`) that runs the full `rekeens create` pipeline end-to-end in CI: installs Flutter SDK, activates the CLI globally, scaffolds a project with `--preset=full`, then runs `flutter analyze` and `flutter test` inside the generated project
+- Protects templates from silent degradation when dependencies or templates are updated (regressions in generated `main.dart`, `app.dart`, `router.dart`, `l10n`, or the `full` preset dependency set surface as CI failures)
+- Triggered on `push`/`pull_request` to `main`/`dev` and via `workflow_dispatch`; runs as a separate job alongside `dart.yml` to keep the heavy Flutter-SDK step isolated from the fast unit-test CI
+
 ## 0.11.2
 
 - Add timeouts for all external process invocations (`flutter create`, `flutter pub add`, `flutter pub get`, `flutter gen-l10n`, `dart format`, `flutter analyze`) to prevent the CLI from hanging indefinitely without feedback
