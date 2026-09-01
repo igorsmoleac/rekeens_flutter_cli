@@ -9,6 +9,8 @@ class Preset {
     required this.storage,
     required this.localization,
     required this.theme,
+    this.seedColor = '0xFF2196F3',
+    this.fontFamily = '',
     this.codegen = false,
   });
   final String name;
@@ -20,6 +22,8 @@ class Preset {
   final String storage;
   final bool localization;
   final String theme;
+  final String seedColor;
+  final String fontFamily;
   final bool codegen;
 
   Map<String, dynamic> toOptions() {
@@ -32,6 +36,8 @@ class Preset {
       'storage': storage,
       'localization': localization,
       'theme': theme,
+      'seed_color': seedColor,
+      'font_family': fontFamily,
       'codegen': codegen,
     };
   }
@@ -48,6 +54,7 @@ const presets = <String, Preset>{
     storage: 'none',
     localization: false,
     theme: 'material3',
+    seedColor: '0xFF2196F3',
   ),
   'mobile': Preset(
     name: 'mobile',
@@ -59,6 +66,7 @@ const presets = <String, Preset>{
     storage: 'shared_preferences',
     localization: true,
     theme: 'material3',
+    seedColor: '0xFF6750A4',
   ),
   'full': Preset(
     name: 'full',
@@ -70,6 +78,8 @@ const presets = <String, Preset>{
     storage: 'secure_storage',
     localization: true,
     theme: 'material3',
+    seedColor: '0xFF6750A4',
+    fontFamily: 'Roboto',
     codegen: true,
   ),
 };

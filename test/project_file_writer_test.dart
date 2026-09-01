@@ -198,7 +198,7 @@ void main() {
   });
 
   group('ProjectFileWriter theme', () {
-    test('uses useMaterial3: true and ColorScheme for material3', () async {
+    test('app.dart uses AppTheme.light and AppTheme.dark', () async {
       await writer.configureProjectFiles(tempProject.path, {
         'state_management': 'none',
         'router': 'none',
@@ -208,11 +208,14 @@ void main() {
 
       final appFile = File(p.join(tempProject.path, 'lib', 'app', 'app.dart'));
       final content = appFile.readAsStringSync();
-      expect(content.contains('useMaterial3: true'), isTrue);
-      expect(content.contains('ColorScheme.fromSeed'), isTrue);
+      expect(content.contains("import 'theme/app_theme.dart'"), isTrue);
+      expect(content.contains('theme: AppTheme.light'), isTrue);
+      expect(content.contains('darkTheme: AppTheme.dark'), isTrue);
+      // No inline ThemeData — theme is delegated to AppTheme
+      expect(content.contains('ThemeData('), isFalse);
     });
 
-    test('uses useMaterial3: false and primarySwatch for material2', () async {
+    test('app.dart uses AppTheme for material2 too', () async {
       await writer.configureProjectFiles(tempProject.path, {
         'state_management': 'none',
         'router': 'none',
@@ -222,9 +225,10 @@ void main() {
 
       final appFile = File(p.join(tempProject.path, 'lib', 'app', 'app.dart'));
       final content = appFile.readAsStringSync();
-      expect(content.contains('useMaterial3: false'), isTrue);
-      expect(content.contains('primarySwatch: Colors.blue'), isTrue);
-      expect(content.contains('ColorScheme.fromSeed'), isFalse);
+      expect(content.contains("import 'theme/app_theme.dart'"), isTrue);
+      expect(content.contains('theme: AppTheme.light'), isTrue);
+      // No inline ThemeData or primarySwatch in app.dart
+      expect(content.contains('primarySwatch'), isFalse);
     });
   });
 

@@ -71,7 +71,7 @@ class ProjectScaffolder {
       options['platforms'] as List<String>,
     );
     _log.info('Applying custom template...');
-    await _applyTemplate(projectName, projectPath);
+    await _applyTemplate(projectName, projectPath, options);
     _log.info('Configuring project files...');
     await _projectFileWriter.configureProjectFiles(projectPath, options);
     _log.info('Adding dependencies...');
@@ -148,15 +148,37 @@ class ProjectScaffolder {
     }
   }
 
-  Future<void> _applyTemplate(String projectName, String projectPath) async {
+  Future<void> _applyTemplate(
+    String projectName,
+    String projectPath,
+    Map<String, dynamic> options,
+  ) async {
     final templateDir = await _templateResolver.resolve(
       category: 'base',
       workingDirectory: _workingDirectory,
     );
+
+    final seedColor = options['seed_color'] as String? ?? '0xFF2196F3';
+    final fontFamily = options['font_family'] as String? ?? '';
+    final theme = options['theme'] as String? ?? 'material3';
+
+    final variables = <String, String>{
+      'project_name': projectName,
+      'seed_color': seedColor,
+      'font_family': fontFamily,
+      'use_material3': theme == 'material3' ? 'true' : 'false',
+    };
+
+    final conditions = <String, bool>{
+      'has_font': fontFamily.isNotEmpty,
+      'material3': theme == 'material3',
+    };
+
     await _templateService.copyTemplate(
       sourceDir: templateDir,
       targetDir: projectPath,
-      variables: <String, String>{'project_name': projectName},
+      variables: variables,
+      conditions: conditions,
     );
   }
 

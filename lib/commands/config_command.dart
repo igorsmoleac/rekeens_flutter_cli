@@ -85,6 +85,8 @@ defaults:
   storage: shared_preferences
   localization: false
   theme: material3
+  seed_color: "0xFF2196F3"
+  font_family: ''
   codegen: false
 
 # Custom analysis_options.yaml for generated projects.

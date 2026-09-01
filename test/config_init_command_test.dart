@@ -47,6 +47,8 @@ void main() {
       expect(loaded['networking'], 'dio');
       expect(loaded['storage'], 'shared_preferences');
       expect(loaded['theme'], 'material3');
+      expect(loaded['seed_color'], '0xFF2196F3');
+      expect(loaded['font_family'], '');
       expect(loaded['localization'], isFalse);
       expect(loaded['codegen'], isFalse);
       expect(loaded['platforms'], ['android', 'ios', 'windows', 'linux']);

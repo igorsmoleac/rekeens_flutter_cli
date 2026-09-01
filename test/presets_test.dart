@@ -51,6 +51,14 @@ void main() {
       expect(preset.theme, 'material3');
     });
 
+    test('has default seed color', () {
+      expect(preset.seedColor, '0xFF2196F3');
+    });
+
+    test('has empty font family by default', () {
+      expect(preset.fontFamily, '');
+    });
+
     test('disables codegen by default', () {
       expect(preset.codegen, isFalse);
     });
@@ -81,6 +89,14 @@ void main() {
 
     test('uses shared_preferences storage', () {
       expect(preset.storage, 'shared_preferences');
+    });
+
+    test('uses purple seed color', () {
+      expect(preset.seedColor, '0xFF6750A4');
+    });
+
+    test('has empty font family', () {
+      expect(preset.fontFamily, '');
     });
 
     test('enables localization', () {
@@ -126,6 +142,14 @@ void main() {
       expect(preset.storage, 'secure_storage');
     });
 
+    test('uses purple seed color', () {
+      expect(preset.seedColor, '0xFF6750A4');
+    });
+
+    test('uses Roboto font family', () {
+      expect(preset.fontFamily, 'Roboto');
+    });
+
     test('enables localization', () {
       expect(preset.localization, isTrue);
     });
@@ -150,6 +174,8 @@ void main() {
           'storage',
           'localization',
           'theme',
+          'seed_color',
+          'font_family',
           'codegen',
         ]),
       );

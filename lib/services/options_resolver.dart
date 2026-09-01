@@ -29,6 +29,18 @@ class OptionsResolver {
   Map<String, dynamic> resolve(ArgResults args, {required String usage}) {
     final options = _resolveOptions(args, usage: usage);
 
+    // Normalize seed_color: YAML may parse unquoted hex (e.g. 0xFF2196F3)
+    // as an int. Convert it back to a hex string.
+    final seedColor = options['seed_color'];
+    if (seedColor is int) {
+      options['seed_color'] =
+          '0x${seedColor.toRadixString(16).toUpperCase().padLeft(8, '0')}';
+    } else if (seedColor is String &&
+        seedColor.isNotEmpty &&
+        !seedColor.startsWith('0x')) {
+      options['seed_color'] = _normalizeHexColor(seedColor, usage: usage);
+    }
+
     // analysis_options is a top-level config section (not under `defaults`),
     // so it is loaded independently and merged regardless of whether a preset,
     // flags, config defaults, or interactive prompt produced the base options.
@@ -90,6 +102,8 @@ class OptionsResolver {
         args.wasParsed('router') ||
         args.wasParsed('networking') ||
         args.wasParsed('storage') ||
+        args.wasParsed('seed-color') ||
+        args.wasParsed('font-family') ||
         args.wasParsed('localization') ||
         args.wasParsed('theme') ||
         args.wasParsed('codegen');
@@ -168,6 +182,18 @@ class OptionsResolver {
       _validateEnumValue('theme', value, _allowedTheme, usage: usage);
       options['theme'] = value;
     }
+    if (args.wasParsed('seed-color')) {
+      final value = args['seed-color'] as String?;
+      if (value != null) {
+        options['seed_color'] = _normalizeHexColor(value, usage: usage);
+      }
+    }
+    if (args.wasParsed('font-family')) {
+      final value = args['font-family'] as String?;
+      if (value != null && value.isNotEmpty) {
+        options['font_family'] = value;
+      }
+    }
     if (args.wasParsed('codegen')) {
       options['codegen'] = args['codegen'];
     }
@@ -188,6 +214,36 @@ class OptionsResolver {
         usage,
       );
     }
+  }
+
+  /// Normalizes a hex color string to `0xFFRRGGBB` format.
+  ///
+  /// Accepts `#RRGGBB`, `RRGGBB`, `0xFFRRGGBB`, `#AARRGGBB`, etc.
+  String _normalizeHexColor(String input, {required String usage}) {
+    var hex = input.trim();
+    if (hex.startsWith('#')) hex = hex.substring(1);
+    if (hex.startsWith('0x') || hex.startsWith('0X')) hex = hex.substring(2);
+
+    if (hex.length == 6) {
+      hex = 'FF$hex';
+    } else if (hex.length == 8) {
+      // Already has alpha — keep as is.
+    } else {
+      throw UsageException(
+        'Invalid seed color "$input". Expected 6 or 8 hex digits '
+        '(e.g. 0xFF2196F3, #2196F3, or 2196F3).',
+        usage,
+      );
+    }
+
+    if (!RegExp(r'^[0-9A-Fa-f]{8}$').hasMatch(hex)) {
+      throw UsageException(
+        'Invalid seed color "$input". Contains non-hex characters.',
+        usage,
+      );
+    }
+
+    return '0x${hex.toUpperCase()}';
   }
 
   void _validateConfigOptions(
@@ -238,6 +294,8 @@ class OptionsResolver {
       'storage': partial['storage'] ?? 'shared_preferences',
       'localization': partial['localization'] ?? false,
       'theme': partial['theme'] ?? 'material3',
+      'seed_color': partial['seed_color'] ?? '0xFF2196F3',
+      'font_family': partial['font_family'] ?? '',
       'codegen': partial['codegen'] ?? false,
     };
   }
@@ -287,6 +345,15 @@ class OptionsResolver {
       'material2',
     ], defaultValue: 'material3');
 
+    final seedColor = _prompter.askString(
+      'Seed color hex (e.g. 0xFF2196F3)',
+      defaultValue: '0xFF2196F3',
+    );
+    final fontFamily = _prompter.askString(
+      'Font family (empty for system default)',
+      defaultValue: '',
+    );
+
     return {
       'platforms': selectedPlatforms,
       'architecture': architecture,
@@ -296,6 +363,8 @@ class OptionsResolver {
       'storage': storage,
       'localization': localization,
       'theme': theme,
+      'seed_color': seedColor,
+      'font_family': fontFamily,
       'codegen': codegen,
     };
   }
