@@ -76,6 +76,7 @@ void main() {
       expect(out, contains('state'));
       expect(out, contains('router'));
       expect(out, contains('networking'));
+      expect(out, contains('storage'));
       expect(out, contains('theme'));
     });
 

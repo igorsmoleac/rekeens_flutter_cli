@@ -100,6 +100,7 @@ void main() {
         'state_management': 'riverpod',
         'router': 'go_router',
         'networking': 'dio',
+        'storage': 'shared_preferences',
         'localization': true,
         'theme': 'material3',
         'codegen': true,
@@ -115,6 +116,7 @@ void main() {
       expect(calls[1], contains('flutter_riverpod'));
       expect(calls[1], contains('go_router'));
       expect(calls[1], contains('dio'));
+      expect(calls[1], contains('shared_preferences'));
       expect(calls[1], contains('intl'));
       expect(calls[1], isNot(contains('--dev')));
       // Dev dependencies.
@@ -152,6 +154,7 @@ void main() {
         'state_management': 'none',
         'router': 'none',
         'networking': 'none',
+        'storage': 'none',
         'localization': false,
         'theme': 'material3',
         'codegen': false,
@@ -175,6 +178,7 @@ void main() {
         'state_management': 'none',
         'router': 'none',
         'networking': 'none',
+        'storage': 'none',
         'localization': false,
         'theme': 'material3',
         'codegen': false,
@@ -241,6 +245,7 @@ void main() {
         'state_management': 'riverpod',
         'router': 'go_router',
         'networking': 'dio',
+        'storage': 'shared_preferences',
         'localization': true,
         'theme': 'material3',
         'codegen': true,

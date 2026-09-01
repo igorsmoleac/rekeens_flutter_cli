@@ -8,9 +8,10 @@ void main() {
         'state_management': 'riverpod',
         'router': 'go_router',
         'networking': 'dio',
+        'storage': 'shared_preferences',
         'localization': true,
       }),
-      ['flutter_riverpod', 'go_router', 'dio', 'intl'],
+      ['flutter_riverpod', 'go_router', 'dio', 'shared_preferences', 'intl'],
     );
 
     expect(
@@ -18,6 +19,7 @@ void main() {
         'state_management': 'none',
         'router': 'none',
         'networking': 'none',
+        'storage': 'none',
         'localization': false,
       }),
       isEmpty,
@@ -30,9 +32,23 @@ void main() {
         'state_management': 'bloc',
         'router': 'none',
         'networking': 'http',
+        'storage': 'none',
         'localization': false,
       }),
       ['flutter_bloc', 'http'],
+    );
+  });
+
+  test('resolves secure_storage dependency', () {
+    expect(
+      DependencyResolver.resolve({
+        'state_management': 'none',
+        'router': 'none',
+        'networking': 'none',
+        'storage': 'secure_storage',
+        'localization': false,
+      }),
+      ['flutter_secure_storage'],
     );
   });
 

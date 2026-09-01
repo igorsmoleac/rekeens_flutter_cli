@@ -31,8 +31,8 @@ class ListCommand extends Command<void> {
       log.info(
         '    platforms: ${p.platforms.join(', ')} | '
         'state: ${p.stateManagement} | router: ${p.router} | '
-        'networking: ${p.networking} | theme: ${p.theme} | '
-        'l10n: ${p.localization} | codegen: ${p.codegen}',
+        'networking: ${p.networking} | storage: ${p.storage} | '
+        'theme: ${p.theme} | l10n: ${p.localization} | codegen: ${p.codegen}',
       );
     }
   }

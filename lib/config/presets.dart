@@ -6,6 +6,7 @@ class Preset {
     required this.stateManagement,
     required this.router,
     required this.networking,
+    required this.storage,
     required this.localization,
     required this.theme,
     this.codegen = false,
@@ -16,6 +17,7 @@ class Preset {
   final String stateManagement;
   final String router;
   final String networking;
+  final String storage;
   final bool localization;
   final String theme;
   final bool codegen;
@@ -27,6 +29,7 @@ class Preset {
       'state_management': stateManagement,
       'router': router,
       'networking': networking,
+      'storage': storage,
       'localization': localization,
       'theme': theme,
       'codegen': codegen,
@@ -42,6 +45,7 @@ const presets = <String, Preset>{
     stateManagement: 'none',
     router: 'none',
     networking: 'none',
+    storage: 'none',
     localization: false,
     theme: 'material3',
   ),
@@ -52,6 +56,7 @@ const presets = <String, Preset>{
     stateManagement: 'riverpod',
     router: 'go_router',
     networking: 'dio',
+    storage: 'shared_preferences',
     localization: true,
     theme: 'material3',
   ),
@@ -62,6 +67,7 @@ const presets = <String, Preset>{
     stateManagement: 'riverpod',
     router: 'go_router',
     networking: 'dio',
+    storage: 'secure_storage',
     localization: true,
     theme: 'material3',
     codegen: true,

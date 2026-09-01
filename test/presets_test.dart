@@ -39,6 +39,10 @@ void main() {
       expect(preset.networking, 'none');
     });
 
+    test('has no storage', () {
+      expect(preset.storage, 'none');
+    });
+
     test('disables localization', () {
       expect(preset.localization, isFalse);
     });
@@ -73,6 +77,10 @@ void main() {
 
     test('uses dio networking', () {
       expect(preset.networking, 'dio');
+    });
+
+    test('uses shared_preferences storage', () {
+      expect(preset.storage, 'shared_preferences');
     });
 
     test('enables localization', () {
@@ -114,6 +122,10 @@ void main() {
       expect(preset.networking, 'dio');
     });
 
+    test('uses secure_storage storage', () {
+      expect(preset.storage, 'secure_storage');
+    });
+
     test('enables localization', () {
       expect(preset.localization, isTrue);
     });
@@ -135,6 +147,7 @@ void main() {
           'state_management',
           'router',
           'networking',
+          'storage',
           'localization',
           'theme',
           'codegen',

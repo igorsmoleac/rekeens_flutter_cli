@@ -5,6 +5,7 @@ class DependencyResolver {
     final stateManagement = options['state_management'] as String? ?? 'none';
     final router = options['router'] as String? ?? 'none';
     final networking = options['networking'] as String? ?? 'none';
+    final storage = options['storage'] as String? ?? 'none';
     final localization = options['localization'] as bool? ?? false;
 
     switch (stateManagement) {
@@ -28,6 +29,15 @@ class DependencyResolver {
         break;
       case 'http':
         deps.add('http');
+        break;
+    }
+
+    switch (storage) {
+      case 'shared_preferences':
+        deps.add('shared_preferences');
+        break;
+      case 'secure_storage':
+        deps.add('flutter_secure_storage');
         break;
     }
 
