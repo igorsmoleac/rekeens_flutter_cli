@@ -14,6 +14,7 @@ class ProviderGenerator extends BaseGenerator {
     String providerName, {
     bool force = false,
     bool dryRun = false,
+    bool withTests = true,
     String? stateManagement,
   }) async {
     if (featureName.isEmpty || providerName.isEmpty) {
@@ -38,6 +39,21 @@ class ProviderGenerator extends BaseGenerator {
       force: force,
     );
 
+    final testDir = p.join(
+      projectDir,
+      'test',
+      'features',
+      featureName,
+      'presentation',
+      'providers',
+    );
+    final testPath = p.join(
+      testDir,
+      useBloc
+          ? '${providerName}_cubit_test.dart'
+          : '${providerName}_provider_test.dart',
+    );
+
     if (dryRun) {
       logDryRun(
         useBloc
@@ -45,6 +61,14 @@ class ProviderGenerator extends BaseGenerator {
             : 'create provider "$providerName"',
         targetPath,
       );
+      if (withTests) {
+        logDryRun(
+          useBloc
+              ? 'create cubit test "$providerName"'
+              : 'create provider test "$providerName"',
+          testPath,
+        );
+      }
       return;
     }
 
@@ -56,6 +80,19 @@ class ProviderGenerator extends BaseGenerator {
       targetDir: providersDir,
       variables: {'provider_name': providerName, 'class_name': className},
     );
+
+    if (withTests) {
+      await generateTest(
+        testTemplateSubPath: useBloc ? 'cubit' : 'provider',
+        testDir: testDir,
+        variables: {
+          'project_name': getProjectName(),
+          'feature_name': featureName,
+          'provider_name': providerName,
+          'class_name': className,
+        },
+      );
+    }
 
     logger.success(
       useBloc

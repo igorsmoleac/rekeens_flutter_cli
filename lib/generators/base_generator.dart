@@ -19,6 +19,9 @@ abstract class BaseGenerator {
 
   String get _projectDir => workingDirectory ?? Directory.current.path;
 
+  /// Protected accessor for the project directory path.
+  String get projectDir => _projectDir;
+
   bool isSnakeCase(String name) => RegExp(r'^[a-z][a-z0-9_]*$').hasMatch(name);
 
   String toPascalCase(String snakeCase) {
@@ -74,9 +77,10 @@ abstract class BaseGenerator {
     required String targetDir,
     required Map<String, String> variables,
     Map<String, List<Map<String, String>>>? lists,
+    String category = 'features',
   }) async {
     final sourceDir = await _templateResolver.resolve(
-      category: 'features',
+      category: category,
       subPath: templateSubPath,
       workingDirectory: workingDirectory,
       packageRootOverride: templatesRootOverride,
@@ -87,5 +91,38 @@ abstract class BaseGenerator {
       variables: variables,
       lists: lists,
     );
+  }
+
+  /// Generates a test file from a test template under `templates/tests/`.
+  ///
+  /// [testTemplateSubPath] is the subdirectory under `templates/tests/`
+  /// (e.g. `model`). [testDir] is the target directory under `test/`.
+  /// [variables] must include all placeholders needed by the test template
+  /// (typically `project_name`, `feature_name`, `class_name`, and the
+  /// entity-specific name like `model_name`).
+  Future<void> generateTest({
+    required String testTemplateSubPath,
+    required String testDir,
+    required Map<String, String> variables,
+  }) async {
+    ensureDirectory(testDir);
+    await copyTemplate(
+      templateSubPath: testTemplateSubPath,
+      targetDir: testDir,
+      variables: variables,
+      category: 'tests',
+    );
+  }
+
+  /// Returns the project name from `pubspec.yaml`.
+  String getProjectName() {
+    final pubspecFile = File(p.join(_projectDir, 'pubspec.yaml'));
+    if (!pubspecFile.existsSync()) return 'app';
+    final content = pubspecFile.readAsStringSync();
+    final match = RegExp(
+      r'^name:\s*(.+)$',
+      multiLine: true,
+    ).firstMatch(content);
+    return match?.group(1)?.trim() ?? 'app';
   }
 }

@@ -387,4 +387,203 @@ void main() {
       });
     });
   });
+
+  // --- Test generation ---
+
+  group('RepositoryGenerator — tests', () {
+    test('creates test file by default', () async {
+      await h.withAuthFeature(() async {
+        final gen = RepositoryGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user');
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'data',
+            'repositories',
+            'user_repository_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isTrue);
+        final content = testFile.readAsStringSync();
+        expect(content.contains('UserRepository'), isTrue);
+        expect(content.contains('getItems'), isTrue);
+      });
+    });
+
+    test('skips test file when withTests=false', () async {
+      await h.withAuthFeature(() async {
+        final gen = RepositoryGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user', withTests: false);
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'data',
+            'repositories',
+            'user_repository_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isFalse);
+      });
+    });
+  });
+
+  group('ServiceGenerator — tests', () {
+    test('creates test file by default', () async {
+      await h.withAuthFeature(() async {
+        final gen = ServiceGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'auth');
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'data',
+            'services',
+            'auth_service_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isTrue);
+        final content = testFile.readAsStringSync();
+        expect(content.contains('AuthService'), isTrue);
+        expect(content.contains('performAction'), isTrue);
+      });
+    });
+
+    test('skips test file when withTests=false', () async {
+      await h.withAuthFeature(() async {
+        final gen = ServiceGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'auth', withTests: false);
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'data',
+            'services',
+            'auth_service_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isFalse);
+      });
+    });
+  });
+
+  group('ProviderGenerator — tests', () {
+    test('creates provider test file by default (riverpod)', () async {
+      await h.withAuthFeature(() async {
+        File(p.join(h.tempProject.path, 'pubspec.yaml')).writeAsStringSync(
+          'name: test\n'
+          'dependencies:\n'
+          '  flutter_riverpod: ^2.4.0\n',
+        );
+
+        final gen = ProviderGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'auth');
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'presentation',
+            'providers',
+            'auth_provider_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isTrue);
+        final content = testFile.readAsStringSync();
+        expect(content.contains('authProvider'), isTrue);
+        expect(content.contains('ProviderContainer'), isTrue);
+      });
+    });
+
+    test('creates cubit test file by default (bloc)', () async {
+      await h.withAuthFeature(() async {
+        File(p.join(h.tempProject.path, 'pubspec.yaml')).writeAsStringSync(
+          'name: test\n'
+          'dependencies:\n'
+          '  flutter_bloc: ^8.1.0\n',
+        );
+
+        final gen = ProviderGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'auth');
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'presentation',
+            'providers',
+            'auth_cubit_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isTrue);
+        final content = testFile.readAsStringSync();
+        expect(content.contains('AuthCubit'), isTrue);
+        expect(content.contains('blocTest'), isTrue);
+      });
+    });
+
+    test('skips test file when withTests=false', () async {
+      await h.withAuthFeature(() async {
+        File(p.join(h.tempProject.path, 'pubspec.yaml')).writeAsStringSync(
+          'name: test\n'
+          'dependencies:\n'
+          '  flutter_riverpod: ^2.4.0\n',
+        );
+
+        final gen = ProviderGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'auth', withTests: false);
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'presentation',
+            'providers',
+            'auth_provider_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isFalse);
+      });
+    });
+  });
 }

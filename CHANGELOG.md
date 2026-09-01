@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.20.0
+
+- **Generated test stubs**: all component generators (`feature`, `screen`, `model`, `repository`, `service`, `provider`/`cubit`) now create a test file alongside the main source by default
+  - Test files are placed under `test/features/<feature>/...` mirroring the `lib/` structure
+  - `model_test`: constructor equality, `fromJson`, `toJson`, round-trip
+  - `repository_test`: `getItems` returns empty list
+  - `service_test`: `performAction` completes without throwing
+  - `screen_test` / `feature_test`: widget tests — AppBar title, body text, renders without throwing
+  - `provider_test` (riverpod): `ProviderContainer` resolves the provider
+  - `cubit_test` (bloc): `blocTest` verifies initial state
+  - Test stubs use `package:{{project_name}}/...` imports resolved from `pubspec.yaml`'s `name:` field
+- New `--tests` / `--no-tests` flag on `rekeens generate` (default: `--tests`); use `--no-tests` to skip test generation
+- `BaseGenerator` — new `generateTest()` helper and `projectDir` / `getProjectName()` accessors; `generate()` methods in all 6 generators gained a `withTests` parameter (default `true`); dry-run mode logs planned test file creation
+- New test templates under `templates/tests/` category: `feature/`, `screen/`, `model/`, `repository/`, `service/`, `cubit/`, `provider/` — separate from `templates/features/` for architectural clarity
+- `BaseGenerator.copyTemplate` — new `category` parameter (default `'features'`); `generateTest()` passes `category: 'tests'`
+- `GenerateCommand` — new `--tests` flag, passes `withTests` to all generators
+- `DOCUMENTATION.md` — "Common Generator Flags" section updated with `--tests`/`--no-tests`, new "Generated Test Stubs" table, templates table updated with test subdirectories
+- Tests: +14 new tests covering test file generation for all 6 generators (default creates test, `withTests=false` skips, dry-run doesn't write)
+
 ## 0.19.0
 
 - New `--pin-versions` CLI flag (and `pin_versions` key in `rekeens.yaml`): when enabled, `flutter pub add` is invoked with `--exact` so dependencies are pinned to the latest resolved version instead of using caret ranges — ensures reproducible installs across machines and over time

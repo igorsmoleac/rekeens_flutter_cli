@@ -21,6 +21,11 @@ class GenerateCommand extends Command<void> {
       defaultsTo: false,
       negatable: false,
     );
+    argParser.addFlag(
+      'tests',
+      help: 'Generate unit/widget test stubs alongside the component.',
+      defaultsTo: true,
+    );
   }
   final _featureGenerator = FeatureGenerator();
   final _screenGenerator = ScreenGenerator();
@@ -48,10 +53,16 @@ class GenerateCommand extends Command<void> {
     final type = rest[0];
     final force = argResults!['force'] as bool;
     final dryRun = argResults!['dry-run'] as bool;
+    final withTests = argResults!['tests'] as bool;
 
     switch (type) {
       case 'feature':
-        await _featureGenerator.generate(rest[1], force: force, dryRun: dryRun);
+        await _featureGenerator.generate(
+          rest[1],
+          force: force,
+          dryRun: dryRun,
+          withTests: withTests,
+        );
         break;
       case 'screen':
         _validateLength(
@@ -64,6 +75,7 @@ class GenerateCommand extends Command<void> {
           rest[2],
           force: force,
           dryRun: dryRun,
+          withTests: withTests,
         );
         break;
       case 'model':
@@ -78,6 +90,7 @@ class GenerateCommand extends Command<void> {
           fields: rest.length > 3 ? rest.sublist(3) : null,
           force: force,
           dryRun: dryRun,
+          withTests: withTests,
         );
         break;
       case 'repository':
@@ -91,6 +104,7 @@ class GenerateCommand extends Command<void> {
           rest[2],
           force: force,
           dryRun: dryRun,
+          withTests: withTests,
         );
         break;
       case 'service':
@@ -104,6 +118,7 @@ class GenerateCommand extends Command<void> {
           rest[2],
           force: force,
           dryRun: dryRun,
+          withTests: withTests,
         );
         break;
       case 'provider':
@@ -117,6 +132,7 @@ class GenerateCommand extends Command<void> {
           rest[2],
           force: force,
           dryRun: dryRun,
+          withTests: withTests,
         );
         break;
       default:

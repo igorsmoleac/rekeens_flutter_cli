@@ -14,6 +14,7 @@ class ServiceGenerator extends BaseGenerator {
     String serviceName, {
     bool force = false,
     bool dryRun = false,
+    bool withTests = true,
   }) async {
     if (featureName.isEmpty || serviceName.isEmpty) {
       throw Exception('Feature name and service name are required.');
@@ -27,8 +28,19 @@ class ServiceGenerator extends BaseGenerator {
     final targetPath = p.join(servicesDir, '${serviceName}_service.dart');
     checkFileExists(targetPath, 'Service "$serviceName"', force: force);
 
+    final testDir = p.join(
+      projectDir,
+      'test',
+      'features',
+      featureName,
+      'data',
+      'services',
+    );
+    final testPath = p.join(testDir, '${serviceName}_service_test.dart');
+
     if (dryRun) {
       logDryRun('create service "$serviceName"', targetPath);
+      if (withTests) logDryRun('create service test "$serviceName"', testPath);
       return;
     }
 
@@ -40,6 +52,19 @@ class ServiceGenerator extends BaseGenerator {
       targetDir: servicesDir,
       variables: {'service_name': serviceName, 'class_name': className},
     );
+
+    if (withTests) {
+      await generateTest(
+        testTemplateSubPath: 'service',
+        testDir: testDir,
+        variables: {
+          'project_name': getProjectName(),
+          'feature_name': featureName,
+          'service_name': serviceName,
+          'class_name': className,
+        },
+      );
+    }
 
     logger.success('Service "$serviceName" created in feature "$featureName".');
   }

@@ -247,4 +247,167 @@ void main() {
       );
     });
   });
+
+  // --- Test generation ---
+
+  test('FeatureGenerator creates page test file by default', () async {
+    final generator = h.featureGenerator();
+    await generator.generate('auth');
+
+    final testFile = File(
+      p.join(
+        h.tempProject.path,
+        'test',
+        'features',
+        'auth',
+        'presentation',
+        'pages',
+        'auth_page_test.dart',
+      ),
+    );
+    expect(testFile.existsSync(), isTrue);
+    final content = testFile.readAsStringSync();
+    expect(content.contains("import 'package:test/features/auth"), isTrue);
+    expect(content.contains('AuthPage'), isTrue);
+  });
+
+  test('FeatureGenerator skips test file when withTests=false', () async {
+    final generator = h.featureGenerator();
+    await generator.generate('auth', withTests: false);
+
+    final testFile = File(
+      p.join(
+        h.tempProject.path,
+        'test',
+        'features',
+        'auth',
+        'presentation',
+        'pages',
+        'auth_page_test.dart',
+      ),
+    );
+    expect(testFile.existsSync(), isFalse);
+  });
+
+  test('ScreenGenerator creates screen test file by default', () async {
+    await h.withAuthFeature(() async {
+      final screenGen = ScreenGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await screenGen.generate('auth', 'login');
+
+      final testFile = File(
+        p.join(
+          h.tempProject.path,
+          'test',
+          'features',
+          'auth',
+          'presentation',
+          'pages',
+          'login_screen_test.dart',
+        ),
+      );
+      expect(testFile.existsSync(), isTrue);
+      final content = testFile.readAsStringSync();
+      expect(content.contains('LoginScreen'), isTrue);
+      expect(content.contains('testWidgets'), isTrue);
+    });
+  });
+
+  test('ScreenGenerator skips test file when withTests=false', () async {
+    await h.withAuthFeature(() async {
+      final screenGen = ScreenGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await screenGen.generate('auth', 'login', withTests: false);
+
+      final testFile = File(
+        p.join(
+          h.tempProject.path,
+          'test',
+          'features',
+          'auth',
+          'presentation',
+          'pages',
+          'login_screen_test.dart',
+        ),
+      );
+      expect(testFile.existsSync(), isFalse);
+    });
+  });
+
+  test('ModelGenerator creates model test file by default', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user');
+
+      final testFile = File(
+        p.join(
+          h.tempProject.path,
+          'test',
+          'features',
+          'auth',
+          'data',
+          'models',
+          'user_model_test.dart',
+        ),
+      );
+      expect(testFile.existsSync(), isTrue);
+      final content = testFile.readAsStringSync();
+      expect(content.contains('UserModel'), isTrue);
+      expect(content.contains('fromJson'), isTrue);
+      expect(content.contains('toJson'), isTrue);
+    });
+  });
+
+  test('ModelGenerator skips test file when withTests=false', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user', withTests: false);
+
+      final testFile = File(
+        p.join(
+          h.tempProject.path,
+          'test',
+          'features',
+          'auth',
+          'data',
+          'models',
+          'user_model_test.dart',
+        ),
+      );
+      expect(testFile.existsSync(), isFalse);
+    });
+  });
+
+  test('ModelGenerator dry-run logs test file creation', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user', dryRun: true);
+
+      final testFile = File(
+        p.join(
+          h.tempProject.path,
+          'test',
+          'features',
+          'auth',
+          'data',
+          'models',
+          'user_model_test.dart',
+        ),
+      );
+      expect(testFile.existsSync(), isFalse);
+    });
+  });
 }

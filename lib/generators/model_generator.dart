@@ -16,6 +16,7 @@ class ModelGenerator extends BaseGenerator {
     List<String>? fields,
     bool force = false,
     bool dryRun = false,
+    bool withTests = true,
   }) async {
     if (featureName.isEmpty || modelName.isEmpty) {
       throw Exception('Feature name and model name are required.');
@@ -31,8 +32,19 @@ class ModelGenerator extends BaseGenerator {
     final targetPath = p.join(modelsDir, '${modelName}_model.dart');
     checkFileExists(targetPath, 'Model "$modelName"', force: force);
 
+    final testDir = p.join(
+      projectDir,
+      'test',
+      'features',
+      featureName,
+      'data',
+      'models',
+    );
+    final testPath = p.join(testDir, '${modelName}_model_test.dart');
+
     if (dryRun) {
       logDryRun('create model "$modelName"', targetPath);
+      if (withTests) logDryRun('create model test "$modelName"', testPath);
       return;
     }
 
@@ -52,6 +64,19 @@ class ModelGenerator extends BaseGenerator {
         targetDir: modelsDir,
         variables: {'model_name': modelName, 'class_name': className},
         lists: {'fields': _buildFieldVariables(parsedFields)},
+      );
+    }
+
+    if (withTests) {
+      await generateTest(
+        testTemplateSubPath: 'model',
+        testDir: testDir,
+        variables: {
+          'project_name': getProjectName(),
+          'feature_name': featureName,
+          'model_name': modelName,
+          'class_name': className,
+        },
       );
     }
 
