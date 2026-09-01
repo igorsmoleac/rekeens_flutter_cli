@@ -27,6 +27,26 @@ class OptionsResolver {
   static const _allowedTheme = ['material3', 'material2'];
 
   Map<String, dynamic> resolve(ArgResults args, {required String usage}) {
+    final options = _resolveOptions(args, usage: usage);
+
+    // analysis_options is a top-level config section (not under `defaults`),
+    // so it is loaded independently and merged regardless of whether a preset,
+    // flags, config defaults, or interactive prompt produced the base options.
+    final analysisOptions = ConfigLoader.loadAnalysisOptions(
+      workingDirectory: _workingDirectory,
+      homeDirectory: _homeDirectory,
+    );
+    if (analysisOptions != null) {
+      options['analysis_options'] = analysisOptions;
+    }
+
+    return options;
+  }
+
+  Map<String, dynamic> _resolveOptions(
+    ArgResults args, {
+    required String usage,
+  }) {
     final presetName = args['preset'] as String?;
     if (presetName != null) {
       final preset = presets[presetName];

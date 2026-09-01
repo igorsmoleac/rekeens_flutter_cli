@@ -339,4 +339,76 @@ defaults:
       expect(options['theme'], 'material3');
     });
   });
+
+  group('OptionsResolver.resolve — analysis_options from config', () {
+    test('includes analysis_options when config has the section', () async {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+  router: go_router
+  theme: material3
+  localization: false
+  codegen: false
+  platforms:
+    - android
+  architecture: feature-first
+  networking: dio
+  storage: shared_preferences
+analysis_options:
+  include: package:flutter_lints/flutter.yaml
+  linter:
+    rules:
+      prefer_const_constructors: true
+''');
+      final options = await resolve(<String>[]);
+      expect(options.containsKey('analysis_options'), isTrue);
+      final ao = options['analysis_options'] as Map<String, dynamic>;
+      expect(ao['include'], 'package:flutter_lints/flutter.yaml');
+      expect(ao['linter'], isA<Map>());
+    });
+
+    test(
+      'does not include analysis_options when config lacks the section',
+      () async {
+        File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+  router: go_router
+  theme: material3
+  localization: false
+  codegen: false
+  platforms:
+    - android
+  architecture: feature-first
+  networking: dio
+  storage: shared_preferences
+''');
+        final options = await resolve(<String>[]);
+        expect(options.containsKey('analysis_options'), isFalse);
+      },
+    );
+
+    test('includes analysis_options even when using --preset', () async {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+analysis_options:
+  include: package:lints/recommended.yaml
+''');
+      final options = await resolve(['--preset=minimal']);
+      expect(options.containsKey('analysis_options'), isTrue);
+      expect(
+        (options['analysis_options'] as Map<String, dynamic>)['include'],
+        'package:lints/recommended.yaml',
+      );
+    });
+
+    test(
+      'does not include analysis_options when no config file exists',
+      () async {
+        final options = await resolve(['--state-management=bloc']);
+        expect(options.containsKey('analysis_options'), isFalse);
+      },
+    );
+  });
 }

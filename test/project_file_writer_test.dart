@@ -708,6 +708,80 @@ void main() {
     });
   });
 
+  group('ProjectFileWriter analysis_options', () {
+    test(
+      'writes analysis_options.yaml when analysis_options is provided',
+      () async {
+        await writer.configureProjectFiles(tempProject.path, {
+          'state_management': 'none',
+          'router': 'none',
+          'theme': 'material3',
+          'localization': false,
+          'analysis_options': {
+            'include': 'package:flutter_lints/flutter.yaml',
+            'analyzer': {
+              'language': {'strict-casts': true},
+            },
+            'linter': {
+              'rules': {
+                'prefer_const_constructors': true,
+                'avoid_print': false,
+              },
+            },
+          },
+        });
+
+        final file = File(p.join(tempProject.path, 'analysis_options.yaml'));
+        expect(file.existsSync(), isTrue);
+        final content = file.readAsStringSync();
+        expect(
+          content,
+          contains('include: package:flutter_lints/flutter.yaml'),
+        );
+        expect(content, contains('strict-casts: true'));
+        expect(content, contains('prefer_const_constructors: true'));
+        expect(content, contains('avoid_print: false'));
+      },
+    );
+
+    test('does not write analysis_options.yaml when not provided', () async {
+      await writer.configureProjectFiles(tempProject.path, {
+        'state_management': 'none',
+        'router': 'none',
+        'theme': 'material3',
+        'localization': false,
+      });
+
+      final file = File(p.join(tempProject.path, 'analysis_options.yaml'));
+      // flutter create generates a default one, but ProjectFileWriter should
+      // not create one if analysis_options is absent from the options map.
+      // In the test temp project there is no flutter create, so it should
+      // not exist.
+      expect(file.existsSync(), isFalse);
+    });
+
+    test('handles list-style linter rules', () async {
+      await writer.configureProjectFiles(tempProject.path, {
+        'state_management': 'none',
+        'router': 'none',
+        'theme': 'material3',
+        'localization': false,
+        'analysis_options': {
+          'include': 'package:lints/recommended.yaml',
+          'linter': {
+            'rules': ['prefer_const_constructors', 'avoid_print'],
+          },
+        },
+      });
+
+      final file = File(p.join(tempProject.path, 'analysis_options.yaml'));
+      expect(file.existsSync(), isTrue);
+      final content = file.readAsStringSync();
+      expect(content, contains('- prefer_const_constructors'));
+      expect(content, contains('- avoid_print'));
+    });
+  });
+
   group('ProjectFileWriter.enableFlutterGenerate', () {
     test('adds generate: true under flutter section', () async {
       final pubspec = File(p.join(tempProject.path, 'pubspec.yaml'));

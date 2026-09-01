@@ -53,6 +53,34 @@ void main() {
     });
 
     test(
+      'default config includes commented analysis_options example',
+      () async {
+        await runnerWithDir().run(['config', 'init']);
+
+        final content = configFile().readAsStringSync();
+        expect(content, contains('# analysis_options:'));
+        expect(
+          content,
+          contains('#   include: package:flutter_lints/flutter.yaml'),
+        );
+        expect(content, contains('#   linter:'));
+      },
+    );
+
+    test(
+      'default config analysis_options is commented and not parsed',
+      () async {
+        await runnerWithDir().run(['config', 'init']);
+
+        // The commented section should NOT be loaded as actual config.
+        final analysisOptions = ConfigLoader.loadAnalysisOptions(
+          workingDirectory: tempDir.path,
+        );
+        expect(analysisOptions, isNull);
+      },
+    );
+
+    test(
       'throws UsageException when file already exists and force=false',
       () async {
         configFile().writeAsStringSync('defaults:\n  theme: material2\n');

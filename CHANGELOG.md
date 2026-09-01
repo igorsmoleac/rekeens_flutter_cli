@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.17.0
+
+- New `analysis_options` top-level section in `rekeens.yaml`: when present, `rekeens create` serializes its content to `analysis_options.yaml` in the generated project, overriding the default `flutter_lints` config from `flutter create` — previously generated projects always used the default lints with no way to customize
+- `ConfigLoader.loadAnalysisOptions()`: reads the top-level `analysis_options` section from `rekeens.yaml` and returns it as a deeply-converted `Map<String, dynamic>` (nested `YamlMap`/`YamlList` are recursively converted to plain Dart types via new `_convertYamlNode` helper so the result can be serialized back to YAML)
+- `OptionsResolver.resolve()` refactored: existing logic moved to `_resolveOptions()`, `resolve()` now wraps it and merges `analysis_options` from config into the options map — works regardless of whether preset, flags, config defaults, or interactive prompt produced the base options
+- `ProjectFileWriter._renderAnalysisOptions()`: writes `analysis_options.yaml` using `YamlEditor` when `options['analysis_options']` is present; skips silently when absent (default from `flutter create` is preserved)
+- `ConfigInitCommand` default `rekeens.yaml` now includes a commented-out `analysis_options` section with example `include`, `analyzer.language`, `analyzer.errors`, and `linter.rules` entries
+- `DOCUMENTATION.md` updated: Schema Specification section now documents the `analysis_options` top-level key with a full example and explanation
+- Tests: `config_loader_test.dart` (+7 tests for `loadAnalysisOptions`: nested map, absent section, no config file, non-map value, list rules, invalid YAML warning, home config fallback), `options_resolver_test.dart` (+4 tests: analysis_options from config, absent section, with preset, no config file), `project_file_writer_test.dart` (+3 tests: writes YAML with nested map, skips when absent, handles list-style linter rules), `config_init_command_test.dart` (+2 tests: commented example present, commented section not parsed)
+
 ## 0.16.0
 
 - `templates/bootstrap/router.dart` (go_router variant) now includes a commented `ShellRoute` example demonstrating nested routes with a shared wrapper widget (e.g. scaffold with nav bar) — the home route remains a top-level `GoRoute` so the template compiles out of the box

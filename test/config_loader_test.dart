@@ -263,6 +263,138 @@ defaults:
       expect(result, isNull);
     });
   });
+
+  group('ConfigLoader.loadAnalysisOptions', () {
+    test('returns analysis_options section as nested map', () {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+analysis_options:
+  include: package:flutter_lints/flutter.yaml
+  analyzer:
+    language:
+      strict-casts: true
+      strict-raw-types: true
+  linter:
+    rules:
+      prefer_const_constructors: true
+      avoid_print: false
+''');
+
+      final result = ConfigLoader.loadAnalysisOptions(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+
+      expect(result, isNotNull);
+      expect(result!['include'], 'package:flutter_lints/flutter.yaml');
+      expect(result['analyzer'], isA<Map>());
+      final analyzer = result['analyzer'] as Map;
+      expect(analyzer['language'], isA<Map>());
+      final language = analyzer['language'] as Map;
+      expect(language['strict-casts'], true);
+      expect(language['strict-raw-types'], true);
+      expect(result['linter'], isA<Map>());
+      final linter = result['linter'] as Map;
+      expect(linter['rules'], isA<Map>());
+      final rules = linter['rules'] as Map;
+      expect(rules['prefer_const_constructors'], true);
+      expect(rules['avoid_print'], false);
+    });
+
+    test('returns null when analysis_options section is absent', () {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+''');
+
+      final result = ConfigLoader.loadAnalysisOptions(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+
+      expect(result, isNull);
+    });
+
+    test('returns null when no config file exists', () {
+      final result = ConfigLoader.loadAnalysisOptions(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+
+      expect(result, isNull);
+    });
+
+    test('returns null when analysis_options is not a map', () {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+analysis_options: not-a-map
+''');
+
+      final result = ConfigLoader.loadAnalysisOptions(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+
+      expect(result, isNull);
+    });
+
+    test('handles list values in linter rules', () {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+analysis_options:
+  include: package:lints/recommended.yaml
+  linter:
+    rules:
+      - prefer_const_constructors
+      - avoid_print
+''');
+
+      final result = ConfigLoader.loadAnalysisOptions(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+
+      expect(result, isNotNull);
+      final linter = result!['linter'] as Map;
+      final rules = linter['rules'] as List;
+      expect(rules, ['prefer_const_constructors', 'avoid_print']);
+    });
+
+    test('returns null and warns when YAML is invalid', () async {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+: invalid: yaml: :
+''');
+
+      final output = await captureOutput(() async {
+        ConfigLoader.loadAnalysisOptions(
+          workingDirectory: tempDir.path,
+          homeDirectory: fakeHome.path,
+        );
+      });
+
+      expect(output, contains('Failed to parse analysis_options'));
+    });
+
+    test('loads from home config when local is absent', () {
+      File(p.join(fakeHome.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+analysis_options:
+  include: package:lints/recommended.yaml
+''');
+
+      final result = ConfigLoader.loadAnalysisOptions(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+
+      expect(result, isNotNull);
+      expect(result!['include'], 'package:lints/recommended.yaml');
+    });
+  });
 }
 
 class _MemoryStdout implements Stdout {
