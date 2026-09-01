@@ -56,7 +56,7 @@ Benefits:
 lib/
 ├── app/                  # Application initialization, root routing & design system
 │   ├── app.dart          # Root widget configuring MaterialApp, theme & l10n
-│   ├── router.dart       # GoRouter configuration / application routes
+│   ├── router.dart       # GoRouter config (with ShellRoute example) / simple AppRouter route constants
 │   └── theme/            # Design system tokens
 │       ├── app_colors.dart
 │       ├── app_theme.dart
@@ -234,20 +234,25 @@ rekeens g <type> <feature_name> [args] [options]
 
 ### Feature Generator
 
-Scaffolds a new feature directory structure with `data/`, `domain/`, and `presentation/` layers and a starter page.
+Scaffolds a new feature directory structure with `data/`, `domain/`, and `presentation/` layers and a starter page. Automatically adds a `GoRoute` (or route constant for non-go_router projects) to `lib/app/router.dart` for the feature's page.
 
 ```bash
 rekeens g feature authentication
+# Creates: lib/features/authentication/...
+# Adds route: /authentication -> AuthenticationPage
 ```
 
 ### Screen Generator
 
-Creates a screen page widget inside `lib/features/<feature>/presentation/pages/`.
+Creates a screen page widget inside `lib/features/<feature>/presentation/pages/`. Automatically adds a nested route to `lib/app/router.dart`.
 
 ```bash
 rekeens g screen authentication login
 # Output: lib/features/authentication/presentation/pages/login_screen.dart
+# Adds route: /authentication/login -> LoginScreen
 ```
+
+Route auto-generation is idempotent — running the same generator twice will not duplicate the route entry. If `router.dart` does not exist, the updater logs a warning and skips.
 
 ### Model Generator & Field Type System
 
