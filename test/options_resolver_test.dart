@@ -73,6 +73,8 @@ void main() {
       expect(options['storage'], 'none');
       expect(options['localization'], isFalse);
       expect(options['theme'], 'material3');
+      expect(options['seed_color'], '0xFF2196F3');
+      expect(options['font_family'], '');
       expect(options['codegen'], isFalse);
     });
 
@@ -133,6 +135,14 @@ void main() {
       await expectUsageException(['--theme=cupertino']);
     });
 
+    test('throws UsageException for invalid seed-color (too short)', () async {
+      await expectUsageException(['--seed-color=123']);
+    });
+
+    test('throws UsageException for invalid seed-color (non-hex)', () async {
+      await expectUsageException(['--seed-color=ZZZZZZ']);
+    });
+
     test('throws UsageException for unsupported architecture', () async {
       await expectUsageException(['--architecture=clean-architecture']);
     });
@@ -170,6 +180,8 @@ void main() {
       expect(options['storage'], 'shared_preferences');
       expect(options['localization'], isFalse);
       expect(options['theme'], 'material3');
+      expect(options['seed_color'], '0xFF2196F3');
+      expect(options['font_family'], '');
       expect(options['codegen'], isFalse);
     });
 
@@ -196,6 +208,8 @@ void main() {
         '--networking=http',
         '--storage=secure_storage',
         '--theme=material2',
+        '--seed-color=#FF5722',
+        '--font-family=Inter',
         '--codegen',
         '--localization',
       ]);
@@ -205,8 +219,30 @@ void main() {
       expect(options['networking'], 'http');
       expect(options['storage'], 'secure_storage');
       expect(options['theme'], 'material2');
+      expect(options['seed_color'], '0xFFFF5722');
+      expect(options['font_family'], 'Inter');
       expect(options['codegen'], isTrue);
       expect(options['localization'], isTrue);
+    });
+
+    test('normalizes 6-digit hex seed-color', () async {
+      final options = await resolve(['--seed-color=2196F3']);
+      expect(options['seed_color'], '0xFF2196F3');
+    });
+
+    test('normalizes # prefixed seed-color', () async {
+      final options = await resolve(['--seed-color=#2196F3']);
+      expect(options['seed_color'], '0xFF2196F3');
+    });
+
+    test('accepts 8-digit hex seed-color with alpha', () async {
+      final options = await resolve(['--seed-color=0xFFFF5722']);
+      expect(options['seed_color'], '0xFFFF5722');
+    });
+
+    test('empty font-family flag defaults to empty string', () async {
+      final options = await resolve(['--font-family=']);
+      expect(options['font_family'], '');
     });
   });
 
@@ -315,7 +351,8 @@ defaults:
   group('OptionsResolver.resolve — interactive prompt', () {
     test('collects options from prompt when nothing else is given', () async {
       // Inputs in order: platforms (multi, comma), architecture, state, router,
-      // networking, storage, codegen (y/n), localization (y/n), theme.
+      // networking, storage, codegen (y/n), localization (y/n), theme,
+      // seed_color, font_family.
       inputs = [
         '1,2', // platforms -> android, ios
         '', // architecture default
@@ -326,6 +363,8 @@ defaults:
         'n', // codegen
         'n', // localization
         '', // theme default
+        '', // seed_color default
+        '', // font_family default
       ];
       final options = await resolve(<String>[]);
       expect(options['platforms'], ['android', 'ios']);
@@ -337,6 +376,80 @@ defaults:
       expect(options['codegen'], isFalse);
       expect(options['localization'], isFalse);
       expect(options['theme'], 'material3');
+      expect(options['seed_color'], '0xFF2196F3');
+      expect(options['font_family'], '');
     });
+  });
+
+  group('OptionsResolver.resolve — analysis_options from config', () {
+    test('includes analysis_options when config has the section', () async {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+  router: go_router
+  theme: material3
+  localization: false
+  codegen: false
+  platforms:
+    - android
+  architecture: feature-first
+  networking: dio
+  storage: shared_preferences
+analysis_options:
+  include: package:flutter_lints/flutter.yaml
+  linter:
+    rules:
+      prefer_const_constructors: true
+''');
+      final options = await resolve(<String>[]);
+      expect(options.containsKey('analysis_options'), isTrue);
+      final ao = options['analysis_options'] as Map<String, dynamic>;
+      expect(ao['include'], 'package:flutter_lints/flutter.yaml');
+      expect(ao['linter'], isA<Map>());
+    });
+
+    test(
+      'does not include analysis_options when config lacks the section',
+      () async {
+        File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+  router: go_router
+  theme: material3
+  localization: false
+  codegen: false
+  platforms:
+    - android
+  architecture: feature-first
+  networking: dio
+  storage: shared_preferences
+''');
+        final options = await resolve(<String>[]);
+        expect(options.containsKey('analysis_options'), isFalse);
+      },
+    );
+
+    test('includes analysis_options even when using --preset', () async {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+analysis_options:
+  include: package:lints/recommended.yaml
+''');
+      final options = await resolve(['--preset=minimal']);
+      expect(options.containsKey('analysis_options'), isTrue);
+      expect(
+        (options['analysis_options'] as Map<String, dynamic>)['include'],
+        'package:lints/recommended.yaml',
+      );
+    });
+
+    test(
+      'does not include analysis_options when no config file exists',
+      () async {
+        final options = await resolve(['--state-management=bloc']);
+        expect(options.containsKey('analysis_options'), isFalse);
+      },
+    );
   });
 }

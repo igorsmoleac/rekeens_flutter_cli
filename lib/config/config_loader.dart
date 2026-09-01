@@ -37,6 +37,43 @@ class ConfigLoader {
     }
   }
 
+  /// Loads the top-level `analysis_options` section from `rekeens.yaml`.
+  ///
+  /// Unlike [load] (which reads the `defaults` section), this returns the
+  /// full nested structure as plain Dart maps/lists so it can be serialized
+  /// back to `analysis_options.yaml` in the generated project.
+  static Map<String, dynamic>? loadAnalysisOptions({
+    String? workingDirectory,
+    String? homeDirectory,
+    Logger? log,
+  }) {
+    final effectiveLog = log ?? logger;
+    final configFile = _findConfigFile(
+      workingDirectory: workingDirectory,
+      homeDirectory: homeDirectory,
+    );
+    if (configFile == null) return null;
+
+    try {
+      final content = File(configFile).readAsStringSync();
+      final yamlMap = loadYaml(content);
+      if (yamlMap is! Map) return null;
+
+      final analysisOptions = yamlMap['analysis_options'];
+      if (analysisOptions is YamlMap) {
+        final converted = _convertYamlNode(analysisOptions);
+        if (converted is Map<String, dynamic>) return converted;
+      }
+      return null;
+    } catch (error) {
+      effectiveLog.warn(
+        'Failed to parse analysis_options in rekeens.yaml at "$configFile": '
+        '$error. Ignoring analysis_options config.',
+      );
+      return null;
+    }
+  }
+
   static String? _findConfigFile({
     String? workingDirectory,
     String? homeDirectory,
@@ -72,5 +109,20 @@ class ConfigLoader {
       }
     }
     return result;
+  }
+
+  /// Recursively converts a [YamlMap] / [YamlList] / scalar into plain Dart
+  /// types so the result can be serialized back to YAML by [YamlEditor].
+  static dynamic _convertYamlNode(dynamic value) {
+    if (value is YamlMap) {
+      return <String, dynamic>{
+        for (final entry in value.entries)
+          entry.key.toString(): _convertYamlNode(entry.value),
+      };
+    }
+    if (value is YamlList) {
+      return value.map(_convertYamlNode).toList();
+    }
+    return value;
   }
 }

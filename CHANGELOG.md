@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.18.0
+
+- `templates/base/lib/app/theme/app_colors.dart` — filled with real semantic color tokens: brand (`primary`/`secondary`/`tertiary`), semantic (`error`/`success`/`warning`/`info`), light & dark surfaces, outlines, dividers, scrim/shadow — `seedColor` is now a `{{seed_color}}` placeholder driven by the new `seed_color` option
+- `templates/base/lib/app/theme/app_typography.dart` — expanded from 4 styles to a complete Material 3 `TextTheme` (all 15 styles: display/headline/title/body/label × large/medium/small) with proper font sizes, weights, letter-spacing, and line heights — `fontFamily` is conditionally rendered via `{{#if has_font}}` from the new `font_family` option
+- `templates/base/lib/app/theme/app_theme.dart` — now imports and uses `AppColors.seedColor` + `AppTypography.textTheme` to build light/dark `ThemeData` (previously hardcoded `Colors.blue` seed and ignored typography); `useMaterial3` is driven by `{{use_material3}}` placeholder
+- `templates/bootstrap/app.dart` — replaced inline `ThemeData(...)` with `theme: AppTheme.light` + `darkTheme: AppTheme.dark` (imports `theme/app_theme.dart`); theme logic is now centralized in `AppTheme` instead of duplicated inline
+- `ProjectScaffolder._applyTemplate` — now receives `options` map and passes `seed_color`, `font_family`, `use_material3` as variables plus `has_font`/`material3` as conditions to `TemplateService.copyTemplate` for the base template
+- New `--seed-color` CLI flag: accepts hex color in `0xFFRRGGBB`, `#RRGGBB`, `RRGGBB`, or `0xAARRGGBB` format; normalized to `0xFFRRGGBB` uppercase by `OptionsResolver._normalizeHexColor`; validated for length and hex characters
+- New `--font-family` CLI flag: accepts a font family name string; empty value is not stored (system default)
+- `OptionsResolver`: `seed_color` and `font_family` added to `_hasAnyCreateFlag`, `_collectOptionsFromFlags`, `_fillDefaults` (defaults `0xFF2196F3` and `''`), and interactive prompt (two new `askString` prompts after theme)
+- `Preset` class: added `seedColor` (default `0xFF2196F3`) and `fontFamily` (default `''`) fields; `toOptions()` now includes `seed_color` and `font_family`
+- Presets updated: `minimal` uses `0xFF2196F3` (blue), `mobile` uses `0xFF6750A4` (purple), `full` uses `0xFF6750A4` + `Roboto` font
+- `ConfigInitCommand` default `rekeens.yaml` now includes `seed_color: 0xFF2196F3` and `font_family: ''`
+- `DOCUMENTATION.md` updated: theme directory tree description, presets table (added Seed Color + Font columns), CLI flags table (added `--seed-color` and `--font-family`), config schema (added `seed_color` and `font_family`), new "Theme Customization" subsection documenting both keys
+- Tests: `presets_test.dart` (+5 tests: seed_color/font_family for each preset + toOptions keys), `options_resolver_test.dart` (+7 tests: preset seed_color/font_family, invalid seed-color validation, hex normalization variants, empty font-family), `config_init_command_test.dart` (+2 assertions: seed_color and font_family in loaded config), `project_file_writer_test.dart` (theme tests rewritten: verify AppTheme.light/dark usage instead of inline ThemeData), new `theme_templates_test.dart` (8 tests: app_colors seed_color substitution, app_typography full TextTheme + font_family conditional, app_theme useMaterial3 + AppColors/AppTypography references)
+
+## 0.17.0
+
+- New `analysis_options` top-level section in `rekeens.yaml`: when present, `rekeens create` serializes its content to `analysis_options.yaml` in the generated project, overriding the default `flutter_lints` config from `flutter create` — previously generated projects always used the default lints with no way to customize
+- `ConfigLoader.loadAnalysisOptions()`: reads the top-level `analysis_options` section from `rekeens.yaml` and returns it as a deeply-converted `Map<String, dynamic>` (nested `YamlMap`/`YamlList` are recursively converted to plain Dart types via new `_convertYamlNode` helper so the result can be serialized back to YAML)
+- `OptionsResolver.resolve()` refactored: existing logic moved to `_resolveOptions()`, `resolve()` now wraps it and merges `analysis_options` from config into the options map — works regardless of whether preset, flags, config defaults, or interactive prompt produced the base options
+- `ProjectFileWriter._renderAnalysisOptions()`: writes `analysis_options.yaml` using `YamlEditor` when `options['analysis_options']` is present; skips silently when absent (default from `flutter create` is preserved)
+- `ConfigInitCommand` default `rekeens.yaml` now includes a commented-out `analysis_options` section with example `include`, `analyzer.language`, `analyzer.errors`, and `linter.rules` entries
+- `DOCUMENTATION.md` updated: Schema Specification section now documents the `analysis_options` top-level key with a full example and explanation
+- Tests: `config_loader_test.dart` (+7 tests for `loadAnalysisOptions`: nested map, absent section, no config file, non-map value, list rules, invalid YAML warning, home config fallback), `options_resolver_test.dart` (+4 tests: analysis_options from config, absent section, with preset, no config file), `project_file_writer_test.dart` (+3 tests: writes YAML with nested map, skips when absent, handles list-style linter rules), `config_init_command_test.dart` (+2 tests: commented example present, commented section not parsed)
+
 ## 0.16.0
 
 - `templates/bootstrap/router.dart` (go_router variant) now includes a commented `ShellRoute` example demonstrating nested routes with a shared wrapper widget (e.g. scaffold with nav bar) — the home route remains a top-level `GoRoute` so the template compiles out of the box

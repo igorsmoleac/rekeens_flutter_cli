@@ -47,10 +47,40 @@ void main() {
       expect(loaded['networking'], 'dio');
       expect(loaded['storage'], 'shared_preferences');
       expect(loaded['theme'], 'material3');
+      expect(loaded['seed_color'], '0xFF2196F3');
+      expect(loaded['font_family'], '');
       expect(loaded['localization'], isFalse);
       expect(loaded['codegen'], isFalse);
       expect(loaded['platforms'], ['android', 'ios', 'windows', 'linux']);
     });
+
+    test(
+      'default config includes commented analysis_options example',
+      () async {
+        await runnerWithDir().run(['config', 'init']);
+
+        final content = configFile().readAsStringSync();
+        expect(content, contains('# analysis_options:'));
+        expect(
+          content,
+          contains('#   include: package:flutter_lints/flutter.yaml'),
+        );
+        expect(content, contains('#   linter:'));
+      },
+    );
+
+    test(
+      'default config analysis_options is commented and not parsed',
+      () async {
+        await runnerWithDir().run(['config', 'init']);
+
+        // The commented section should NOT be loaded as actual config.
+        final analysisOptions = ConfigLoader.loadAnalysisOptions(
+          workingDirectory: tempDir.path,
+        );
+        expect(analysisOptions, isNull);
+      },
+    );
 
     test(
       'throws UsageException when file already exists and force=false',

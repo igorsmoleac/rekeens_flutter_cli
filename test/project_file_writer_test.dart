@@ -198,7 +198,7 @@ void main() {
   });
 
   group('ProjectFileWriter theme', () {
-    test('uses useMaterial3: true and ColorScheme for material3', () async {
+    test('app.dart uses AppTheme.light and AppTheme.dark', () async {
       await writer.configureProjectFiles(tempProject.path, {
         'state_management': 'none',
         'router': 'none',
@@ -208,11 +208,14 @@ void main() {
 
       final appFile = File(p.join(tempProject.path, 'lib', 'app', 'app.dart'));
       final content = appFile.readAsStringSync();
-      expect(content.contains('useMaterial3: true'), isTrue);
-      expect(content.contains('ColorScheme.fromSeed'), isTrue);
+      expect(content.contains("import 'theme/app_theme.dart'"), isTrue);
+      expect(content.contains('theme: AppTheme.light'), isTrue);
+      expect(content.contains('darkTheme: AppTheme.dark'), isTrue);
+      // No inline ThemeData — theme is delegated to AppTheme
+      expect(content.contains('ThemeData('), isFalse);
     });
 
-    test('uses useMaterial3: false and primarySwatch for material2', () async {
+    test('app.dart uses AppTheme for material2 too', () async {
       await writer.configureProjectFiles(tempProject.path, {
         'state_management': 'none',
         'router': 'none',
@@ -222,9 +225,10 @@ void main() {
 
       final appFile = File(p.join(tempProject.path, 'lib', 'app', 'app.dart'));
       final content = appFile.readAsStringSync();
-      expect(content.contains('useMaterial3: false'), isTrue);
-      expect(content.contains('primarySwatch: Colors.blue'), isTrue);
-      expect(content.contains('ColorScheme.fromSeed'), isFalse);
+      expect(content.contains("import 'theme/app_theme.dart'"), isTrue);
+      expect(content.contains('theme: AppTheme.light'), isTrue);
+      // No inline ThemeData or primarySwatch in app.dart
+      expect(content.contains('primarySwatch'), isFalse);
     });
   });
 
@@ -705,6 +709,80 @@ void main() {
             .existsSync(),
         isFalse,
       );
+    });
+  });
+
+  group('ProjectFileWriter analysis_options', () {
+    test(
+      'writes analysis_options.yaml when analysis_options is provided',
+      () async {
+        await writer.configureProjectFiles(tempProject.path, {
+          'state_management': 'none',
+          'router': 'none',
+          'theme': 'material3',
+          'localization': false,
+          'analysis_options': {
+            'include': 'package:flutter_lints/flutter.yaml',
+            'analyzer': {
+              'language': {'strict-casts': true},
+            },
+            'linter': {
+              'rules': {
+                'prefer_const_constructors': true,
+                'avoid_print': false,
+              },
+            },
+          },
+        });
+
+        final file = File(p.join(tempProject.path, 'analysis_options.yaml'));
+        expect(file.existsSync(), isTrue);
+        final content = file.readAsStringSync();
+        expect(
+          content,
+          contains('include: package:flutter_lints/flutter.yaml'),
+        );
+        expect(content, contains('strict-casts: true'));
+        expect(content, contains('prefer_const_constructors: true'));
+        expect(content, contains('avoid_print: false'));
+      },
+    );
+
+    test('does not write analysis_options.yaml when not provided', () async {
+      await writer.configureProjectFiles(tempProject.path, {
+        'state_management': 'none',
+        'router': 'none',
+        'theme': 'material3',
+        'localization': false,
+      });
+
+      final file = File(p.join(tempProject.path, 'analysis_options.yaml'));
+      // flutter create generates a default one, but ProjectFileWriter should
+      // not create one if analysis_options is absent from the options map.
+      // In the test temp project there is no flutter create, so it should
+      // not exist.
+      expect(file.existsSync(), isFalse);
+    });
+
+    test('handles list-style linter rules', () async {
+      await writer.configureProjectFiles(tempProject.path, {
+        'state_management': 'none',
+        'router': 'none',
+        'theme': 'material3',
+        'localization': false,
+        'analysis_options': {
+          'include': 'package:lints/recommended.yaml',
+          'linter': {
+            'rules': ['prefer_const_constructors', 'avoid_print'],
+          },
+        },
+      });
+
+      final file = File(p.join(tempProject.path, 'analysis_options.yaml'));
+      expect(file.existsSync(), isTrue);
+      final content = file.readAsStringSync();
+      expect(content, contains('- prefer_const_constructors'));
+      expect(content, contains('- avoid_print'));
     });
   });
 

@@ -85,6 +85,25 @@ defaults:
   storage: shared_preferences
   localization: false
   theme: material3
+  seed_color: "0xFF2196F3"
+  font_family: ''
   codegen: false
+
+# Custom analysis_options.yaml for generated projects.
+# Uncomment and adapt to enforce your team's linting standards.
+# analysis_options:
+#   include: package:flutter_lints/flutter.yaml
+#   analyzer:
+#     language:
+#       strict-casts: true
+#       strict-raw-types: true
+#     errors:
+#       todo: ignore
+#   linter:
+#     rules:
+#       prefer_const_constructors: true
+#       prefer_const_declarations: true
+#       avoid_print: true
+#       require_trailing_commas: true
 ''';
 }

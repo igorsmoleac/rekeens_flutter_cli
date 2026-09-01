@@ -129,6 +129,23 @@ class ProjectFileWriter {
         conditions: conditions,
       );
     }
+
+    final analysisOptions =
+        options['analysis_options'] as Map<String, dynamic>?;
+    if (analysisOptions != null) {
+      _renderAnalysisOptions(projectName, analysisOptions);
+    }
+  }
+
+  void _renderAnalysisOptions(
+    String projectName,
+    Map<String, dynamic> analysisOptions,
+  ) {
+    final editor = YamlEditor('');
+    editor.update([], analysisOptions);
+    final content = editor.toString();
+    File(p.join(projectName, 'analysis_options.yaml'))
+        .writeAsStringSync(content);
   }
 
   Future<void> _renderNetworkFiles(
