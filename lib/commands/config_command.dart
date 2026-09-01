@@ -88,6 +88,7 @@ defaults:
   seed_color: "0xFF2196F3"
   font_family: ''
   codegen: false
+  pin_versions: false
 
 # Custom analysis_options.yaml for generated projects.
 # Uncomment and adapt to enforce your team's linting standards.

@@ -51,6 +51,7 @@ void main() {
       expect(loaded['font_family'], '');
       expect(loaded['localization'], isFalse);
       expect(loaded['codegen'], isFalse);
+      expect(loaded['pin_versions'], isFalse);
       expect(loaded['platforms'], ['android', 'ios', 'windows', 'linux']);
     });
 

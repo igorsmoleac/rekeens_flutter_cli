@@ -76,6 +76,7 @@ void main() {
       expect(options['seed_color'], '0xFF2196F3');
       expect(options['font_family'], '');
       expect(options['codegen'], isFalse);
+      expect(options['pin_versions'], isFalse);
     });
 
     test('flag overrides preset value', () async {
@@ -183,6 +184,7 @@ void main() {
       expect(options['seed_color'], '0xFF2196F3');
       expect(options['font_family'], '');
       expect(options['codegen'], isFalse);
+      expect(options['pin_versions'], isFalse);
     });
 
     test('parses comma-separated platforms', () async {
@@ -243,6 +245,16 @@ void main() {
     test('empty font-family flag defaults to empty string', () async {
       final options = await resolve(['--font-family=']);
       expect(options['font_family'], '');
+    });
+
+    test('pin-versions flag sets pin_versions to true', () async {
+      final options = await resolve(['--pin-versions']);
+      expect(options['pin_versions'], isTrue);
+    });
+
+    test('no-pin-versions flag sets pin_versions to false', () async {
+      final options = await resolve(['--no-pin-versions']);
+      expect(options['pin_versions'], isFalse);
     });
   });
 
@@ -351,8 +363,8 @@ defaults:
   group('OptionsResolver.resolve — interactive prompt', () {
     test('collects options from prompt when nothing else is given', () async {
       // Inputs in order: platforms (multi, comma), architecture, state, router,
-      // networking, storage, codegen (y/n), localization (y/n), theme,
-      // seed_color, font_family.
+      // networking, storage, codegen (y/n), pin_versions (y/n),
+      // localization (y/n), theme, seed_color, font_family.
       inputs = [
         '1,2', // platforms -> android, ios
         '', // architecture default
@@ -361,6 +373,7 @@ defaults:
         '', // networking default
         '', // storage default
         'n', // codegen
+        'n', // pin_versions
         'n', // localization
         '', // theme default
         '', // seed_color default
@@ -374,6 +387,7 @@ defaults:
       expect(options['networking'], 'dio');
       expect(options['storage'], 'shared_preferences');
       expect(options['codegen'], isFalse);
+      expect(options['pin_versions'], isFalse);
       expect(options['localization'], isFalse);
       expect(options['theme'], 'material3');
       expect(options['seed_color'], '0xFF2196F3');

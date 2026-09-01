@@ -12,6 +12,7 @@ class Preset {
     this.seedColor = '0xFF2196F3',
     this.fontFamily = '',
     this.codegen = false,
+    this.pinVersions = false,
   });
   final String name;
   final List<String> platforms;
@@ -25,6 +26,7 @@ class Preset {
   final String seedColor;
   final String fontFamily;
   final bool codegen;
+  final bool pinVersions;
 
   Map<String, dynamic> toOptions() {
     return {
@@ -39,6 +41,7 @@ class Preset {
       'seed_color': seedColor,
       'font_family': fontFamily,
       'codegen': codegen,
+      'pin_versions': pinVersions,
     };
   }
 }

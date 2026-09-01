@@ -219,6 +219,7 @@ rekeens create my_app \
 | `--seed-color` | hex string (e.g. `0xFF2196F3`, `#2196F3`) | `0xFF2196F3` | Seed color for `ColorScheme.fromSeed` — drives `AppColors.seedColor` |
 | `--font-family` | string (e.g. `Roboto`) | `''` (system default) | Font family applied to all `AppTypography` `TextTheme` styles |
 | `--codegen` | `--codegen`, `--no-codegen` | `false` | Adds `build_runner`, `freezed`, `json_serializable` |
+| `--pin-versions` | `--pin-versions`, `--no-pin-versions` | `false` | Pins dependency versions with `flutter pub add --exact` for reproducible installs |
 | `-n, --dry-run` | Flag | `false` | Previews actions without creating files |
 | `-v, --verbose` | Flag | `false` | Enables verbose diagnostic output |
 
@@ -356,6 +357,7 @@ defaults:
   seed_color: 0xFF6750A4
   font_family: Roboto
   codegen: false
+  pin_versions: false
 
 # Optional: custom analysis_options.yaml for generated projects.
 # When present, rekeens create writes this section verbatim to

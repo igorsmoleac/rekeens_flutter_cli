@@ -104,6 +104,7 @@ class OptionsResolver {
         args.wasParsed('storage') ||
         args.wasParsed('seed-color') ||
         args.wasParsed('font-family') ||
+        args.wasParsed('pin-versions') ||
         args.wasParsed('localization') ||
         args.wasParsed('theme') ||
         args.wasParsed('codegen');
@@ -196,6 +197,9 @@ class OptionsResolver {
     }
     if (args.wasParsed('codegen')) {
       options['codegen'] = args['codegen'];
+    }
+    if (args.wasParsed('pin-versions')) {
+      options['pin_versions'] = args['pin-versions'] as bool;
     }
 
     return options;
@@ -297,6 +301,7 @@ class OptionsResolver {
       'seed_color': partial['seed_color'] ?? '0xFF2196F3',
       'font_family': partial['font_family'] ?? '',
       'codegen': partial['codegen'] ?? false,
+      'pin_versions': partial['pin_versions'] ?? false,
     };
   }
 
@@ -339,6 +344,11 @@ class OptionsResolver {
       defaultValue: false,
     );
 
+    final pinVersions = _prompter.askYesNo(
+      'Pin dependency versions (--exact for reproducible installs)?',
+      defaultValue: false,
+    );
+
     final localization = _prompter.askYesNo('Localization', defaultValue: true);
     final theme = _prompter.askChoice('Theme', [
       'material3',
@@ -366,6 +376,7 @@ class OptionsResolver {
       'seed_color': seedColor,
       'font_family': fontFamily,
       'codegen': codegen,
+      'pin_versions': pinVersions,
     };
   }
 }
