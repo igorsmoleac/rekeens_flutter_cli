@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.20.1
+
+- Fix info-level warning in generated app_typography.dart by using non-nullable fontFamily with empty string fallback
+
 ## 0.20.0
 
 - **Generated test stubs**: all component generators (`feature`, `screen`, `model`, `repository`, `service`, `provider`/`cubit`) now create a test file alongside the main source by default
