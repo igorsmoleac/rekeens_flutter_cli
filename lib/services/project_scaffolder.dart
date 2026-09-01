@@ -75,7 +75,12 @@ class ProjectScaffolder {
     _log.info('Configuring project files...');
     await _projectFileWriter.configureProjectFiles(projectPath, options);
     _log.info('Adding dependencies...');
-    await _addDependencies(projectPath, DependencyResolver.resolve(options));
+    final pinVersions = options['pin_versions'] as bool? ?? false;
+    await _addDependencies(
+      projectPath,
+      DependencyResolver.resolve(options),
+      pinVersions: pinVersions,
+    );
     await _addDevDependencies(projectPath, options);
     if (options['localization'] == true) {
       await _setupLocalization(projectPath);
@@ -186,9 +191,16 @@ class ProjectScaffolder {
     String projectName,
     List<String> packages, {
     bool dev = false,
+    bool pinVersions = false,
   }) async {
     if (packages.isEmpty) return;
-    final args = ['pub', 'add', if (dev) '--dev', ...packages];
+    final args = [
+      'pub',
+      'add',
+      if (pinVersions) '--exact',
+      if (dev) '--dev',
+      ...packages,
+    ];
     await _runProcess(
       'flutter',
       args,
@@ -207,7 +219,13 @@ class ProjectScaffolder {
     final devDependencies = DependencyResolver.resolveDevDependencies(
       includeCodegen: true,
     );
-    await _addDependencies(projectName, devDependencies, dev: true);
+    final pinVersions = options['pin_versions'] as bool? ?? false;
+    await _addDependencies(
+      projectName,
+      devDependencies,
+      dev: true,
+      pinVersions: pinVersions,
+    );
   }
 
   Future<void> _setupLocalization(String projectName) async {

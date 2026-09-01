@@ -144,6 +144,54 @@ void main() {
       );
     });
 
+    test('uses --exact when pin_versions is true', () async {
+      createBaseTemplate();
+      final scaffolder = makeScaffolder(makeRunner());
+
+      await scaffolder.scaffold('my_app', {
+        'platforms': ['android', 'ios'],
+        'architecture': 'feature-first',
+        'state_management': 'riverpod',
+        'router': 'go_router',
+        'networking': 'dio',
+        'storage': 'shared_preferences',
+        'localization': false,
+        'theme': 'material3',
+        'codegen': true,
+        'pin_versions': true,
+      });
+
+      // Dependencies call should include --exact.
+      expect(calls[1], startsWith('flutter pub add '));
+      expect(calls[1], contains('--exact'));
+      expect(calls[1], contains('flutter_riverpod'));
+      // Dev dependencies should also include --exact.
+      expect(calls[2], startsWith('flutter pub add '));
+      expect(calls[2], contains('--exact'));
+      expect(calls[2], contains('--dev'));
+    });
+
+    test('does not use --exact when pin_versions is false', () async {
+      createBaseTemplate();
+      final scaffolder = makeScaffolder(makeRunner());
+
+      await scaffolder.scaffold('my_app', {
+        'platforms': ['android', 'ios'],
+        'architecture': 'feature-first',
+        'state_management': 'riverpod',
+        'router': 'go_router',
+        'networking': 'dio',
+        'storage': 'shared_preferences',
+        'localization': false,
+        'theme': 'material3',
+        'codegen': true,
+        'pin_versions': false,
+      });
+
+      expect(calls[1], isNot(contains('--exact')));
+      expect(calls[2], isNot(contains('--exact')));
+    });
+
     test('skips codegen and localization when disabled', () async {
       createBaseTemplate();
       final scaffolder = makeScaffolder(makeRunner());

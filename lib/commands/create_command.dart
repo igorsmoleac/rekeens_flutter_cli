@@ -63,6 +63,11 @@ class CreateCommand extends Command<void> {
       'font-family',
       help: 'Font family name (e.g. Roboto). Empty = system default.',
     );
+    argParser.addFlag(
+      'pin-versions',
+      help: 'Pin dependency versions with --exact (reproducible installs)',
+      defaultsTo: false,
+    );
   }
 
   final OptionsResolver _optionsResolver;

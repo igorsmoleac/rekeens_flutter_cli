@@ -177,6 +177,7 @@ void main() {
           'seed_color',
           'font_family',
           'codegen',
+          'pin_versions',
         ]),
       );
     });

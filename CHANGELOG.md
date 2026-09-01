@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.19.0
+
+- New `--pin-versions` CLI flag (and `pin_versions` key in `rekeens.yaml`): when enabled, `flutter pub add` is invoked with `--exact` so dependencies are pinned to the latest resolved version instead of using caret ranges — ensures reproducible installs across machines and over time
+- `ProjectScaffolder._addDependencies` — new `pinVersions` parameter; when true, `--exact` is inserted into `flutter pub add` args before `--dev` and package names; applies to both regular and dev dependencies
+- `ProjectScaffolder.scaffold` — reads `options['pin_versions']` and passes it to `_addDependencies` for both the main and dev dependency calls
+- `OptionsResolver` — `pin_versions` added to `_hasAnyCreateFlag`, `_collectOptionsFromFlags`, `_fillDefaults` (default `false`), and interactive prompt (new `askYesNo` after codegen)
+- `CreateCommand` — new `--pin-versions` / `--no-pin-versions` flag
+- `ConfigInitCommand` — default `rekeens.yaml` now includes `pin_versions: false`
+- `DOCUMENTATION.md` — CLI flags table updated with `--pin-versions`, config schema updated with `pin_versions`
+- Tests: `options_resolver_test.dart` (+3 tests: `--pin-versions` sets true, `--no-pin-versions` sets false, defaults false in preset/fillDefaults), `project_scaffolder_test.dart` (+2 tests: `--exact` present when `pin_versions=true`, absent when `false`), `config_init_command_test.dart` (+1 assertion: `pin_versions` in loaded config)
+
 ## 0.18.0
 
 - `templates/base/lib/app/theme/app_colors.dart` — filled with real semantic color tokens: brand (`primary`/`secondary`/`tertiary`), semantic (`error`/`success`/`warning`/`info`), light & dark surfaces, outlines, dividers, scrim/shadow — `seedColor` is now a `{{seed_color}}` placeholder driven by the new `seed_color` option
