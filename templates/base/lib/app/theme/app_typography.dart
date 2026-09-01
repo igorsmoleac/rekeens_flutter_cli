@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 class AppTypography {
   const AppTypography._();
 
-  {{#if has_font}}static const String? fontFamily = '{{font_family}}';{{/if}}{{#unless has_font}}static const String? fontFamily = null;{{/unless}}
+  {{#if has_font}}static const String fontFamily = '{{font_family}}';{{/if}}{{#unless has_font}}static const String? fontFamily = null;{{/unless}}
 
   static TextTheme get textTheme => TextTheme(
     // Display

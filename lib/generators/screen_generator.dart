@@ -19,6 +19,7 @@ class ScreenGenerator extends BaseGenerator {
     String screenName, {
     bool force = false,
     bool dryRun = false,
+    bool withTests = true,
   }) async {
     if (featureName.isEmpty || screenName.isEmpty) {
       throw Exception('Feature name and screen name are required.');
@@ -32,10 +33,21 @@ class ScreenGenerator extends BaseGenerator {
     final targetPath = p.join(pagesDir, '${screenName}_screen.dart');
     checkFileExists(targetPath, 'Screen "$screenName"', force: force);
 
+    final testDir = p.join(
+      projectDir,
+      'test',
+      'features',
+      featureName,
+      'presentation',
+      'pages',
+    );
+    final testPath = p.join(testDir, '${screenName}_screen_test.dart');
+
     final className = toPascalCase(screenName);
 
     if (dryRun) {
       logDryRun('create screen "$screenName"', targetPath);
+      if (withTests) logDryRun('create screen test "$screenName"', testPath);
       await _routerUpdater.addRoute(
         featureName: featureName,
         screenName: screenName,
@@ -53,6 +65,19 @@ class ScreenGenerator extends BaseGenerator {
       targetDir: pagesDir,
       variables: {'screen_name': screenName, 'class_name': className},
     );
+
+    if (withTests) {
+      await generateTest(
+        testTemplateSubPath: 'screen',
+        testDir: testDir,
+        variables: {
+          'project_name': getProjectName(),
+          'feature_name': featureName,
+          'screen_name': screenName,
+          'class_name': className,
+        },
+      );
+    }
 
     await _routerUpdater.addRoute(
       featureName: featureName,

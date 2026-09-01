@@ -321,6 +321,23 @@ rekeens g provider authentication auth
 
 - `-f, --force`: Overwrite existing files if they already exist.
 - `-n, --dry-run`: Preview planned file generations in the console without writing to disk.
+- `--tests` (default) / `--no-tests`: Generate unit/widget test stubs alongside the component. Test files are placed under `test/features/<feature>/...` mirroring the `lib/` structure. Use `--no-tests` to skip test generation.
+
+### Generated Test Stubs
+
+By default, every generator also creates a test file with basic checks:
+
+| Generator | Test file | Test type | Example assertions |
+|:---|:---|:---|:---|
+| `feature` | `test/features/<f>/presentation/pages/<f>_page_test.dart` | widget | renders without throwing |
+| `screen` | `test/features/<f>/presentation/pages/<s>_screen_test.dart` | widget | AppBar title, body text |
+| `model` | `test/features/<f>/data/models/<m>_model_test.dart` | unit | constructor equality, `fromJson`, `toJson`, round-trip |
+| `repository` | `test/features/<f>/data/repositories/<r>_repository_test.dart` | unit | `getItems` returns empty list |
+| `service` | `test/features/<f>/data/services/<s>_service_test.dart` | unit | `performAction` completes |
+| `provider` (riverpod) | `test/features/<f>/presentation/providers/<p>_provider_test.dart` | unit | `ProviderContainer` resolves provider |
+| `cubit` (bloc) | `test/features/<f>/presentation/providers/<p>_cubit_test.dart` | unit | `blocTest` initial state |
+
+Test stubs use `package:{{project_name}}/...` imports resolved from `pubspec.yaml`'s `name:` field. Templates live under `templates/tests/` as a separate category from `templates/features/`.
 
 ---
 
@@ -426,6 +443,7 @@ Rekeens supports custom template overrides. You can replace the default boilerpl
 | `bootstrap` | `rekeens create` | Entry-point files rendered with selected options (`main.dart`, `app.dart`, `router.dart`, `app_cubit.dart`, `l10n.yaml`, `app_en.arb`) |
 | `core` | `rekeens create` | Cross-cutting infrastructure rendered with selected options: `network_config.dart`, `api_exception.dart`, `dio_client.dart` / `http_client.dart` (when `--networking` is not `none`); `failure.dart`, `result.dart` (always); `exception_to_failure_mapper.dart` (when `--networking` is not `none`); `key_value_storage.dart` + `shared_preferences_storage.dart` / `secure_storage.dart` (when `--storage` is not `none`) |
 | `features` | `rekeens generate *` | Feature-scoped generators (feature, screen, model, repository, service, provider, cubit) |
+| `tests` | `rekeens generate *` | Test stub templates rendered alongside feature components (`feature`, `screen`, `model`, `repository`, `service`, `provider`, `cubit`) |
 
 ### Template Resolution Hierarchy
 

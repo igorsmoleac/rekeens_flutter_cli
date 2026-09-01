@@ -14,6 +14,7 @@ class RepositoryGenerator extends BaseGenerator {
     String repositoryName, {
     bool force = false,
     bool dryRun = false,
+    bool withTests = true,
   }) async {
     if (featureName.isEmpty || repositoryName.isEmpty) {
       throw Exception('Feature name and repository name are required.');
@@ -30,8 +31,21 @@ class RepositoryGenerator extends BaseGenerator {
     );
     checkFileExists(targetPath, 'Repository "$repositoryName"', force: force);
 
+    final testDir = p.join(
+      projectDir,
+      'test',
+      'features',
+      featureName,
+      'data',
+      'repositories',
+    );
+    final testPath = p.join(testDir, '${repositoryName}_repository_test.dart');
+
     if (dryRun) {
       logDryRun('create repository "$repositoryName"', targetPath);
+      if (withTests) {
+        logDryRun('create repository test "$repositoryName"', testPath);
+      }
       return;
     }
 
@@ -43,6 +57,19 @@ class RepositoryGenerator extends BaseGenerator {
       targetDir: repositoriesDir,
       variables: {'repository_name': repositoryName, 'class_name': className},
     );
+
+    if (withTests) {
+      await generateTest(
+        testTemplateSubPath: 'repository',
+        testDir: testDir,
+        variables: {
+          'project_name': getProjectName(),
+          'feature_name': featureName,
+          'repository_name': repositoryName,
+          'class_name': className,
+        },
+      );
+    }
 
     logger.success(
       'Repository "$repositoryName" created in feature "$featureName".',

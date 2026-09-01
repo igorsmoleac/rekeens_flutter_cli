@@ -97,7 +97,7 @@ void main() {
         fontFamily: 'Roboto',
         useMaterial3: 'true',
       );
-      expect(content, contains("static const String? fontFamily = 'Roboto';"));
+      expect(content, contains("static const String fontFamily = 'Roboto';"));
       // All TextTheme styles reference fontFamily
       expect(content, contains('fontFamily: fontFamily'));
       // Full TextTheme — all 15 styles
