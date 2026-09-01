@@ -1,15 +1,60 @@
 # Changelog
 
+## 0.13.0
+
+- `ProjectFileWriter.configureProjectFiles` now renders `core/network` templates into the generated project based on the `--networking` option, so users get a ready-to-use HTTP layer instead of just a dependency
+- When `--networking=dio` or `--networking=http`, the CLI writes `network_config.dart`, `api_exception.dart`, and the matching client (`dio_client.dart` / `http_client.dart`) into `lib/core/network/`; `--networking=none` (or omitting the option) leaves the directory untouched
+- Rewrote `templates/core/dio_client.dart` with an auth-token interceptor (`Authorization: Bearer`), request logging via `LogInterceptor`, and error handling that converts `DioException` into `ApiException`
+- Rewrote `templates/core/http_client.dart` with the same auth-token + logging + error-handling concerns, exposing `get`/`post`/`put`/`delete` and throwing `ApiException` on non-2xx responses
+- New `templates/core/api_exception.dart` provides a typed exception carrying `message`, `statusCode`, and `responseBody`
+- `templates/core/network_config.dart` gains an optional `TokenProvider` callback so callers can supply the current bearer token without subclassing the client
+- Renamed the internal `_renderBootstrapFile` helper to `_renderTemplateFile` (now generic enough to render files from any template category, not just `bootstrap`)
+- New tests cover dio/http/none/omitted networking scenarios in `project_file_writer_test.dart`
+
+## 0.12.0
+
+- Add validation for enum-like options (state-management, router, networking, theme, architecture, platforms) with clear error messages
+- Log warning when `rekeens.yaml` parsing fails instead of silently ignoring
+- Expand e2e smoke test to cover all presets (`minimal`, `mobile`, `full`) using matrix strategy
+- Add unit tests for invalid option values
+- Unify model generation with explicit fields through template system with `{{#each}}` support
+- Add Windows CI matrix to run unit tests on Windows, covering Windows-specific process handling
+
+## 0.11.10
+
+- `Dart CI` workflow (`.github/workflows/dart.yml`) now runs `dart analyze` + `dart test` on both `ubuntu-latest` and `windows-latest` via an OS matrix, instead of only Ubuntu
+- Guarantees that Windows-specific code branches are actually executed in CI: `defaultScaffoldProcessRunner`'s `cmd /c` process spawn and `taskkill /F /T /PID` process-tree kill, `ConfigLoader`'s `USERPROFILE` fallback, `TemplateResolver`'s `USERPROFILE` home detection, and `DoctorCommand`'s Windows-only tool checks
+- The `defaultScaffoldProcessRunner` timeout test branches on `Platform.isWindows` (`ping -t localhost` vs `sleep 30`) — previously only the `sleep` path ran in CI, leaving the `taskkill` path untested
+- `fail-fast: false` ensures both OS jobs complete, surfacing failures on either platform in a single run
+- Cache key already used `${{ runner.os }}`, so pub caches remain per-OS without key collisions
+
+## 0.11.9
+
+- Unified model generation on the template system: `ModelGenerator` no longer uses `StringBuffer` to build model source for `--fields` — it now renders a `model_with_fields` template via `copyTemplate`, matching the approach used for all other generators and bootstrap files
+- Extended `TemplateService` with `{{#each list}}...{{/each}}` loop support: `renderContent`, `copyTemplate`, and `renderFile` accept an optional `lists` parameter (`Map<String, List<Map<String, String>>>`); each block's inner content is repeated per item with item-specific variable substitution
+- New template `templates/features/model_with_fields/{{model_name}}_model.dart` contains the class skeleton with four `{{#each fields}}` sections (field declarations, constructor params, fromJson lines, toJson lines)
+- Per-field expressions that involve type-specific logic (`fromJson` casts, `DateTime` parsing, nullable handling) are pre-computed in Dart (`_buildFieldVariables`) and passed as string variables to the template — the template handles structure and iteration, Dart handles type dispatch
+- Removed `_generateModelSource`, `_jsonKey`, and unused `generateSourceForTest` from `ModelGenerator`; removed unused `dart:io` import
+- `BaseGenerator.copyTemplate` now accepts and forwards an optional `lists` parameter
+- 6 new `template_service_test.dart` tests covering `{{#each}}` iteration, empty/missing lists, multiple blocks, combination with top-level variables, and `copyTemplate` integration
+
+## 0.11.8
+
+- E2E smoke workflow (`.github/workflows/e2e_smoke.yml`) now scaffolds and validates all three presets (`minimal`, `mobile`, `full`) via a `strategy.matrix` instead of only `--preset=full` 
+- Each preset exercises a different combination of conditional template blocks (`{{#if}}`/`{{#unless}}` on `state_management`, `router`, `networking`, `localization`, `codegen`); the `minimal` preset is the only one that hits the `none` branches for state/router/networking, so a regression there previously went undetected
+- `fail-fast: false` ensures all preset jobs run to completion, surfacing every failing preset in a single push rather than aborting on the first failure
+- Job name reflects the preset: `create (<preset>) + analyze + test` 
+
 ## 0.11.7
 
-- `ConfigLoader.load` now logs a `warning` when `rekeens.yaml` fails to parse instead of silently swallowing the error via `catch (_) { return null; }`
+- `ConfigLoader.load` now logs a `warning` when `rekeens.yaml` fails to parse instead of silently swallowing the error via `catch (_) { return null; }` 
 - The warning includes the resolved config file path, the parse error message, and notes that the CLI is falling back to defaults
 - `ConfigLoader.load` accepts an optional `Logger? log` parameter (defaults to the global `logger`) for testability, mirroring the `ListCommand({Logger? log})` injection pattern
 - New tests verify the warning is emitted for malformed YAML (unclosed flow sequences) and that no warning is logged when the config file is absent or valid but lacks a `defaults` section
 
 ## 0.11.6
 
-- Validate enum-like options (`--state-management`, `--router`, `--networking`, `--theme`, `--architecture`) against their allowed values in `OptionsResolver._applyFlags` and when loading defaults from `rekeens.yaml`
+- Validate enum-like options (`--state-management`, `--router`, `--networking`, `--theme`, `--architecture`) against their allowed values in `OptionsResolver._applyFlags` and when loading defaults from `rekeens.yaml` 
 - A typo such as `--state-management=Riverpod` now throws a `UsageException` listing the available values instead of silently producing a broken project (no dependency added, no template activated)
 - `architecture` currently accepts only `feature-first`; unsupported values are rejected with a clear message
 - New `_validateEnumValue`/`_validateConfigOptions` helpers mirror the existing preset validation
@@ -38,7 +83,7 @@
 - Add timeouts for all external process invocations (`flutter create`, `flutter pub add`, `flutter pub get`, `flutter gen-l10n`, `dart format`, `flutter analyze`) to prevent the CLI from hanging indefinitely without feedback
 - New `ProcessTimeouts` class with conservative per-command timeout constants: `create` (5 min), `pub` (3 min), `genL10n` (2 min), `format` (2 min), `analyze` (5 min)
 - `ScaffoldProcessRunner` typedef extended with optional `timeout` parameter
-- `defaultScaffoldProcessRunner` rewritten to use `listen`/`Completer` instead of `addStream` (avoids "StreamSink is already bound" errors when called sequentially), kills the process tree on timeout (`taskkill /F /T` on Windows, `SIGKILL` on Unix), and throws a descriptive `TimeoutException`
+- `defaultScaffoldProcessRunner` rewritten to use `listen`/`Completer` instead of `addStream` (avoids "StreamSink is already bound" errors when called sequentially), kills the process tree on timeout (`taskkill /F /T` on Windows, `SIGKILL` on Unix), and throws a descriptive `TimeoutException` 
 - `ProjectScaffolder` passes the appropriate `ProcessTimeouts.*` constant to every `_runProcess` call
 - 3 new tests: timeout propagation through the scaffold pipeline (full and minimal), and `defaultScaffoldProcessRunner` timeout behavior (kills on timeout, completes within bounds, null timeout works)
 
@@ -47,8 +92,8 @@
 - Fix: `AppCubit` and `AppState` are now generated in `lib/core/state/` instead of `lib/app/`, matching the project's layered architecture convention (state management belongs in `core/`, not the app shell)
 - `AppState` extracted into its own `app_state.dart` file (was previously inlined in `app_cubit.dart`) with `isLoading` field and `copyWith` for immutable state updates
 - `AppCubit` now imports `app_state.dart` and exposes a `setLoading(bool)` method
-- `main.dart` import path updated to `core/state/app_cubit.dart`
-- New bootstrap template `templates/bootstrap/app_state.dart`
+- `main.dart` import path updated to `core/state/app_cubit.dart` 
+- New bootstrap template `templates/bootstrap/app_state.dart` 
 - Updated `project_file_writer_test.dart` to verify the new file locations and `AppState` separation
 
 ## 0.11.0
@@ -61,12 +106,12 @@
 
 ## 0.10.0
 
-- Bootstrap files (`main.dart`, `app.dart`, `router.dart`, `app_cubit.dart`, `l10n.yaml`, `app_en.arb`) are now generated from templates in `templates/bootstrap/` instead of imperative `StringBuffer` code in `ProjectFileWriter`
+- Bootstrap files (`main.dart`, `app.dart`, `router.dart`, `app_cubit.dart`, `l10n.yaml`, `app_en.arb`) are now generated from templates in `templates/bootstrap/` instead of imperative `StringBuffer` code in `ProjectFileWriter` 
 - `TemplateService` extended with conditional rendering (`{{#if cond}}...{{/if}}`, `{{#unless cond}}...{{/unless}}`) and a `renderFile` method for single-file rendering with variables and conditions
-- `ProjectFileWriter` rewritten to use `TemplateService` + `TemplateResolver` (same resolution chain as feature generators: home → local → built-in); accepts injectable `templateService`, `templateResolver`, `workingDirectory`, and `templatesRootOverride`
+- `ProjectFileWriter` rewritten to use `TemplateService` + `TemplateResolver` (same resolution chain as feature generators: home → local → built-in); accepts injectable `templateService`, `templateResolver`, `workingDirectory`, and `templatesRootOverride` 
 - Static `main.dart`, `app.dart`, `router.dart` removed from `templates/base/` (now generated from `templates/bootstrap/` based on selected options)
 - Users can now override bootstrap templates by placing files in `~/.rekeens/templates/bootstrap/` (home) or `./.rekeens/templates/bootstrap/` (local project)
-- `ProjectScaffolder` now propagates `workingDirectory` to the default `ProjectFileWriter`
+- `ProjectScaffolder` now propagates `workingDirectory` to the default `ProjectFileWriter` 
 - No user-facing behavior changes; generated project files are identical to the previous `StringBuffer` output
 
 ## 0.9.0
@@ -81,7 +126,7 @@
 ## 0.8.0
 
 - `rekeens doctor` now checks additional tools beyond Dart/Flutter/Git:
-  - **Android SDK**: resolves via `ANDROID_HOME` / `ANDROID_SDK_ROOT` env vars and verifies the directory exists; reports presence of `platform-tools`
+  - **Android SDK**: resolves via `ANDROID_HOME` / `ANDROID_SDK_ROOT` env vars and verifies the directory exists; reports presence of `platform-tools` 
   - **Xcode**: runs `xcodebuild -version` on macOS only; skipped on other platforms
   - **Chrome**: tries `google-chrome`/`chromium`/`chrome --version` (Linux), `/Applications/Google Chrome.app` (macOS), `chrome --version` (Windows), and falls back to scanning standard install paths on disk
 - Core tools (Dart/Flutter/Git) and optional tools (Android SDK/Xcode/Chrome) are reported in separate sections with distinct summary lines
@@ -111,21 +156,21 @@
 ## 0.7.0
 
 - Replace all `print()` calls with colored terminal output via `mason_logger` (`logger.info`, `logger.success`, `logger.warn`, `logger.err`, `logger.detail`)
-- New shared `logger` instance in `lib/utils/logger.dart`
+- New shared `logger` instance in `lib/utils/logger.dart` 
 - `doctor` command now reports tool checks with green success / red error styling instead of plain `✓`/`✗` bullets
-- `create` command step messages use `logger.info`, verbose output uses `logger.detail`, and the final result uses `logger.success`
+- `create` command step messages use `logger.info`, verbose output uses `logger.detail`, and the final result uses `logger.success` 
 - Generator success messages (`feature`, `screen`, `model`, `repository`, `service`, `provider`) and dry-run notices now go through the shared logger
 - Errors in `main()` are reported via `logger.err` instead of writing to `stderr` directly
 
 ## 0.6.3
 
-- Extract shared generator test setup (temp project creation, `setUpAll`/`setUp`/`tearDown`, `withAuthFeature`) into `test/helpers/generator_test_helper.dart`
+- Extract shared generator test setup (temp project creation, `setUpAll`/`setUp`/`tearDown`, `withAuthFeature`) into `test/helpers/generator_test_helper.dart` 
 - Refactor `generators_test.dart` and `all_generators_test.dart` to use `GeneratorTestHelper`, removing duplicated boilerplate
 
 ## 0.6.2
 
 - Unit tests for `ConfigLoader` covering local/home config loading, precedence, invalid YAML, missing defaults section, list conversion, and boolean values
-- Unit tests for `presets` covering all three presets (minimal, mobile, full) and `Preset.toOptions()`
+- Unit tests for `presets` covering all three presets (minimal, mobile, full) and `Preset.toOptions()` 
 - Extended `ProjectFileWriter` tests covering go_router vs none router, material3 vs material2 theme, localization file generation, and `enableFlutterGenerate` (insert, dedup, append, missing pubspec)
 - Extended `TemplateService` tests covering binary files, missing source, nested directories, .gitkeep, multiple variables, and unreplaced placeholders
 - Unit tests for `PrompterService` covering `askString`, `askYesNo`, `askChoice`, `askMultipleChoice` with mocked stdin/stdout
@@ -157,7 +202,7 @@
 ## 0.4.2
 
 - Make `getPackageRoot()` reliable under `dart pub global activate` by resolving the package URI via `Isolate.resolvePackageUri` instead of walking up from `Platform.script` (which points at the Pub cache snapshot)
-- Fall back to walking up from `Platform.script` and `Platform.resolvedExecutable`, matching the package by `name` in `pubspec.yaml`
+- Fall back to walking up from `Platform.script` and `Platform.resolvedExecutable`, matching the package by `name` in `pubspec.yaml` 
 - Throw a clear `StateError` when the package root cannot be located instead of silently returning an incorrect path
 
 ## 0.4.1
@@ -196,4 +241,4 @@
 - `doctor` command for environment diagnostics
 - Dry-run mode (`--dry-run`) for create and generate commands
 - Unit tests for core logic
-- Global installation support via `dart pub global activate`
+- Global installation support via `dart pub global activate` 

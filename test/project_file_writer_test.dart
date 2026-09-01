@@ -307,6 +307,129 @@ void main() {
     });
   });
 
+  group('ProjectFileWriter networking', () {
+    test(
+      'creates dio client files in lib/core/network when networking=dio',
+      () async {
+        await writer.configureProjectFiles(tempProject.path, {
+          'state_management': 'none',
+          'router': 'none',
+          'networking': 'dio',
+          'theme': 'material3',
+          'localization': false,
+        });
+
+        final networkDir = Directory(
+          p.join(tempProject.path, 'lib', 'core', 'network'),
+        );
+        expect(networkDir.existsSync(), isTrue);
+
+        final configFile = File(p.join(networkDir.path, 'network_config.dart'));
+        expect(configFile.existsSync(), isTrue);
+        final configContent = configFile.readAsStringSync();
+        expect(configContent.contains('class NetworkConfig'), isTrue);
+        expect(configContent.contains('TokenProvider'), isTrue);
+
+        final exceptionFile = File(
+          p.join(networkDir.path, 'api_exception.dart'),
+        );
+        expect(exceptionFile.existsSync(), isTrue);
+        expect(
+          exceptionFile.readAsStringSync().contains('class ApiException'),
+          isTrue,
+        );
+
+        final dioFile = File(p.join(networkDir.path, 'dio_client.dart'));
+        expect(dioFile.existsSync(), isTrue);
+        final dioContent = dioFile.readAsStringSync();
+        expect(dioContent.contains("import 'package:dio/dio.dart'"), isTrue);
+        expect(dioContent.contains('class DioClient'), isTrue);
+        expect(dioContent.contains('_AuthInterceptor'), isTrue);
+        expect(dioContent.contains('LogInterceptor'), isTrue);
+        expect(dioContent.contains('ApiException'), isTrue);
+
+        expect(
+          File(p.join(networkDir.path, 'http_client.dart')).existsSync(),
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      'creates http client files in lib/core/network when networking=http',
+      () async {
+        await writer.configureProjectFiles(tempProject.path, {
+          'state_management': 'none',
+          'router': 'none',
+          'networking': 'http',
+          'theme': 'material3',
+          'localization': false,
+        });
+
+        final networkDir = Directory(
+          p.join(tempProject.path, 'lib', 'core', 'network'),
+        );
+        expect(networkDir.existsSync(), isTrue);
+
+        expect(
+          File(p.join(networkDir.path, 'network_config.dart')).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(p.join(networkDir.path, 'api_exception.dart')).existsSync(),
+          isTrue,
+        );
+
+        final httpFile = File(p.join(networkDir.path, 'http_client.dart'));
+        expect(httpFile.existsSync(), isTrue);
+        final httpContent = httpFile.readAsStringSync();
+        expect(
+          httpContent.contains("import 'package:http/http.dart' as http"),
+          isTrue,
+        );
+        expect(httpContent.contains('class HttpClient'), isTrue);
+        expect(httpContent.contains('Authorization'), isTrue);
+        expect(httpContent.contains('ApiException'), isTrue);
+
+        expect(
+          File(p.join(networkDir.path, 'dio_client.dart')).existsSync(),
+          isFalse,
+        );
+      },
+    );
+
+    test('does not create network dir when networking=none', () async {
+      await writer.configureProjectFiles(tempProject.path, {
+        'state_management': 'none',
+        'router': 'none',
+        'networking': 'none',
+        'theme': 'material3',
+        'localization': false,
+      });
+
+      expect(
+        Directory(p.join(tempProject.path, 'lib', 'core', 'network'))
+            .existsSync(),
+        isFalse,
+      );
+    });
+
+    test('does not create network dir when networking is omitted', () async {
+      await writer.configureProjectFiles(tempProject.path, {
+        'state_management': 'none',
+        'router': 'none',
+        'theme': 'material3',
+        'localization': false,
+      });
+
+      expect(
+        Directory(p.join(tempProject.path, 'lib', 'core', 'network'))
+            .existsSync(),
+        isFalse,
+      );
+    });
+  });
+
   group('ProjectFileWriter.enableFlutterGenerate', () {
     test('adds generate: true under flutter section', () async {
       final pubspec = File(p.join(tempProject.path, 'pubspec.yaml'));

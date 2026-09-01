@@ -27,6 +27,7 @@ class ProjectFileWriter {
     final stateManagement = options['state_management'] as String;
     final router = options['router'] as String;
     final theme = options['theme'] as String;
+    final networking = options['networking'] as String? ?? 'none';
     final localization = options['localization'] as bool? ?? false;
 
     final bootstrapDir = await _templateResolver.resolve(
@@ -45,8 +46,8 @@ class ProjectFileWriter {
       'l10n': localization,
     };
 
-    await _renderBootstrapFile(
-      bootstrapDir: bootstrapDir,
+    await _renderTemplateFile(
+      sourceDir: bootstrapDir,
       fileName: 'main.dart',
       targetPath: p.join(projectName, 'lib', 'main.dart'),
       variables: variables,
@@ -54,8 +55,8 @@ class ProjectFileWriter {
     );
 
     if (stateManagement == 'bloc') {
-      await _renderBootstrapFile(
-        bootstrapDir: bootstrapDir,
+      await _renderTemplateFile(
+        sourceDir: bootstrapDir,
         fileName: 'app_state.dart',
         targetPath: p.join(
           projectName,
@@ -68,8 +69,8 @@ class ProjectFileWriter {
         conditions: conditions,
       );
 
-      await _renderBootstrapFile(
-        bootstrapDir: bootstrapDir,
+      await _renderTemplateFile(
+        sourceDir: bootstrapDir,
         fileName: 'app_cubit.dart',
         targetPath: p.join(
           projectName,
@@ -83,25 +84,29 @@ class ProjectFileWriter {
       );
     }
 
-    await _renderBootstrapFile(
-      bootstrapDir: bootstrapDir,
+    await _renderTemplateFile(
+      sourceDir: bootstrapDir,
       fileName: 'app.dart',
       targetPath: p.join(projectName, 'lib', 'app', 'app.dart'),
       variables: variables,
       conditions: conditions,
     );
 
-    await _renderBootstrapFile(
-      bootstrapDir: bootstrapDir,
+    await _renderTemplateFile(
+      sourceDir: bootstrapDir,
       fileName: 'router.dart',
       targetPath: p.join(projectName, 'lib', 'app', 'router.dart'),
       variables: variables,
       conditions: conditions,
     );
 
+    if (networking != 'none') {
+      await _renderNetworkFiles(projectName, networking);
+    }
+
     if (localization) {
-      await _renderBootstrapFile(
-        bootstrapDir: bootstrapDir,
+      await _renderTemplateFile(
+        sourceDir: bootstrapDir,
         fileName: 'l10n.yaml',
         targetPath: p.join(projectName, 'l10n.yaml'),
         variables: variables,
@@ -109,8 +114,8 @@ class ProjectFileWriter {
       );
 
       Directory(p.join(projectName, 'lib', 'l10n')).createSync(recursive: true);
-      await _renderBootstrapFile(
-        bootstrapDir: bootstrapDir,
+      await _renderTemplateFile(
+        sourceDir: bootstrapDir,
         fileName: 'app_en.arb',
         targetPath: p.join(projectName, 'lib', 'l10n', 'app_en.arb'),
         variables: variables,
@@ -119,15 +124,57 @@ class ProjectFileWriter {
     }
   }
 
-  Future<void> _renderBootstrapFile({
-    required String bootstrapDir,
+  Future<void> _renderNetworkFiles(
+    String projectName,
+    String networking,
+  ) async {
+    final coreDir = await _templateResolver.resolve(
+      category: 'core',
+      workingDirectory: workingDirectory,
+      packageRootOverride: templatesRootOverride,
+    );
+
+    final networkDir = p.join(projectName, 'lib', 'core', 'network');
+    const variables = <String, String>{};
+    const conditions = <String, bool>{};
+
+    await _renderTemplateFile(
+      sourceDir: coreDir,
+      fileName: 'network_config.dart',
+      targetPath: p.join(networkDir, 'network_config.dart'),
+      variables: variables,
+      conditions: conditions,
+    );
+
+    await _renderTemplateFile(
+      sourceDir: coreDir,
+      fileName: 'api_exception.dart',
+      targetPath: p.join(networkDir, 'api_exception.dart'),
+      variables: variables,
+      conditions: conditions,
+    );
+
+    final clientFile = networking == 'dio'
+        ? 'dio_client.dart'
+        : 'http_client.dart';
+    await _renderTemplateFile(
+      sourceDir: coreDir,
+      fileName: clientFile,
+      targetPath: p.join(networkDir, clientFile),
+      variables: variables,
+      conditions: conditions,
+    );
+  }
+
+  Future<void> _renderTemplateFile({
+    required String sourceDir,
     required String fileName,
     required String targetPath,
     required Map<String, String> variables,
     required Map<String, bool> conditions,
   }) async {
     await _templateService.renderFile(
-      sourcePath: p.join(bootstrapDir, fileName),
+      sourcePath: p.join(sourceDir, fileName),
       targetPath: targetPath,
       variables: variables,
       conditions: conditions,
