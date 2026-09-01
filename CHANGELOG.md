@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.16.0
+
+- `templates/bootstrap/router.dart` (go_router variant) now includes a commented `ShellRoute` example demonstrating nested routes with a shared wrapper widget (e.g. scaffold with nav bar) — the home route remains a top-level `GoRoute` so the template compiles out of the box
+- New `lib/services/router_updater.dart` (`RouterUpdater`): idempotently adds routes to an existing `lib/app/router.dart` — detects go_router vs simple `AppRouter` variant from file content, inserts `GoRoute` entries (with import) or `static const String` route names, skips if the route path already exists, respects `--dry-run`, skips silently if `router.dart` is absent
+- `FeatureGenerator` now calls `RouterUpdater` after creating a feature: adds `/<feature_name>` route pointing to `<ClassName>Page` (e.g. `/auth` → `AuthPage`)
+- `ScreenGenerator` now calls `RouterUpdater` after creating a screen: adds `/<feature_name>/<screen_name>` route pointing to `<ClassName>Screen` (e.g. `/auth/login` → `LoginScreen`)
+- Route naming convention: feature `auth` → path `/auth`; screen `login` in `auth` → path `/auth/login`; simple-router constant names use lowerCamelCase (e.g. `authLogin`)
+- `DOCUMENTATION.md` updated: Feature Generator and Screen Generator sections now document automatic route addition; `router.dart` tree description updated to mention ShellRoute example
+- New `test/router_updater_test.dart` (10 tests): go_router route addition (feature + screen), idempotency, existing route preservation, dry-run, simple AppRouter route constants, camelCase naming for multi-word names, missing router.dart handling
+- `test/generators_test.dart` updated: 2 new tests verifying FeatureGenerator and ScreenGenerator add routes to `router.dart`
+- `test/helpers/generator_test_helper.dart` updated: now creates `lib/app/router.dart` with a go_router template in the temp project so generator tests can verify route auto-addition
+
 ## 0.15.0
 
 - New `--storage` option (`shared_preferences`, `secure_storage`, `none`, default `shared_preferences`) adds a local key-value storage abstraction to the generated project — previously `core/storage/` was an empty README despite being documented as a ready layer

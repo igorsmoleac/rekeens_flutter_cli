@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
+import 'package:rekeens_flutter_cli/services/router_updater.dart';
 import 'package:rekeens_flutter_cli/utils/logger.dart';
 
 class FeatureGenerator extends BaseGenerator {
@@ -8,7 +9,11 @@ class FeatureGenerator extends BaseGenerator {
     super.templateService,
     super.templatesRootOverride,
     super.workingDirectory,
-  });
+    RouterUpdater? routerUpdater,
+  }) : _routerUpdater =
+           routerUpdater ?? RouterUpdater(workingDirectory: workingDirectory);
+
+  final RouterUpdater _routerUpdater;
 
   Future<void> generate(
     String featureName, {
@@ -29,12 +34,19 @@ class FeatureGenerator extends BaseGenerator {
       );
     }
 
+    final className = toPascalCase(featureName);
+
     if (dryRun) {
       logDryRun('create feature "$featureName"', featureDir);
+      await _routerUpdater.addRoute(
+        featureName: featureName,
+        className: '${className}Page',
+        fileName: '${featureName}_page.dart',
+        dryRun: true,
+      );
       return;
     }
 
-    final className = toPascalCase(featureName);
     final variables = <String, String>{
       'feature_name': featureName,
       'class_name': className,
@@ -44,6 +56,12 @@ class FeatureGenerator extends BaseGenerator {
       templateSubPath: 'feature',
       targetDir: featureDir,
       variables: variables,
+    );
+
+    await _routerUpdater.addRoute(
+      featureName: featureName,
+      className: '${className}Page',
+      fileName: '${featureName}_page.dart',
     );
 
     logger.success('Feature "$featureName" created successfully.');

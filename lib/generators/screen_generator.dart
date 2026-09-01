@@ -1,5 +1,6 @@
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
+import 'package:rekeens_flutter_cli/services/router_updater.dart';
 import 'package:rekeens_flutter_cli/utils/logger.dart';
 
 class ScreenGenerator extends BaseGenerator {
@@ -7,7 +8,11 @@ class ScreenGenerator extends BaseGenerator {
     super.templateService,
     super.templatesRootOverride,
     super.workingDirectory,
-  });
+    RouterUpdater? routerUpdater,
+  }) : _routerUpdater =
+           routerUpdater ?? RouterUpdater(workingDirectory: workingDirectory);
+
+  final RouterUpdater _routerUpdater;
 
   Future<void> generate(
     String featureName,
@@ -27,18 +32,33 @@ class ScreenGenerator extends BaseGenerator {
     final targetPath = p.join(pagesDir, '${screenName}_screen.dart');
     checkFileExists(targetPath, 'Screen "$screenName"', force: force);
 
+    final className = toPascalCase(screenName);
+
     if (dryRun) {
       logDryRun('create screen "$screenName"', targetPath);
+      await _routerUpdater.addRoute(
+        featureName: featureName,
+        screenName: screenName,
+        className: '${className}Screen',
+        fileName: '${screenName}_screen.dart',
+        dryRun: true,
+      );
       return;
     }
 
     ensureDirectory(pagesDir);
 
-    final className = toPascalCase(screenName);
     await copyTemplate(
       templateSubPath: 'screen',
       targetDir: pagesDir,
       variables: {'screen_name': screenName, 'class_name': className},
+    );
+
+    await _routerUpdater.addRoute(
+      featureName: featureName,
+      screenName: screenName,
+      className: '${className}Screen',
+      fileName: '${screenName}_screen.dart',
     );
 
     logger.success('Screen "$screenName" created in feature "$featureName".');

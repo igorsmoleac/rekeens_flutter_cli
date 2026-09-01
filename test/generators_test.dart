@@ -27,6 +27,24 @@ void main() {
     );
   });
 
+  test('FeatureGenerator adds route to router.dart', () async {
+    final generator = h.featureGenerator();
+    await generator.generate('auth');
+
+    final routerFile = File(
+      p.join(h.tempProject.path, 'lib', 'app', 'router.dart'),
+    );
+    final content = routerFile.readAsStringSync();
+    expect(content.contains("path: '/auth'"), isTrue);
+    expect(content.contains('const AuthPage()'), isTrue);
+    expect(
+      content.contains(
+        "import '../features/auth/presentation/pages/auth_page.dart';",
+      ),
+      isTrue,
+    );
+  });
+
   test('ScreenGenerator creates screen file', () async {
     await h.withAuthFeature(() async {
       final screenGen = ScreenGenerator(
@@ -49,6 +67,29 @@ void main() {
       expect(screenFile.existsSync(), isTrue);
       final content = screenFile.readAsStringSync();
       expect(content.contains('class LoginScreen'), isTrue);
+    });
+  });
+
+  test('ScreenGenerator adds nested route to router.dart', () async {
+    await h.withAuthFeature(() async {
+      final screenGen = ScreenGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await screenGen.generate('auth', 'login');
+
+      final routerFile = File(
+        p.join(h.tempProject.path, 'lib', 'app', 'router.dart'),
+      );
+      final content = routerFile.readAsStringSync();
+      expect(content.contains("path: '/auth/login'"), isTrue);
+      expect(content.contains('const LoginScreen()'), isTrue);
+      expect(
+        content.contains(
+          "import '../features/auth/presentation/pages/login_screen.dart';",
+        ),
+        isTrue,
+      );
     });
   });
 
