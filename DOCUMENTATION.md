@@ -66,8 +66,14 @@ lib/
 │   ├── config/           # App flavors, environments & remote configs
 │   ├── constants/        # Global constants, API endpoints & keys
 │   ├── errors/           # Failure models, exceptions & error mappers
+│   │   ├── failure.dart          # Sealed Failure (Server/Client/Network/Cache/Unknown)
+│   │   ├── result.dart           # Result<T> sealed class (Success / FailureResult)
+│   │   └── exception_to_failure_mapper.dart  # ApiException → Failure (when networking enabled)
 │   ├── extensions/       # Dart extension utilities
 │   ├── network/          # HTTP client instance (Dio / Http), interceptors
+│   │   ├── network_config.dart  # BaseUrl, timeouts, headers, token provider
+│   │   ├── api_exception.dart   # Typed ApiException (message, statusCode, body)
+│   │   └── <dio_client|http_client>.dart  # Client w/ auth + log + error handling
 │   ├── storage/          # Local key-value storage & cache adapters
 │   └── utils/            # General-purpose helper functions
 │
@@ -204,7 +210,7 @@ rekeens create my_app \
 | `--architecture` | `feature-first` | `feature-first` | Project architecture type. **Supported values:** `feature-first` (currently the only option). Other architecture patterns are on the roadmap. |
 | `--state-management` | `riverpod`, `bloc`, `none` | `riverpod` | State management solution |
 | `--router` | `go_router`, `none` | `go_router` | Application router |
-| `--networking` | `dio`, `http`, `none` | `dio` | HTTP client library |
+| `--networking` | `dio`, `http`, `none` | `dio` | HTTP client library and `core/network` scaffolding (client, `network_config.dart`, `api_exception.dart` with auth/log/error handling) |
 | `--localization` | `--localization`, `--no-localization` | `false` *(Prompt: `true`)* | Enables Flutter `gen-l10n` & `intl` |
 | `--theme` | `material3`, `material2` | `material3` | Theme system |
 | `--codegen` | `--codegen`, `--no-codegen` | `false` | Adds `build_runner`, `freezed`, `json_serializable` |
@@ -371,6 +377,7 @@ Rekeens supports custom template overrides. You can replace the default boilerpl
 |----------|---------|-------------|
 | `base` | `rekeens create` | Project skeleton (directory structure, `home_page.dart`, theme files, READMEs) |
 | `bootstrap` | `rekeens create` | Entry-point files rendered with selected options (`main.dart`, `app.dart`, `router.dart`, `app_cubit.dart`, `l10n.yaml`, `app_en.arb`) |
+| `core` | `rekeens create` | Cross-cutting infrastructure rendered with selected options: `network_config.dart`, `api_exception.dart`, `dio_client.dart` / `http_client.dart` (when `--networking` is not `none`); `failure.dart`, `result.dart` (always); `exception_to_failure_mapper.dart` (when `--networking` is not `none`) |
 | `features` | `rekeens generate *` | Feature-scoped generators (feature, screen, model, repository, service, provider, cubit) |
 
 ### Template Resolution Hierarchy

@@ -104,6 +104,8 @@ class ProjectFileWriter {
       await _renderNetworkFiles(projectName, networking);
     }
 
+    await _renderErrorFiles(projectName, networking);
+
     if (localization) {
       await _renderTemplateFile(
         sourceDir: bootstrapDir,
@@ -164,6 +166,44 @@ class ProjectFileWriter {
       variables: variables,
       conditions: conditions,
     );
+  }
+
+  Future<void> _renderErrorFiles(String projectName, String networking) async {
+    final coreDir = await _templateResolver.resolve(
+      category: 'core',
+      workingDirectory: workingDirectory,
+      packageRootOverride: templatesRootOverride,
+    );
+
+    final errorsDir = p.join(projectName, 'lib', 'core', 'errors');
+    const variables = <String, String>{};
+    const conditions = <String, bool>{};
+
+    await _renderTemplateFile(
+      sourceDir: coreDir,
+      fileName: 'failure.dart',
+      targetPath: p.join(errorsDir, 'failure.dart'),
+      variables: variables,
+      conditions: conditions,
+    );
+
+    await _renderTemplateFile(
+      sourceDir: coreDir,
+      fileName: 'result.dart',
+      targetPath: p.join(errorsDir, 'result.dart'),
+      variables: variables,
+      conditions: conditions,
+    );
+
+    if (networking != 'none') {
+      await _renderTemplateFile(
+        sourceDir: coreDir,
+        fileName: 'exception_to_failure_mapper.dart',
+        targetPath: p.join(errorsDir, 'exception_to_failure_mapper.dart'),
+        variables: variables,
+        conditions: conditions,
+      );
+    }
   }
 
   Future<void> _renderTemplateFile({

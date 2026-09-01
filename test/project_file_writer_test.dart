@@ -430,6 +430,160 @@ void main() {
     });
   });
 
+  group('ProjectFileWriter core/errors', () {
+    test(
+      'creates failure.dart and result.dart always, even without networking',
+      () async {
+        await writer.configureProjectFiles(tempProject.path, {
+          'state_management': 'none',
+          'router': 'none',
+          'networking': 'none',
+          'theme': 'material3',
+          'localization': false,
+        });
+
+        final errorsDir = Directory(
+          p.join(tempProject.path, 'lib', 'core', 'errors'),
+        );
+        expect(errorsDir.existsSync(), isTrue);
+
+        final failureFile = File(p.join(errorsDir.path, 'failure.dart'));
+        expect(failureFile.existsSync(), isTrue);
+        final failureContent = failureFile.readAsStringSync();
+        expect(failureContent.contains('sealed class Failure'), isTrue);
+        expect(failureContent.contains('class ServerFailure'), isTrue);
+        expect(failureContent.contains('class ClientFailure'), isTrue);
+        expect(failureContent.contains('class NetworkFailure'), isTrue);
+        expect(failureContent.contains('class CacheFailure'), isTrue);
+        expect(failureContent.contains('class UnknownFailure'), isTrue);
+
+        final resultFile = File(p.join(errorsDir.path, 'result.dart'));
+        expect(resultFile.existsSync(), isTrue);
+        final resultContent = resultFile.readAsStringSync();
+        expect(resultContent.contains('sealed class Result<T>'), isTrue);
+        expect(resultContent.contains('class Success<T>'), isTrue);
+        expect(resultContent.contains('class FailureResult<T>'), isTrue);
+        expect(resultContent.contains("import 'failure.dart'"), isTrue);
+      },
+    );
+
+    test(
+      'creates exception_to_failure_mapper.dart when networking=dio',
+      () async {
+        await writer.configureProjectFiles(tempProject.path, {
+          'state_management': 'none',
+          'router': 'none',
+          'networking': 'dio',
+          'theme': 'material3',
+          'localization': false,
+        });
+
+        final mapperFile = File(
+          p.join(
+            tempProject.path,
+            'lib',
+            'core',
+            'errors',
+            'exception_to_failure_mapper.dart',
+          ),
+        );
+        expect(mapperFile.existsSync(), isTrue);
+        final content = mapperFile.readAsStringSync();
+        expect(content.contains('Failure mapExceptionToFailure'), isTrue);
+        expect(content.contains("import 'failure.dart'"), isTrue);
+        expect(
+          content.contains("import '../network/api_exception.dart'"),
+          isTrue,
+        );
+        expect(content.contains('ServerFailure'), isTrue);
+        expect(content.contains('ClientFailure'), isTrue);
+        expect(content.contains('NetworkFailure'), isTrue);
+        // Must NOT use package: imports — these are templates rendered into a
+        // generated project whose name differs from the CLI package.
+        expect(content.contains('package:rekeens_flutter_cli'), isFalse);
+      },
+    );
+
+    test(
+      'creates exception_to_failure_mapper.dart when networking=http',
+      () async {
+        await writer.configureProjectFiles(tempProject.path, {
+          'state_management': 'none',
+          'router': 'none',
+          'networking': 'http',
+          'theme': 'material3',
+          'localization': false,
+        });
+
+        expect(
+          File(
+            p.join(
+              tempProject.path,
+              'lib',
+              'core',
+              'errors',
+              'exception_to_failure_mapper.dart',
+            ),
+          ).existsSync(),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'does not create exception_to_failure_mapper.dart when networking=none',
+      () async {
+        await writer.configureProjectFiles(tempProject.path, {
+          'state_management': 'none',
+          'router': 'none',
+          'networking': 'none',
+          'theme': 'material3',
+          'localization': false,
+        });
+
+        expect(
+          File(
+            p.join(
+              tempProject.path,
+              'lib',
+              'core',
+              'errors',
+              'exception_to_failure_mapper.dart',
+            ),
+          ).existsSync(),
+          isFalse,
+        );
+      },
+    );
+
+    test('creates errors dir even when networking is omitted', () async {
+      await writer.configureProjectFiles(tempProject.path, {
+        'state_management': 'none',
+        'router': 'none',
+        'theme': 'material3',
+        'localization': false,
+      });
+
+      expect(
+        Directory(p.join(tempProject.path, 'lib', 'core', 'errors'))
+            .existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          p.join(
+            tempProject.path,
+            'lib',
+            'core',
+            'errors',
+            'exception_to_failure_mapper.dart',
+          ),
+        ).existsSync(),
+        isFalse,
+      );
+    });
+  });
+
   group('ProjectFileWriter.enableFlutterGenerate', () {
     test('adds generate: true under flutter section', () async {
       final pubspec = File(p.join(tempProject.path, 'pubspec.yaml'));

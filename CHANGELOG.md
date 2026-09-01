@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.0
+
+- `ProjectFileWriter.configureProjectFiles` now renders `core/errors` templates into the generated project, completing the error-handling stack: `failure.dart` and `result.dart` are always rendered (foundational types), `exception_to_failure_mapper.dart` is rendered only when `--networking` is not `none` (it imports `ApiException` from `core/network/`)
+- New `templates/core/failure.dart`: sealed `Failure` class with `ServerFailure` (5xx), `ClientFailure` (4xx), `NetworkFailure`, `CacheFailure`, and `UnknownFailure` subclasses — replaces the draft that had a `CacheFailure` constructor typo and no `ClientFailure` (causing dead code in the mapper where both 4xx and 5xx returned `ServerFailure`)
+- New `templates/core/result.dart`: `Result<T>` sealed class with `Success<T>` / `FailureResult<T>` and convenience getters (`isSuccess`, `isFailure`, `valueOrNull`, `failureOrNull`) — replaces `Either<Failure, T>` from `dartz` with a dependency-free idiomatic Dart 3 sealed class, following STYLE.md's "don't add dependencies without necessity" rule
+- Rewrote `templates/core/exception_to_failure_mapper.dart`: fixed broken `package:rekeens_flutter_cli/...` imports (templates render into a generated project with a different name — now uses relative `import 'failure.dart'` and `import '../network/api_exception.dart'`); 4xx now maps to `ClientFailure` instead of falling through to the unreachable `ServerFailure` branch; `null` statusCode maps to `NetworkFailure`
+- Reuses the existing `ApiException` from `core/network/api_exception.dart` (added in 0.13.0) instead of duplicating it as a separate `AppException` — both carry `message`, `statusCode`, and `responseBody`
+- `DOCUMENTATION.md` updated: `core/errors/` directory tree now lists the generated files; `core` row in Template Categories expanded to cover error templates
+- 5 new tests in `project_file_writer_test.dart` covering: failure+result always rendered (even without networking), mapper rendered for dio/http, mapper omitted for none/omitted networking, no `package:rekeens_flutter_cli` imports in rendered mapper
 
 ## 0.13.0
 
@@ -11,6 +20,7 @@
 - `templates/core/network_config.dart` gains an optional `TokenProvider` callback so callers can supply the current bearer token without subclassing the client
 - Renamed the internal `_renderBootstrapFile` helper to `_renderTemplateFile` (now generic enough to render files from any template category, not just `bootstrap`)
 - New tests cover dio/http/none/omitted networking scenarios in `project_file_writer_test.dart`
+- `DOCUMENTATION.md` updated: `core/network/` directory tree now lists the generated files; new `core` row added to the Template Categories table; `--networking` flag description notes the scaffolding output, not just the dependency
 
 ## 0.12.0
 
