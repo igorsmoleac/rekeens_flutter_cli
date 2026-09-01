@@ -75,6 +75,8 @@ lib/
 │   │   ├── api_exception.dart   # Typed ApiException (message, statusCode, body)
 │   │   └── <dio_client|http_client>.dart  # Client w/ auth + log + error handling
 │   ├── storage/          # Local key-value storage & cache adapters
+│   │   ├── key_value_storage.dart          # Abstract KeyValueStorage interface
+│   │   └── <shared_preferences_storage|secure_storage>.dart  # Implementation
 │   └── utils/            # General-purpose helper functions
 │
 ├── features/             # Business modules (Domain-Driven boundaries)
@@ -195,11 +197,11 @@ rekeens create my_app \
 
 ### Presets Specification
 
-| Preset | Target Platforms | State Management | Router | Network | Localization | Theme | Codegen (`freezed`, `json_serializable`) |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`minimal`** | `android, ios` | `none` | `none` | `none` | `false` | `material3` | `false` |
-| **`mobile`** | `android, ios` | `riverpod` | `go_router` | `dio` | `true` | `material3` | `false` |
-| **`full`** | `android, ios, windows, linux, macos, web` | `riverpod` | `go_router` | `dio` | `true` | `material3` | `true` |
+| Preset | Target Platforms | State Management | Router | Network | Storage | Localization | Theme | Codegen (`freezed`, `json_serializable`) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **`minimal`** | `android, ios` | `none` | `none` | `none` | `none` | `false` | `material3` | `false` |
+| **`mobile`** | `android, ios` | `riverpod` | `go_router` | `dio` | `shared_preferences` | `true` | `material3` | `false` |
+| **`full`** | `android, ios, windows, linux, macos, web` | `riverpod` | `go_router` | `dio` | `secure_storage` | `true` | `material3` | `true` |
 
 ### CLI Flags & Options Reference
 
@@ -211,6 +213,7 @@ rekeens create my_app \
 | `--state-management` | `riverpod`, `bloc`, `none` | `riverpod` | State management solution |
 | `--router` | `go_router`, `none` | `go_router` | Application router |
 | `--networking` | `dio`, `http`, `none` | `dio` | HTTP client library and `core/network` scaffolding (client, `network_config.dart`, `api_exception.dart` with auth/log/error handling) |
+| `--storage` | `shared_preferences`, `secure_storage`, `none` | `shared_preferences` | Local key-value storage and `core/storage` scaffolding (`key_value_storage.dart` interface + implementation) |
 | `--localization` | `--localization`, `--no-localization` | `false` *(Prompt: `true`)* | Enables Flutter `gen-l10n` & `intl` |
 | `--theme` | `material3`, `material2` | `material3` | Theme system |
 | `--codegen` | `--codegen`, `--no-codegen` | `false` | Adds `build_runner`, `freezed`, `json_serializable` |
@@ -340,6 +343,7 @@ defaults:
   state_management: riverpod
   router: go_router
   networking: dio
+  storage: shared_preferences
   localization: true
   theme: material3
   codegen: false
@@ -377,7 +381,7 @@ Rekeens supports custom template overrides. You can replace the default boilerpl
 |----------|---------|-------------|
 | `base` | `rekeens create` | Project skeleton (directory structure, `home_page.dart`, theme files, READMEs) |
 | `bootstrap` | `rekeens create` | Entry-point files rendered with selected options (`main.dart`, `app.dart`, `router.dart`, `app_cubit.dart`, `l10n.yaml`, `app_en.arb`) |
-| `core` | `rekeens create` | Cross-cutting infrastructure rendered with selected options: `network_config.dart`, `api_exception.dart`, `dio_client.dart` / `http_client.dart` (when `--networking` is not `none`); `failure.dart`, `result.dart` (always); `exception_to_failure_mapper.dart` (when `--networking` is not `none`) |
+| `core` | `rekeens create` | Cross-cutting infrastructure rendered with selected options: `network_config.dart`, `api_exception.dart`, `dio_client.dart` / `http_client.dart` (when `--networking` is not `none`); `failure.dart`, `result.dart` (always); `exception_to_failure_mapper.dart` (when `--networking` is not `none`); `key_value_storage.dart` + `shared_preferences_storage.dart` / `secure_storage.dart` (when `--storage` is not `none`) |
 | `features` | `rekeens generate *` | Feature-scoped generators (feature, screen, model, repository, service, provider, cubit) |
 
 ### Template Resolution Hierarchy

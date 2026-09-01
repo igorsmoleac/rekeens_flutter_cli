@@ -70,6 +70,7 @@ void main() {
       expect(options['state_management'], 'none');
       expect(options['router'], 'none');
       expect(options['networking'], 'none');
+      expect(options['storage'], 'none');
       expect(options['localization'], isFalse);
       expect(options['theme'], 'material3');
       expect(options['codegen'], isFalse);
@@ -124,6 +125,10 @@ void main() {
       await expectUsageException(['--networking=retrofit']);
     });
 
+    test('throws UsageException for invalid storage', () async {
+      await expectUsageException(['--storage=hive']);
+    });
+
     test('throws UsageException for invalid theme', () async {
       await expectUsageException(['--theme=cupertino']);
     });
@@ -145,6 +150,13 @@ void main() {
         expect(options['networking'], value);
       }
     });
+
+    test('accepts all valid storage values', () async {
+      for (final value in ['shared_preferences', 'secure_storage', 'none']) {
+        final options = await resolve(['--storage=$value']);
+        expect(options['storage'], value);
+      }
+    });
   });
 
   group('OptionsResolver.resolve — flags only', () {
@@ -155,6 +167,7 @@ void main() {
       expect(options['architecture'], 'feature-first');
       expect(options['router'], 'go_router');
       expect(options['networking'], 'dio');
+      expect(options['storage'], 'shared_preferences');
       expect(options['localization'], isFalse);
       expect(options['theme'], 'material3');
       expect(options['codegen'], isFalse);
@@ -181,6 +194,7 @@ void main() {
         '--state-management=none',
         '--router=none',
         '--networking=http',
+        '--storage=secure_storage',
         '--theme=material2',
         '--codegen',
         '--localization',
@@ -189,6 +203,7 @@ void main() {
       expect(options['state_management'], 'none');
       expect(options['router'], 'none');
       expect(options['networking'], 'http');
+      expect(options['storage'], 'secure_storage');
       expect(options['theme'], 'material2');
       expect(options['codegen'], isTrue);
       expect(options['localization'], isTrue);
@@ -209,6 +224,7 @@ defaults:
     - web
   architecture: feature-first
   networking: http
+  storage: secure_storage
 ''');
       final options = await resolve(<String>[]);
       expect(options['state_management'], 'bloc');
@@ -218,6 +234,7 @@ defaults:
       expect(options['codegen'], isTrue);
       expect(options['platforms'], ['android', 'web']);
       expect(options['networking'], 'http');
+      expect(options['storage'], 'secure_storage');
     });
 
     test('flags override config file values', () async {
@@ -298,13 +315,14 @@ defaults:
   group('OptionsResolver.resolve — interactive prompt', () {
     test('collects options from prompt when nothing else is given', () async {
       // Inputs in order: platforms (multi, comma), architecture, state, router,
-      // networking, codegen (y/n), localization (y/n), theme.
+      // networking, storage, codegen (y/n), localization (y/n), theme.
       inputs = [
         '1,2', // platforms -> android, ios
         '', // architecture default
         '', // state default
         '', // router default
         '', // networking default
+        '', // storage default
         'n', // codegen
         'n', // localization
         '', // theme default
@@ -315,6 +333,7 @@ defaults:
       expect(options['state_management'], 'riverpod');
       expect(options['router'], 'go_router');
       expect(options['networking'], 'dio');
+      expect(options['storage'], 'shared_preferences');
       expect(options['codegen'], isFalse);
       expect(options['localization'], isFalse);
       expect(options['theme'], 'material3');

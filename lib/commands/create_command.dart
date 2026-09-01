@@ -45,6 +45,10 @@ class CreateCommand extends Command<void> {
     );
     argParser.addOption('router', help: 'Router (go_router, none)');
     argParser.addOption('networking', help: 'Networking (dio, http, none)');
+    argParser.addOption(
+      'storage',
+      help: 'Local storage (shared_preferences, secure_storage, none)',
+    );
     argParser.addFlag(
       'localization',
       help: 'Enable localization',

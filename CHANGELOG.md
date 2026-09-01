@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.15.0
+
+- New `--storage` option (`shared_preferences`, `secure_storage`, `none`, default `shared_preferences`) adds a local key-value storage abstraction to the generated project — previously `core/storage/` was an empty README despite being documented as a ready layer
+- `ProjectFileWriter.configureProjectFiles` now renders `core/storage` templates: `key_value_storage.dart` (abstract interface with `read`/`write`/`delete`/`clear`) is always rendered when storage is enabled, plus the matching implementation (`shared_preferences_storage.dart` or `secure_storage.dart`); `--storage=none` (or omitting the option) leaves the directory untouched
+- New `templates/core/key_value_storage.dart`: abstract `KeyValueStorage` interface — `read`, `write`, `delete`, `clear` — so features depend on the abstraction, not the concrete package
+- New `templates/core/shared_preferences_storage.dart`: `SharedPreferencesStorage implements KeyValueStorage` wrapping `package:shared_preferences`
+- New `templates/core/secure_storage.dart`: `SecureStorage implements KeyValueStorage` wrapping `package:flutter_secure_storage`
+- `DependencyResolver` now adds `shared_preferences` or `flutter_secure_storage` based on the `storage` option
+- `Preset` class gains a `storage` field: `minimal` → `none`, `mobile` → `shared_preferences`, `full` → `secure_storage`; `toOptions()` includes `storage`
+- `OptionsResolver` validates `--storage` against allowed values, includes it in `_hasAnyCreateFlag`, `_fillDefaults`, `_validateConfigOptions`, and the interactive prompt (after networking)
+- `ConfigInitCommand` default `rekeens.yaml` now includes `storage: shared_preferences`
+- `ListCommand` preset output now shows `storage: <value>`
+- `CreateCommand` exposes `--storage` flag
+- `DOCUMENTATION.md` updated: `core/storage/` directory tree, presets table (new Storage column), CLI flags table (`--storage` row), `core` Template Categories row, config file schema example
+- Tests updated: `presets_test.dart` (storage assertions for all 3 presets + `toOptions` keys), `options_resolver_test.dart` (invalid/valid storage values, defaults, single-value flags, config file, interactive prompt), `dependency_resolver_test.dart` (shared_preferences + secure_storage deps), `config_init_command_test.dart` (storage in loaded config), `list_command_test.dart` (storage in output), `project_scaffolder_test.dart` (storage in options maps + dep assertions), `project_file_writer_test.dart` (4 new tests: shared_preferences, secure_storage, none, omitted)
+
 ## 0.14.0
 
 - `ProjectFileWriter.configureProjectFiles` now renders `core/errors` templates into the generated project, completing the error-handling stack: `failure.dart` and `result.dart` are always rendered (foundational types), `exception_to_failure_mapper.dart` is rendered only when `--networking` is not `none` (it imports `ApiException` from `core/network/`)

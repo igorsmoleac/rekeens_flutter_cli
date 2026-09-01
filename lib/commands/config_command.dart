@@ -82,6 +82,7 @@ defaults:
   state_management: riverpod
   router: go_router
   networking: dio
+  storage: shared_preferences
   localization: false
   theme: material3
   codegen: false

@@ -19,6 +19,11 @@ class OptionsResolver {
   static const _allowedStateManagement = ['riverpod', 'bloc', 'none'];
   static const _allowedRouter = ['go_router', 'none'];
   static const _allowedNetworking = ['dio', 'http', 'none'];
+  static const _allowedStorage = [
+    'shared_preferences',
+    'secure_storage',
+    'none',
+  ];
   static const _allowedTheme = ['material3', 'material2'];
 
   Map<String, dynamic> resolve(ArgResults args, {required String usage}) {
@@ -64,6 +69,7 @@ class OptionsResolver {
         args.wasParsed('state-management') ||
         args.wasParsed('router') ||
         args.wasParsed('networking') ||
+        args.wasParsed('storage') ||
         args.wasParsed('localization') ||
         args.wasParsed('theme') ||
         args.wasParsed('codegen');
@@ -129,6 +135,11 @@ class OptionsResolver {
       _validateEnumValue('networking', value, _allowedNetworking, usage: usage);
       options['networking'] = value;
     }
+    if (args.wasParsed('storage')) {
+      final value = args['storage'] as String?;
+      _validateEnumValue('storage', value, _allowedStorage, usage: usage);
+      options['storage'] = value;
+    }
     if (args.wasParsed('localization')) {
       options['localization'] = args['localization'];
     }
@@ -187,6 +198,12 @@ class OptionsResolver {
       _allowedNetworking,
       usage: usage,
     );
+    _validateEnumValue(
+      'storage',
+      options['storage'],
+      _allowedStorage,
+      usage: usage,
+    );
     _validateEnumValue('theme', options['theme'], _allowedTheme, usage: usage);
   }
 
@@ -198,6 +215,7 @@ class OptionsResolver {
       'state_management': partial['state_management'] ?? 'riverpod',
       'router': partial['router'] ?? 'go_router',
       'networking': partial['networking'] ?? 'dio',
+      'storage': partial['storage'] ?? 'shared_preferences',
       'localization': partial['localization'] ?? false,
       'theme': partial['theme'] ?? 'material3',
       'codegen': partial['codegen'] ?? false,
@@ -232,6 +250,12 @@ class OptionsResolver {
       'none',
     ], defaultValue: 'dio');
 
+    final storage = _prompter.askChoice('Local storage', [
+      'shared_preferences',
+      'secure_storage',
+      'none',
+    ], defaultValue: 'shared_preferences');
+
     final codegen = _prompter.askYesNo(
       'Add code generation tools (build_runner, freezed, json_serializable)?',
       defaultValue: false,
@@ -249,6 +273,7 @@ class OptionsResolver {
       'state_management': stateManagement,
       'router': router,
       'networking': networking,
+      'storage': storage,
       'localization': localization,
       'theme': theme,
       'codegen': codegen,

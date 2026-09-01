@@ -28,6 +28,7 @@ class ProjectFileWriter {
     final router = options['router'] as String;
     final theme = options['theme'] as String;
     final networking = options['networking'] as String? ?? 'none';
+    final storage = options['storage'] as String? ?? 'none';
     final localization = options['localization'] as bool? ?? false;
 
     final bootstrapDir = await _templateResolver.resolve(
@@ -105,6 +106,10 @@ class ProjectFileWriter {
     }
 
     await _renderErrorFiles(projectName, networking);
+
+    if (storage != 'none') {
+      await _renderStorageFiles(projectName, storage);
+    }
 
     if (localization) {
       await _renderTemplateFile(
@@ -204,6 +209,37 @@ class ProjectFileWriter {
         conditions: conditions,
       );
     }
+  }
+
+  Future<void> _renderStorageFiles(String projectName, String storage) async {
+    final coreDir = await _templateResolver.resolve(
+      category: 'core',
+      workingDirectory: workingDirectory,
+      packageRootOverride: templatesRootOverride,
+    );
+
+    final storageDir = p.join(projectName, 'lib', 'core', 'storage');
+    const variables = <String, String>{};
+    const conditions = <String, bool>{};
+
+    await _renderTemplateFile(
+      sourceDir: coreDir,
+      fileName: 'key_value_storage.dart',
+      targetPath: p.join(storageDir, 'key_value_storage.dart'),
+      variables: variables,
+      conditions: conditions,
+    );
+
+    final implFile = storage == 'shared_preferences'
+        ? 'shared_preferences_storage.dart'
+        : 'secure_storage.dart';
+    await _renderTemplateFile(
+      sourceDir: coreDir,
+      fileName: implFile,
+      targetPath: p.join(storageDir, implFile),
+      variables: variables,
+      conditions: conditions,
+    );
   }
 
   Future<void> _renderTemplateFile({

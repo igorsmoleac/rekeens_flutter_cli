@@ -45,6 +45,7 @@ void main() {
       expect(loaded['state_management'], 'riverpod');
       expect(loaded['router'], 'go_router');
       expect(loaded['networking'], 'dio');
+      expect(loaded['storage'], 'shared_preferences');
       expect(loaded['theme'], 'material3');
       expect(loaded['localization'], isFalse);
       expect(loaded['codegen'], isFalse);
