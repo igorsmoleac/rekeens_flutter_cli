@@ -232,4 +232,105 @@ void main() {
 
     expect(Directory(p.join(target.path, 'empty_dir')).existsSync(), isTrue);
   });
+
+  group('{{#each}} loops', () {
+    test('renderContent iterates over list items', () {
+      final result = service.renderContent(
+        '{{#each items}}  final {{type}} {{name}};\n{{/each}}',
+        {'class_name': 'User'},
+        lists: {
+          'items': [
+            {'type': 'String', 'name': 'email'},
+            {'type': 'int', 'name': 'age'},
+          ],
+        },
+      );
+
+      expect(result, '  final String email;\n  final int age;\n');
+    });
+
+    test('renderContent handles empty list gracefully', () {
+      final result = service.renderContent(
+        'Start\n{{#each items}}item\n{{/each}}End',
+        {},
+        lists: {'items': []},
+      );
+
+      expect(result, 'Start\nEnd');
+    });
+
+    test('renderContent handles missing list as empty', () {
+      final result = service.renderContent(
+        'Start\n{{#each items}}item\n{{/each}}End',
+        {},
+      );
+
+      expect(result, 'Start\nEnd');
+    });
+
+    test('renderContent processes multiple each blocks', () {
+      final result = service.renderContent(
+        '{{#each fields}}  final {{type}} {{name}};\n{{/each}}'
+        'const C({\n'
+        '{{#each fields}}  this.{{name}},\n{{/each}}});',
+        {},
+        lists: {
+          'fields': [
+            {'type': 'String', 'name': 'a'},
+            {'type': 'int', 'name': 'b'},
+          ],
+        },
+      );
+
+      expect(
+        result,
+        '  final String a;\n  final int b;\n'
+        'const C({\n  this.a,\n  this.b,\n});',
+      );
+    });
+
+    test('renderContent combines each with top-level variables', () {
+      final result = service.renderContent(
+        'class {{class_name}} {\n'
+        '{{#each fields}}  final {{type}} {{name}};\n{{/each}}}',
+        {'class_name': 'User'},
+        lists: {
+          'fields': [
+            {'type': 'String', 'name': 'email'},
+          ],
+        },
+      );
+
+      expect(result, 'class User {\n  final String email;\n}');
+    });
+
+    test('copyTemplate renders each blocks in files', () async {
+      final source = Directory(p.join(tempDir.path, 'source'))..createSync();
+      final target = Directory(p.join(tempDir.path, 'target'))..createSync();
+
+      File(p.join(source.path, 'model.dart')).writeAsStringSync(
+        'class {{class_name}} {\n'
+        '{{#each fields}}  final {{type}} {{name}};\n{{/each}}}',
+      );
+
+      await service.copyTemplate(
+        sourceDir: source.path,
+        targetDir: target.path,
+        variables: {'class_name': 'User'},
+        lists: {
+          'fields': [
+            {'type': 'String', 'name': 'email'},
+            {'type': 'int', 'name': 'age'},
+          ],
+        },
+      );
+
+      final content = File(p.join(target.path, 'model.dart'))
+          .readAsStringSync();
+      expect(
+        content,
+        'class User {\n  final String email;\n  final int age;\n}',
+      );
+    });
+  });
 }
