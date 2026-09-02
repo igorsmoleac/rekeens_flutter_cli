@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.21.1
+
+- **`dio_client.dart` now matches `http_client.dart` HTTP verb coverage**: added `put` and `delete` methods so projects generated with `--networking=dio` can perform PUT/DELETE requests without manual edits
+  - `put<T>(path, {body, headers})` delegates to `_dio.put` via the existing `_request` wrapper (consistent error handling through `ApiException`)
+  - `delete<T>(path, {headers})` delegates to `_dio.delete` via the same wrapper
+  - Signatures mirror `http_client.dart` (`body` + `headers` for `put`, `headers` only for `delete`)
+
 ## 0.21.0
 
 - **Repository generator split across Clean Architecture layers**: the interface and implementation are no longer emitted into a single file inside `data/repositories/` (which left `domain/repositories/` empty and violated layer separation)

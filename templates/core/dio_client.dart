@@ -49,6 +49,26 @@ class DioClient {
     );
   }
 
+  Future<T> put<T>(
+    String path, {
+    Object? body,
+    Map<String, String>? headers,
+  }) async {
+    return _request(
+      () => _dio.put<T>(
+        path,
+        data: body,
+        options: Options(headers: headers),
+      ),
+    );
+  }
+
+  Future<T> delete<T>(String path, {Map<String, String>? headers}) async {
+    return _request(
+      () => _dio.delete<T>(path, options: Options(headers: headers)),
+    );
+  }
+
   Future<T> _request<T>(Future<Response<T>> Function() call) async {
     try {
       final response = await call();
