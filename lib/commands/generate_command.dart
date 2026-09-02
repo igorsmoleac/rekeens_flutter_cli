@@ -1,10 +1,12 @@
 import 'package:args/command_runner.dart';
+import 'package:rekeens_flutter_cli/generators/entity_generator.dart';
 import 'package:rekeens_flutter_cli/generators/feature_generator.dart';
 import 'package:rekeens_flutter_cli/generators/model_generator.dart';
 import 'package:rekeens_flutter_cli/generators/provider_generator.dart';
 import 'package:rekeens_flutter_cli/generators/repository_generator.dart';
 import 'package:rekeens_flutter_cli/generators/screen_generator.dart';
 import 'package:rekeens_flutter_cli/generators/service_generator.dart';
+import 'package:rekeens_flutter_cli/generators/usecase_generator.dart';
 
 class GenerateCommand extends Command<void> {
   GenerateCommand() {
@@ -33,6 +35,8 @@ class GenerateCommand extends Command<void> {
   final _repositoryGenerator = RepositoryGenerator();
   final _serviceGenerator = ServiceGenerator();
   final _providerGenerator = ProviderGenerator();
+  final _entityGenerator = EntityGenerator();
+  final _useCaseGenerator = UseCaseGenerator();
 
   @override
   String get name => 'generate';
@@ -135,9 +139,37 @@ class GenerateCommand extends Command<void> {
           withTests: withTests,
         );
         break;
+      case 'entity':
+        _validateLength(
+          rest,
+          3,
+          'rekeens generate entity <feature_name> <entity_name>',
+        );
+        await _entityGenerator.generate(
+          rest[1],
+          rest[2],
+          force: force,
+          dryRun: dryRun,
+          withTests: withTests,
+        );
+        break;
+      case 'usecase':
+        _validateLength(
+          rest,
+          3,
+          'rekeens generate usecase <feature_name> <usecase_name>',
+        );
+        await _useCaseGenerator.generate(
+          rest[1],
+          rest[2],
+          force: force,
+          dryRun: dryRun,
+          withTests: withTests,
+        );
+        break;
       default:
         throw UsageException(
-          'Unknown generator type "$type". Available: feature, screen, model, repository, service, provider',
+          'Unknown generator type "$type". Available: feature, screen, model, repository, service, provider, entity, usecase',
           usage,
         );
     }

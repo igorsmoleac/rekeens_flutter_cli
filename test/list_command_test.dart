@@ -58,6 +58,8 @@ void main() {
       expect(out, contains('repository'));
       expect(out, contains('service'));
       expect(out, contains('provider'));
+      expect(out, contains('entity'));
+      expect(out, contains('usecase'));
     });
 
     test('includes usage examples for generators', () async {
@@ -68,6 +70,8 @@ void main() {
       expect(out, contains('rekeens generate repository auth user'));
       expect(out, contains('rekeens generate service auth auth'));
       expect(out, contains('rekeens generate provider auth auth'));
+      expect(out, contains('rekeens generate entity auth user'));
+      expect(out, contains('rekeens generate usecase auth login'));
     });
 
     test('includes preset details', () async {
@@ -89,6 +93,8 @@ void main() {
         'repository',
         'service',
         'provider',
+        'entity',
+        'usecase',
       });
     });
   });

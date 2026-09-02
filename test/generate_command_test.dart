@@ -63,6 +63,20 @@ void main() {
         throwsA(isA<UsageException>()),
       );
     });
+
+    test('throws UsageException when entity name is missing', () {
+      expect(
+        () => runner.run(['generate', 'entity', 'auth']),
+        throwsA(isA<UsageException>()),
+      );
+    });
+
+    test('throws UsageException when usecase name is missing', () {
+      expect(
+        () => runner.run(['generate', 'usecase', 'auth']),
+        throwsA(isA<UsageException>()),
+      );
+    });
   });
 
   group('flag parsing', () {

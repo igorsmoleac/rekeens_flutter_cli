@@ -322,6 +322,28 @@ The CLI automatically detects the active state management package from `pubspec.
 rekeens g provider authentication auth
 ```
 
+### Entity Generator
+
+Creates a domain entity inside `lib/features/<feature>/domain/entities/`. Entities are
+plain Dart classes with value equality (`==`/`hashCode`) and a `const` constructor —
+no JSON serialization, no external dependencies.
+
+```bash
+rekeens g entity profile user
+# Output: lib/features/profile/domain/entities/user_entity.dart
+```
+
+### Use Case Generator
+
+Creates a domain use case inside `lib/features/<feature>/domain/usecases/`. The use case
+exposes a `call(Params)` method and a matching `<Name>Params` class, following the
+canonical Clean Architecture use case pattern.
+
+```bash
+rekeens g usecase auth login
+# Output: lib/features/auth/domain/usecases/login_usecase.dart
+```
+
 ### Common Generator Flags
 
 - `-f, --force`: Overwrite existing files if they already exist.
@@ -341,6 +363,8 @@ By default, every generator also creates a test file with basic checks:
 | `service` | `test/features/<f>/data/services/<s>_service_test.dart` | unit | `performAction` completes |
 | `provider` (riverpod) | `test/features/<f>/presentation/providers/<p>_provider_test.dart` | unit | `ProviderContainer` resolves provider |
 | `cubit` (bloc) | `test/features/<f>/presentation/providers/<p>_cubit_test.dart` | unit | `blocTest` initial state |
+| `entity` | `test/features/<f>/domain/entities/<e>_entity_test.dart` | unit | value equality by `id` |
+| `usecase` | `test/features/<f>/domain/usecases/<u>_usecase_test.dart` | unit | `call` returns injected params, null fallback |
 
 Test stubs use `package:{{project_name}}/...` imports resolved from `pubspec.yaml`'s `name:` field. Templates live under `templates/tests/` as a separate category from `templates/features/`.
 

@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:rekeens_flutter_cli/generators/entity_generator.dart';
 import 'package:rekeens_flutter_cli/generators/provider_generator.dart';
 import 'package:rekeens_flutter_cli/generators/repository_generator.dart';
 import 'package:rekeens_flutter_cli/generators/service_generator.dart';
+import 'package:rekeens_flutter_cli/generators/usecase_generator.dart';
 import 'package:test/test.dart';
 
 import 'helpers/generator_test_helper.dart';
@@ -226,6 +228,179 @@ void main() {
         templatesRootOverride: h.projectRoot,
       );
       expect(() => gen.generate('missing', 'auth'), throwsA(isA<Exception>()));
+    });
+  });
+
+  group('EntityGenerator', () {
+    test('creates user_entity.dart in domain/entities', () async {
+      await h.withAuthFeature(() async {
+        final gen = EntityGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user');
+
+        final file = File(
+          p.join(
+            h.tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'domain',
+            'entities',
+            'user_entity.dart',
+          ),
+        );
+        expect(file.existsSync(), isTrue);
+        final content = file.readAsStringSync();
+        expect(content.contains('class UserEntity'), isTrue);
+      });
+    });
+
+    test('throws when file exists and force=false', () async {
+      await h.withAuthFeature(() async {
+        final gen = EntityGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user');
+
+        expect(() => gen.generate('auth', 'user'), throwsA(isA<Exception>()));
+      });
+    });
+
+    test('overwrites when file exists and force=true', () async {
+      await h.withAuthFeature(() async {
+        final gen = EntityGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user');
+
+        await gen.generate('auth', 'user', force: true);
+
+        final file = File(
+          p.join(
+            h.tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'domain',
+            'entities',
+            'user_entity.dart',
+          ),
+        );
+        expect(file.existsSync(), isTrue);
+        expect(file.readAsStringSync().contains('class UserEntity'), isTrue);
+      });
+    });
+
+    test('throws on invalid name (UserProfile)', () async {
+      await h.withAuthFeature(() async {
+        final gen = EntityGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        expect(
+          () => gen.generate('auth', 'UserProfile'),
+          throwsA(isA<Exception>()),
+        );
+      });
+    });
+
+    test('throws when feature does not exist', () {
+      final gen = EntityGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      expect(() => gen.generate('missing', 'user'), throwsA(isA<Exception>()));
+    });
+  });
+
+  group('UseCaseGenerator', () {
+    test('creates login_usecase.dart in domain/usecases', () async {
+      await h.withAuthFeature(() async {
+        final gen = UseCaseGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'login');
+
+        final file = File(
+          p.join(
+            h.tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'domain',
+            'usecases',
+            'login_usecase.dart',
+          ),
+        );
+        expect(file.existsSync(), isTrue);
+        final content = file.readAsStringSync();
+        expect(content.contains('class LoginUseCase'), isTrue);
+        expect(content.contains('class LoginParams'), isTrue);
+      });
+    });
+
+    test('throws when file exists and force=false', () async {
+      await h.withAuthFeature(() async {
+        final gen = UseCaseGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'login');
+
+        expect(() => gen.generate('auth', 'login'), throwsA(isA<Exception>()));
+      });
+    });
+
+    test('overwrites when file exists and force=true', () async {
+      await h.withAuthFeature(() async {
+        final gen = UseCaseGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'login');
+
+        await gen.generate('auth', 'login', force: true);
+
+        final file = File(
+          p.join(
+            h.tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'domain',
+            'usecases',
+            'login_usecase.dart',
+          ),
+        );
+        expect(file.existsSync(), isTrue);
+        expect(file.readAsStringSync().contains('class LoginUseCase'), isTrue);
+      });
+    });
+
+    test('throws on invalid name (LoginUser)', () async {
+      await h.withAuthFeature(() async {
+        final gen = UseCaseGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        expect(
+          () => gen.generate('auth', 'LoginUser'),
+          throwsA(isA<Exception>()),
+        );
+      });
+    });
+
+    test('throws when feature does not exist', () {
+      final gen = UseCaseGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      expect(() => gen.generate('missing', 'login'), throwsA(isA<Exception>()));
     });
   });
 
@@ -628,6 +803,108 @@ void main() {
             'presentation',
             'providers',
             'auth_provider_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isFalse);
+      });
+    });
+  });
+
+  group('EntityGenerator — tests', () {
+    test('creates test file by default', () async {
+      await h.withAuthFeature(() async {
+        final gen = EntityGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user');
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'domain',
+            'entities',
+            'user_entity_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isTrue);
+        final content = testFile.readAsStringSync();
+        expect(content.contains('UserEntity'), isTrue);
+        expect(content.contains('equals'), isTrue);
+      });
+    });
+
+    test('skips test file when withTests=false', () async {
+      await h.withAuthFeature(() async {
+        final gen = EntityGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user', withTests: false);
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'domain',
+            'entities',
+            'user_entity_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isFalse);
+      });
+    });
+  });
+
+  group('UseCaseGenerator — tests', () {
+    test('creates test file by default', () async {
+      await h.withAuthFeature(() async {
+        final gen = UseCaseGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'login');
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'domain',
+            'usecases',
+            'login_usecase_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isTrue);
+        final content = testFile.readAsStringSync();
+        expect(content.contains('LoginUseCase'), isTrue);
+        expect(content.contains('LoginParams'), isTrue);
+      });
+    });
+
+    test('skips test file when withTests=false', () async {
+      await h.withAuthFeature(() async {
+        final gen = UseCaseGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'login', withTests: false);
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'domain',
+            'usecases',
+            'login_usecase_test.dart',
           ),
         );
         expect(testFile.existsSync(), isFalse);
