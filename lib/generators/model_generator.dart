@@ -59,11 +59,15 @@ class ModelGenerator extends BaseGenerator {
         variables: {'model_name': modelName, 'class_name': className},
       );
     } else {
+      final imports = _collectImports(parsedFields);
       await copyTemplate(
         templateSubPath: 'model_with_fields',
         targetDir: modelsDir,
         variables: {'model_name': modelName, 'class_name': className},
-        lists: {'fields': _buildFieldVariables(parsedFields)},
+        lists: {
+          'fields': _buildFieldVariables(parsedFields),
+          if (imports.isNotEmpty) 'imports': imports,
+        },
       );
     }
 
@@ -96,49 +100,106 @@ class ModelGenerator extends BaseGenerator {
     }).toList();
   }
 
+  /// Collects unique relative import paths for custom/enum/list-custom fields.
+  List<Map<String, String>> _collectImports(List<ModelField> fields) {
+    final seen = <String>{};
+    final imports = <Map<String, String>>[];
+    for (final f in fields) {
+      final path = f.importPath;
+      if (path == null || seen.contains(path)) continue;
+      seen.add(path);
+      imports.add(<String, String>{'path': path});
+    }
+    return imports;
+  }
+
   String _fromJsonExpr(ModelField f) {
     final key = "'${f.name}'";
-    switch (f.baseType) {
-      case 'String':
-      case 'bool':
-      case 'int':
-        return 'json[$key] as ${f.dartType}';
-      case 'double':
-        return f.isNullable
-            ? '(json[$key] as num?)?.toDouble()'
-            : '(json[$key] as num).toDouble()';
-      case 'DateTime':
+    final nullableAccess = f.isNullable ? '?' : '';
+    switch (f.category) {
+      case FieldCategory.primitive:
+        switch (f.baseType) {
+          case 'String':
+          case 'bool':
+          case 'int':
+            return 'json[$key] as ${f.dartType}';
+          case 'double':
+            return f.isNullable
+                ? '(json[$key] as num?)?.toDouble()'
+                : '(json[$key] as num).toDouble()';
+        }
+        throw StateError('Unhandled primitive ${f.dartType}');
+      case FieldCategory.dateTime:
         return f.isNullable
             ? 'json[$key] == null ? null : DateTime.parse(json[$key] as String)'
             : 'DateTime.parse(json[$key] as String)';
-      case 'List<String>':
-        return f.isNullable
-            ? '(json[$key] as List?)?.cast<String>()'
-            : '(json[$key] as List).cast<String>()';
-      case 'List<int>':
-        return f.isNullable
-            ? '(json[$key] as List?)?.cast<int>()'
-            : '(json[$key] as List).cast<int>()';
-      case 'List<double>':
-        return f.isNullable
-            ? '(json[$key] as List?)?.map((e) => (e as num).toDouble()).toList()'
-            : '(json[$key] as List).map((e) => (e as num).toDouble()).toList()';
-      case 'List<bool>':
-        return f.isNullable
-            ? '(json[$key] as List?)?.cast<bool>()'
-            : '(json[$key] as List).cast<bool>()';
-      default:
-        throw StateError('Unsupported type ${f.dartType}');
+      case FieldCategory.listPrimitive:
+        switch (f.baseType) {
+          case 'List<String>':
+            return f.isNullable
+                ? '(json[$key] as List?)?.cast<String>()'
+                : '(json[$key] as List).cast<String>()';
+          case 'List<int>':
+            return f.isNullable
+                ? '(json[$key] as List?)?.cast<int>()'
+                : '(json[$key] as List).cast<int>()';
+          case 'List<double>':
+            return f.isNullable
+                ? '(json[$key] as List?)?.map((e) => (e as num).toDouble()).toList()'
+                : '(json[$key] as List).map((e) => (e as num).toDouble()).toList()';
+          case 'List<bool>':
+            return f.isNullable
+                ? '(json[$key] as List?)?.cast<bool>()'
+                : '(json[$key] as List).cast<bool>()';
+        }
+        throw StateError('Unhandled list primitive ${f.dartType}');
+      case FieldCategory.listCustom:
+        final inner = f.innerType!;
+        if (f.isNullable) {
+          return '(json[$key] as List?)'
+              '?.map((e) => $inner.fromJson(e as Map<String, dynamic>))'
+              '.toList()';
+        }
+        return '(json[$key] as List)'
+            '.map((e) => $inner.fromJson(e as Map<String, dynamic>))'
+            '.toList()';
+      case FieldCategory.custom:
+        final inner = f.baseType;
+        if (f.isNullable) {
+          return 'json[$key] == null ? null : '
+              '$inner.fromJson(json[$key] as Map<String, dynamic>)';
+        }
+        return '$inner.fromJson(json[$key] as Map<String, dynamic>)';
+      case FieldCategory.enumType:
+        final inner = f.baseType;
+        if (f.isNullable) {
+          return 'json[$key] == null ? null : '
+              '$inner.values.byName(json[$key] as String)';
+        }
+        return '$inner.values.byName(json[$key] as String)';
+      case FieldCategory.map:
+        return 'Map<String, dynamic>.from(json[$key] as Map$nullableAccess)';
     }
   }
 
   String _toJsonExpr(ModelField f) {
-    switch (f.baseType) {
-      case 'DateTime':
+    switch (f.category) {
+      case FieldCategory.dateTime:
         return f.isNullable
             ? '${f.name}?.toIso8601String()'
             : '${f.name}.toIso8601String()';
-      default:
+      case FieldCategory.listCustom:
+        if (f.isNullable) {
+          return '${f.name}?.map((e) => e.toJson()).toList()';
+        }
+        return '${f.name}.map((e) => e.toJson()).toList()';
+      case FieldCategory.custom:
+        return f.isNullable ? '${f.name}?.toJson()' : '${f.name}.toJson()';
+      case FieldCategory.enumType:
+        return f.isNullable ? '${f.name}?.name' : '${f.name}.name';
+      case FieldCategory.primitive:
+      case FieldCategory.listPrimitive:
+      case FieldCategory.map:
         return f.name;
     }
   }

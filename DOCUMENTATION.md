@@ -270,22 +270,38 @@ rekeens g model profile user \
   score:double? \
   isVerified:bool \
   roles:string[] \
-  registeredAt:datetime
+  registeredAt:datetime \
+  address:AddressModel? \
+  orders:List<OrderModel> \
+  status:enum OrderStatus \
+  metadata:Map<String, dynamic>
 ```
 
 #### Supported Field Syntax & Type Mapping
 
-| CLI Type | Dart Canonical Type | Nullable CLI Syntax | Dart Nullable Type |
-| :--- | :--- | :--- | :--- |
-| `string`, `String` | `String` | `string?` | `String?` |
-| `int` | `int` | `int?` | `int?` |
-| `double` | `double` | `double?` | `double?` |
-| `bool` | `bool` | `bool?` | `bool?` |
-| `datetime`, `date`, `DateTime` | `DateTime` | `datetime?` | `DateTime?` |
-| `string[]`, `List<String>` | `List<String>` | `string[]?` | `List<String>?` |
-| `int[]`, `List<int>` | `List<int>` | `int[]?` | `List<int>?` |
-| `double[]`, `List<double>` | `List<double>` | `double[]?` | `List<double>?` |
-| `bool[]`, `List<bool>` | `List<bool>` | `bool[]?` | `List<bool>?` |
+| CLI Type | Dart Canonical Type | Nullable CLI Syntax | Dart Nullable Type | Auto-import |
+| :--- | :--- | :--- | :--- | :--- |
+| `string`, `String` | `String` | `string?` | `String?` | — |
+| `int` | `int` | `int?` | `int?` | — |
+| `double` | `double` | `double?` | `double?` | — |
+| `bool` | `bool` | `bool?` | `bool?` | — |
+| `datetime`, `date`, `DateTime` | `DateTime` | `datetime?` | `DateTime?` | — |
+| `string[]`, `List<String>` | `List<String>` | `string[]?` | `List<String>?` | — |
+| `int[]`, `List<int>` | `List<int>` | `int[]?` | `List<int>?` | — |
+| `double[]`, `List<double>` | `List<double>` | `double[]?` | `List<double>?` | — |
+| `bool[]`, `List<bool>` | `List<bool>` | `bool[]?` | `List<bool>?` | — |
+| `Map<String, dynamic>` | `Map<String, dynamic>` | `Map<String, dynamic>?` | `Map<String, dynamic>?` | — |
+| `AddressModel` (PascalCase) | `AddressModel` | `AddressModel?` | `AddressModel?` | `import 'address_model.dart';` |
+| `List<OrderModel>` | `List<OrderModel>` | `List<OrderModel>?` | `List<OrderModel>?` | `import 'order_model.dart';` |
+| `enum OrderStatus` | `OrderStatus` | `enum OrderStatus?` | `OrderStatus?` | `import 'order_status.dart';` |
+
+**Nested custom models** (`AddressModel`, `List<OrderModel>`) — the generator emits a relative `import` at the top of the file and calls `Model.fromJson(...)` / `.toJson()` in the serialization methods. The imported file is expected to exist in the same `models/` directory (generate it separately with `rekeens g model`).
+
+**Enums** (`enum OrderStatus`) — the generator emits a relative `import` and uses `OrderStatus.values.byName(json[...] as String)` for deserialization and `.name` for serialization. The enum file is expected to exist in the same `models/` directory.
+
+**`Map<String, dynamic>`** — for arbitrary JSON payloads; serialized as-is via `Map<String, dynamic>.from(...)`.
+
+Imports are deduplicated: referencing the same custom type multiple times produces only one import line.
 
 ### Repository Generator
 
@@ -315,8 +331,8 @@ rekeens g service authentication auth_api
 Generates state management controllers in `lib/features/<feature>/presentation/providers/`.
 
 The CLI automatically detects the active state management package from `pubspec.yaml`:
-- If `flutter_bloc` is detected: Generates `<name>_cubit.dart` and `<name>_state.dart`.
-- If `flutter_riverpod` is detected: Generates `<name>_provider.dart`.
+- If `flutter_bloc` is detected: Generates `<name>_cubit.dart` and `<name>_state.dart` (sealed state with `Initial` and `Loading` variants, `emit` example in `doSomething`).
+- If `flutter_riverpod` is detected: Generates `<name>_provider.dart` and `<name>_state.dart` — a `StateNotifierProvider` backed by a `StateNotifier<<Name>State>` with a `count`/`isLoading` state class and a `doSomething` method that increments the count.
 
 ```bash
 rekeens g provider authentication auth
@@ -361,7 +377,7 @@ By default, every generator also creates a test file with basic checks:
 | `model` | `test/features/<f>/data/models/<m>_model_test.dart` | unit | constructor equality, `fromJson`, `toJson`, round-trip |
 | `repository` | `test/features/<f>/data/repositories/<r>_repository_test.dart` | unit | `getItems` returns empty list |
 | `service` | `test/features/<f>/data/services/<s>_service_test.dart` | unit | `performAction` completes |
-| `provider` (riverpod) | `test/features/<f>/presentation/providers/<p>_provider_test.dart` | unit | `ProviderContainer` resolves provider |
+| `provider` (riverpod) | `test/features/<f>/presentation/providers/<p>_provider_test.dart` | unit | initial state `count=0`/`isLoading=false`, `doSomething` increments count |
 | `cubit` (bloc) | `test/features/<f>/presentation/providers/<p>_cubit_test.dart` | unit | `blocTest` initial state |
 | `entity` | `test/features/<f>/domain/entities/<e>_entity_test.dart` | unit | value equality by `id` |
 | `usecase` | `test/features/<f>/domain/usecases/<u>_usecase_test.dart` | unit | `call` returns injected params, null fallback |

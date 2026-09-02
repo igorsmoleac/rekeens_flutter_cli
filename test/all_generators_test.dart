@@ -406,7 +406,7 @@ void main() {
 
   group('ProviderGenerator', () {
     test(
-      'creates auth_provider.dart with AuthProvider class and authProvider',
+      'creates auth_provider.dart with AuthNotifier and authProvider + state',
       () async {
         await h.withAuthFeature(() async {
           final gen = ProviderGenerator(
@@ -428,8 +428,27 @@ void main() {
           );
           expect(file.existsSync(), isTrue);
           final content = file.readAsStringSync();
-          expect(content.contains('class AuthProvider'), isTrue);
+          expect(content.contains('class AuthNotifier'), isTrue);
           expect(content.contains('authProvider'), isTrue);
+          expect(content.contains('StateNotifierProvider'), isTrue);
+          expect(content.contains('StateNotifier'), isTrue);
+
+          final stateFile = File(
+            p.join(
+              h.tempProject.path,
+              'lib',
+              'features',
+              'auth',
+              'presentation',
+              'providers',
+              'auth_state.dart',
+            ),
+          );
+          expect(stateFile.existsSync(), isTrue);
+          expect(
+            stateFile.readAsStringSync().contains('class AuthState'),
+            isTrue,
+          );
         });
       },
     );
@@ -468,7 +487,7 @@ void main() {
           ),
         );
         expect(file.existsSync(), isTrue);
-        expect(file.readAsStringSync().contains('class AuthProvider'), isTrue);
+        expect(file.readAsStringSync().contains('class AuthNotifier'), isTrue);
       });
     });
 
@@ -599,7 +618,7 @@ void main() {
         );
         expect(providerFile.existsSync(), isTrue);
         expect(
-          providerFile.readAsStringSync().contains('class AuthProvider'),
+          providerFile.readAsStringSync().contains('class AuthNotifier'),
           isTrue,
         );
       });
@@ -745,6 +764,8 @@ void main() {
         final content = testFile.readAsStringSync();
         expect(content.contains('authProvider'), isTrue);
         expect(content.contains('ProviderContainer'), isTrue);
+        expect(content.contains('count'), isTrue);
+        expect(content.contains('isLoading'), isTrue);
       });
     });
 

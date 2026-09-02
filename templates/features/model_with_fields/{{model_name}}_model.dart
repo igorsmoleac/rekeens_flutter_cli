@@ -1,4 +1,5 @@
-class {{class_name}}Model {
+{{#each imports}}import '{{path}}';
+{{/each}}class {{class_name}}Model {
 {{#each fields}}  final {{dart_type}} {{name}};
 {{/each}}
   const {{class_name}}Model({

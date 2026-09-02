@@ -80,7 +80,8 @@ Inside your project directory, scaffold modular code using `rekeens generate` (o
 rekeens g feature auth
 
 # Generate a typed model with JSON serialization
-rekeens g model auth user id:string name:string email:string? age:int createdAt:datetime
+rekeens g model auth user id:string name:string email:string? age:int createdAt:datetime \
+  address:AddressModel? orders:List<OrderModel> role:enum Role metadata:Map<String, dynamic>
 
 # Generate screen, repository, service, and state provider
 rekeens g screen auth login
@@ -93,7 +94,7 @@ rekeens g entity auth user
 rekeens g usecase auth login
 ```
 
-*The provider generator automatically detects whether your project uses **Riverpod** (generates Provider) or **BLoC** (generates Cubit + State).*
+*The provider generator automatically detects whether your project uses **Riverpod** (generates `StateNotifierProvider` + `StateNotifier` + state class) or **BLoC** (generates Cubit + State).*
 
 ---
 
@@ -128,10 +129,10 @@ lib/
 | `rekeens list` | Lists all available presets and generators | `rekeens list` |
 | `rekeens g feature <name>` | Scaffolds feature layers (`data`, `domain`, `presentation`) | `rekeens g feature profile` |
 | `rekeens g screen <feature> <name>` | Creates a screen widget inside a feature | `rekeens g screen profile settings` |
-| `rekeens g model <feature> <name> [fields]` | Creates a typed model with `fromJson` and `toJson` | `rekeens g model profile user name:string age:int` |
+| `rekeens g model <feature> <name> [fields]` | Creates a typed model with `fromJson`/`toJson`; supports primitives, `DateTime`, `List<>`, custom models, enums, `Map` | `rekeens g model profile user name:string age:int role:enum Role` |
 | `rekeens g repository <feature> <name>` | Creates a repository inside a feature | `rekeens g repository profile user` |
 | `rekeens g service <feature> <name>` | Creates an API service inside a feature | `rekeens g service profile user_api` |
-| `rekeens g provider <feature> <name>` | Creates a Riverpod provider or BLoC Cubit | `rekeens g provider profile profile_state` |
+| `rekeens g provider <feature> <name>` | Creates a Riverpod `StateNotifierProvider` or BLoC Cubit | `rekeens g provider profile profile_state` |
 | `rekeens g entity <feature> <name>` | Creates a domain entity inside a feature | `rekeens g entity profile user` |
 | `rekeens g usecase <feature> <name>` | Creates a domain use case inside a feature | `rekeens g usecase profile update_profile` |
 | `rekeens config init` | Generates a `rekeens.yaml` default configuration file | `rekeens config init` |
