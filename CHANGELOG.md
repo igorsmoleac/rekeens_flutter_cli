@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.25.0
+
+- **Before/after generate hooks** — `rekeens.yaml` now supports a `hooks` section that runs shell commands before and after every `rekeens generate` invocation, enabling auto-formatting, analysis, DI registration, and other post-generation tasks
+  - **New `hooks` section** in `rekeens.yaml` with `before_generate` and `after_generate` lists; each entry is either a plain string (runs for all generators) or a map with `run` (required), `when` (optional list of generator types), and `description` (optional label)
+  - **New files**: `lib/config/hooks.dart` (`HookConfig`, `HookSet`, `HookContext`, `HookRunner`), `test/hooks_test.dart` (14 tests)
+  - **`ConfigLoader.loadHooks`** — parses the `hooks` section from `rekeens.yaml` using the same resolution chain (local → home); returns empty `HookSet` on missing/malformed config with a `logger.warn`
+  - **`GenerateCommand`** — loads hooks before dispatch, runs `before_generate` hooks → generator → `after_generate` hooks; new `--hooks` (default) / `--no-hooks` flag; `--dry-run` skips hook execution and logs what would have run; constructor accepts injectable `HookRunner` for testing
+  - **Environment variables** passed to every hook: `REKEENS_GENERATOR_TYPE`, `REKEENS_FEATURE_NAME`, `REKEENS_ENTITY_NAME`
+  - **Behavior**: hooks run in the project working directory via `sh -c` (Linux/macOS) or `cmd /c` (Windows); non-zero exit code stops the pipeline and throws; hooks are filtered by `when` list if present
+  - **`config_command.dart`** — `defaultConfigContent` now includes a commented-out `hooks:` section with examples
+  - **`DOCUMENTATION.md`** — new "Hooks" subsection under "Component Generators" with syntax, env vars table, and behavior notes; "Common Generator Flags" updated with `--hooks`/`--no-hooks`
+  - **Tests**: `hooks_test.dart` (+14: `appliesTo` filtering, `HookSet.isEmpty`, echo success, marker file, env var passing, skip on `when` mismatch, failure on non-zero exit, dry-run skip, multiple hooks in order); `config_loader_test.dart` (+6: empty on no config, empty on no hooks section, simple string hooks, map-style hooks, multiple hooks, skip entries without `run`, malformed YAML); `generate_command_test.dart` (+2: `--no-hooks` flag, hook runner not called)
+
 ## 0.24.0
 
 - **Model generator now supports nested custom models, enums, and `Map<String, dynamic>`** — previously only primitives, `DateTime`, and `List<primitive>` were accepted; real API models frequently need nested objects, enums, and arbitrary JSON maps

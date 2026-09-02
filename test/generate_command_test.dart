@@ -1,5 +1,6 @@
 import 'package:args/command_runner.dart';
 import 'package:rekeens_flutter_cli/commands/generate_command.dart';
+import 'package:rekeens_flutter_cli/config/hooks.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -105,4 +106,35 @@ void main() {
       await runner.run(['generate', 'feature', 'auth', '-n']);
     });
   });
+
+  group('hooks flag', () {
+    test('accepts --no-hooks flag without error', () async {
+      final fakeRunner = _FakeHookRunner();
+      final r = CommandRunner<void>('rekeens', 'test');
+      r.addCommand(GenerateCommand(hookRunner: fakeRunner));
+      await r.run(['generate', 'feature', 'auth', '--no-hooks', '--dry-run']);
+      expect(fakeRunner.runCalls, 0);
+    });
+
+    test('does not call hooks when --hooks is disabled', () async {
+      final fakeRunner = _FakeHookRunner();
+      final r = CommandRunner<void>('rekeens', 'test');
+      r.addCommand(GenerateCommand(hookRunner: fakeRunner));
+      await r.run(['generate', 'feature', 'auth', '--no-hooks', '--dry-run']);
+      expect(fakeRunner.runCalls, 0);
+    });
+  });
+}
+
+class _FakeHookRunner extends HookRunner {
+  _FakeHookRunner() : super();
+
+  int runCalls = 0;
+  List<String> generatorTypes = [];
+
+  @override
+  Future<void> runHooks(List<HookConfig> hooks, HookContext context) async {
+    runCalls++;
+    generatorTypes.add(context.generatorType);
+  }
 }
