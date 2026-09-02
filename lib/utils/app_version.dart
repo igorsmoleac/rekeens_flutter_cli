@@ -6,7 +6,13 @@ import 'package:rekeens_flutter_cli/utils/project_paths.dart';
 import 'package:yaml/yaml.dart';
 
 Future<String> getAppVersion() async {
-  final root = await getPackageRoot();
+  final String root;
+  try {
+    root = await getPackageRoot();
+  } catch (e) {
+    logger.warn('Could not resolve package root: $e');
+    return 'unknown';
+  }
   final pubspecFile = File(p.join(root, 'pubspec.yaml'));
   if (!pubspecFile.existsSync()) return 'unknown';
 
