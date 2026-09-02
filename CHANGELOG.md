@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.22.4
+
+- **Removed commented-out `ShellRoute` block from `templates/bootstrap/router.dart`** per STYLE.md §6 ("Не оставлять закомментированный код"): the go_router template shipped with a 15-line commented-out `ShellRoute` example (settings/profile routes inside a `MainShell`); removed entirely, leaving only the active `GoRoute` for the home page
+
 ## 0.22.3
 
 - **`main()` is now thin per STYLE.md §1** — `bin/rekeens_flutter_cli.dart` contained `--version` handling and the `g`→`generate` alias rewrite inline; both have been extracted into `lib/utils/arg_preprocessor.dart`
