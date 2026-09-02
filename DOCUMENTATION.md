@@ -540,8 +540,9 @@ dart run bin/rekeens_flutter_cli.dart doctor
 # Run unit and integration tests
 dart test
 
-# Format verification
-dart format --output=none --set-exit-if-changed .
+# Format verification (lib/test/bin only — templates/ contain {{placeholders}}
+# that are not valid Dart and cannot be formatted)
+dart format --output=none --set-exit-if-changed lib test bin
 
 # Static analysis
 dart analyze --fatal-infos
@@ -550,7 +551,7 @@ dart analyze --fatal-infos
 CI runs two workflows on every push and pull request to `main`/`dev`:
 
 - **`dart.yml`** — unit tests, format verification, and static analysis of the CLI itself.
-- **`e2e_smoke.yml`** — end-to-end smoke test that activates the CLI globally, scaffolds a project with `--preset=full` (all platforms, riverpod, go_router, dio, localization, codegen), then runs `flutter analyze` and `flutter test` inside the generated project. This guards the templates against silent degradation when dependencies or templates are updated.
+- **`e2e_smoke.yml`** — end-to-end smoke test that activates the CLI globally, scaffolds a project for each preset (`minimal`, `mobile`, `full`) as a matrix, then runs `flutter analyze` and `flutter test` inside each generated project. This guards the templates against silent degradation when dependencies or templates are updated.
 
 ---
 
