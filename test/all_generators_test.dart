@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:rekeens_flutter_cli/generators/datasource_generator.dart';
 import 'package:rekeens_flutter_cli/generators/entity_generator.dart';
 import 'package:rekeens_flutter_cli/generators/provider_generator.dart';
 import 'package:rekeens_flutter_cli/generators/repository_generator.dart';
@@ -401,6 +402,178 @@ void main() {
         templatesRootOverride: h.projectRoot,
       );
       expect(() => gen.generate('missing', 'login'), throwsA(isA<Exception>()));
+    });
+  });
+
+  group('DatasourceGenerator', () {
+    test('creates interface and impl in data/datasources', () async {
+      await h.withAuthFeature(() async {
+        final gen = DatasourceGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user_api');
+
+        final interfaceFile = File(
+          p.join(
+            h.tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'data',
+            'datasources',
+            'user_api_datasource.dart',
+          ),
+        );
+        expect(interfaceFile.existsSync(), isTrue);
+        final interfaceContent = interfaceFile.readAsStringSync();
+        expect(
+          interfaceContent.contains('abstract class UserApiDataSource'),
+          isTrue,
+        );
+        expect(interfaceContent.contains('fetchData'), isTrue);
+        expect(interfaceContent.contains('postData'), isTrue);
+
+        final implFile = File(
+          p.join(
+            h.tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'data',
+            'datasources',
+            'user_api_datasource_impl.dart',
+          ),
+        );
+        expect(implFile.existsSync(), isTrue);
+        final implContent = implFile.readAsStringSync();
+        expect(implContent.contains('class UserApiDataSourceImpl'), isTrue);
+        expect(
+          implContent.contains("import 'user_api_datasource.dart';"),
+          isTrue,
+        );
+        expect(implContent.contains('HttpClient'), isTrue);
+      });
+    });
+
+    test('throws when file exists and force=false', () async {
+      await h.withAuthFeature(() async {
+        final gen = DatasourceGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user_api');
+
+        expect(
+          () => gen.generate('auth', 'user_api'),
+          throwsA(isA<Exception>()),
+        );
+      });
+    });
+
+    test('overwrites when file exists and force=true', () async {
+      await h.withAuthFeature(() async {
+        final gen = DatasourceGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user_api');
+
+        await gen.generate('auth', 'user_api', force: true);
+
+        final implFile = File(
+          p.join(
+            h.tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'data',
+            'datasources',
+            'user_api_datasource_impl.dart',
+          ),
+        );
+        expect(implFile.existsSync(), isTrue);
+        expect(
+          implFile.readAsStringSync().contains('UserApiDataSourceImpl'),
+          isTrue,
+        );
+      });
+    });
+
+    test('throws on invalid name (UserApi)', () async {
+      await h.withAuthFeature(() async {
+        final gen = DatasourceGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        expect(
+          () => gen.generate('auth', 'UserApi'),
+          throwsA(isA<Exception>()),
+        );
+      });
+    });
+
+    test('throws when feature does not exist', () {
+      final gen = DatasourceGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      expect(
+        () => gen.generate('missing', 'user_api'),
+        throwsA(isA<Exception>()),
+      );
+    });
+  });
+
+  group('DatasourceGenerator — tests', () {
+    test('creates test file by default', () async {
+      await h.withAuthFeature(() async {
+        final gen = DatasourceGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user_api');
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'data',
+            'datasources',
+            'user_api_datasource_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isTrue);
+        final content = testFile.readAsStringSync();
+        expect(content.contains('UserApiDataSource'), isTrue);
+        expect(content.contains('fetchData'), isTrue);
+        expect(content.contains('postData'), isTrue);
+      });
+    });
+
+    test('skips test file when withTests=false', () async {
+      await h.withAuthFeature(() async {
+        final gen = DatasourceGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await gen.generate('auth', 'user_api', withTests: false);
+
+        final testFile = File(
+          p.join(
+            h.tempProject.path,
+            'test',
+            'features',
+            'auth',
+            'data',
+            'datasources',
+            'user_api_datasource_test.dart',
+          ),
+        );
+        expect(testFile.existsSync(), isFalse);
+      });
     });
   });
 

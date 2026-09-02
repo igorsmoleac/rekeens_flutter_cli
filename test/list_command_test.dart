@@ -60,6 +60,7 @@ void main() {
       expect(out, contains('provider'));
       expect(out, contains('entity'));
       expect(out, contains('usecase'));
+      expect(out, contains('datasource'));
     });
 
     test('includes usage examples for generators', () async {
@@ -72,6 +73,7 @@ void main() {
       expect(out, contains('rekeens generate provider auth auth'));
       expect(out, contains('rekeens generate entity auth user'));
       expect(out, contains('rekeens generate usecase auth login'));
+      expect(out, contains('rekeens generate datasource auth user_api'));
     });
 
     test('includes preset details', () async {
@@ -95,6 +97,7 @@ void main() {
         'provider',
         'entity',
         'usecase',
+        'datasource',
       });
     });
   });

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.26.0
+
+- **New `datasource` generator** — `rekeens g feature` creates `data/datasources/` but there was no command to generate files inside it; the new `datasource` generator fills this gap, completing the data layer alongside `model`, `repository`, and `service`
+  - `rekeens g datasource <feature> <name>` — creates two files in `lib/features/<feature>/data/datasources/`:
+    - `<name>_datasource.dart` — abstract interface with `fetchData()` and `postData()` methods
+    - `<name>_datasource_impl.dart` — concrete HTTP implementation using `dart:io` `HttpClient`, with JSON encoding/decoding, status code checking, and injectable `HttpClient` constructor for testing
+  - **New files**: `lib/generators/datasource_generator.dart`, `templates/features/datasource/{{datasource_name}}_datasource.dart`, `templates/features/datasource/{{datasource_name}}_datasource_impl.dart`, `templates/tests/datasource/{{datasource_name}}_datasource_test.dart`
+  - **Test stub**: `fetchData` decodes JSON on 200, throws on non-200, `postData` completes on 201; uses `_FakeHttpClient` / `_FakeHttpClientRequest` / `_FakeHttpClientResponse` to avoid real network calls
+  - **`GenerateCommand`** — registers `datasource` case with `<feature> <name>` validation; updated "Available:" list in unknown-type error
+  - **`ListCommand`** — `generators` list extended with `datasource` entry
+  - **Tests**: `all_generators_test.dart` (+7: interface+impl creation, force=false, force=true, invalid name, missing feature, test file by default, withTests=false); `generate_command_test.dart` (+1: missing datasource name); `list_command_test.dart` (extended assertions for `datasource`)
+  - **Docs**: `DOCUMENTATION.md` — new "Datasource Generator" section + TOC entries for entity/usecase/datasource + test stubs table row; `README.md` — quick-start example and commands table updated
+
 ## 0.25.0
 
 - **Before/after generate hooks** — `rekeens.yaml` now supports a `hooks` section that runs shell commands before and after every `rekeens generate` invocation, enabling auto-formatting, analysis, DI registration, and other post-generation tasks

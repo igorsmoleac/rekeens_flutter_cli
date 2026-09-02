@@ -92,6 +92,9 @@ rekeens g provider auth session
 # Generate domain-layer entities and use cases
 rekeens g entity auth user
 rekeens g usecase auth login
+
+# Generate a data source (interface + HTTP implementation)
+rekeens g datasource auth user_api
 ```
 
 *The provider generator automatically detects whether your project uses **Riverpod** (generates `StateNotifierProvider` + `StateNotifier` + state class) or **BLoC** (generates Cubit + State).*
@@ -135,6 +138,7 @@ lib/
 | `rekeens g provider <feature> <name>` | Creates a Riverpod `StateNotifierProvider` or BLoC Cubit | `rekeens g provider profile profile_state` |
 | `rekeens g entity <feature> <name>` | Creates a domain entity inside a feature | `rekeens g entity profile user` |
 | `rekeens g usecase <feature> <name>` | Creates a domain use case inside a feature | `rekeens g usecase profile update_profile` |
+| `rekeens g datasource <feature> <name>` | Creates a data source (interface + HTTP impl) inside a feature | `rekeens g datasource auth user_api` |
 | `rekeens config init` | Generates a `rekeens.yaml` default configuration file | `rekeens config init` |
 
 *Pass `-f, --force` to overwrite existing files, or `-n, --dry-run` to preview actions without writing to disk.*
