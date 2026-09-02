@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.22.3
+
+- **`main()` is now thin per STYLE.md §1** — `bin/rekeens_flutter_cli.dart` contained `--version` handling and the `g`→`generate` alias rewrite inline; both have been extracted into `lib/utils/arg_preprocessor.dart`
+  - New `handleVersionFlag(List<String> args)` — returns `true` when `--version`/`-v` was present (and printed the version), `false` otherwise; caller exits on `true`
+  - New `expandAliases(List<String> args)` — rewrites a leading `g` to `generate`, returns the args list unchanged otherwise; only the first positional argument is considered
+  - `bin/rekeens_flutter_cli.dart` — `main()` now calls `handleVersionFlag`, builds the `CommandRunner`, and calls `runner.run(expandAliases(args))`; no inline business logic remains
+- **Fixed `getAppVersion` crash when package root cannot be resolved** — `getPackageRoot()` was called outside the try/catch in `lib/utils/app_version.dart`, so a `StateError` ("Unable to locate rekeens_flutter_cli package root") propagated uncaught in environments where the CLI is not globally activated (e.g. unit tests); now wrapped in its own try/catch with a `logger.warn` and `'unknown'` fallback, consistent with the existing recovery pattern for YAML parsing errors
+- New test file `test/arg_preprocessor_test.dart` (+10 tests: 4 `handleVersionFlag` covering absent/present/`-v`/mixed, 6 `expandAliases` covering `g`/`generate`/non-g/empty/first-only/non-first)
+
 ## 0.22.2
 
 - **CI now matches the documented quality gates** — `DOCUMENTATION.md` claimed `dart.yml` runs format verification and `--fatal-infos` analysis, but the workflow only ran `dart analyze` (without `--fatal-infos`) and `dart test`
