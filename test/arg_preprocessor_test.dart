@@ -22,7 +22,11 @@ void main() {
 
   group('expandAliases', () {
     test('rewrites leading g to generate', () {
-      expect(expandAliases(['g', 'auth', 'login']), ['generate', 'auth', 'login']);
+      expect(expandAliases(['g', 'auth', 'login']), [
+        'generate',
+        'auth',
+        'login',
+      ]);
     });
 
     test('leaves generate unchanged', () {
