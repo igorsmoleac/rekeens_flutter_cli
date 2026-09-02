@@ -6,6 +6,6 @@ class {{class_name}}Cubit extends Cubit<{{class_name}}State> {
   {{class_name}}Cubit() : super(const {{class_name}}Initial());
 
   Future<void> doSomething() async {
-    // TODO: implement cubit logic
+    emit(const {{class_name}}Loading());
   }
 }
