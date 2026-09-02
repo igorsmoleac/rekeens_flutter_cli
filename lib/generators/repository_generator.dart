@@ -24,12 +24,26 @@ class RepositoryGenerator extends BaseGenerator {
     }
 
     final featureDir = getFeatureDir(featureName);
-    final repositoriesDir = p.join(featureDir, 'data', 'repositories');
-    final targetPath = p.join(
-      repositoriesDir,
+    final domainRepositoriesDir = p.join(featureDir, 'domain', 'repositories');
+    final dataRepositoriesDir = p.join(featureDir, 'data', 'repositories');
+    final interfacePath = p.join(
+      domainRepositoriesDir,
       '${repositoryName}_repository.dart',
     );
-    checkFileExists(targetPath, 'Repository "$repositoryName"', force: force);
+    final implPath = p.join(
+      dataRepositoriesDir,
+      '${repositoryName}_repository_impl.dart',
+    );
+    checkFileExists(
+      interfacePath,
+      'Repository interface "$repositoryName"',
+      force: force,
+    );
+    checkFileExists(
+      implPath,
+      'Repository implementation "$repositoryName"',
+      force: force,
+    );
 
     final testDir = p.join(
       projectDir,
@@ -42,20 +56,32 @@ class RepositoryGenerator extends BaseGenerator {
     final testPath = p.join(testDir, '${repositoryName}_repository_test.dart');
 
     if (dryRun) {
-      logDryRun('create repository "$repositoryName"', targetPath);
+      logDryRun('create repository interface "$repositoryName"', interfacePath);
+      logDryRun('create repository implementation "$repositoryName"', implPath);
       if (withTests) {
         logDryRun('create repository test "$repositoryName"', testPath);
       }
       return;
     }
 
-    ensureDirectory(repositoriesDir);
+    ensureDirectory(domainRepositoriesDir);
+    ensureDirectory(dataRepositoriesDir);
 
     final className = toPascalCase(repositoryName);
+    final variables = <String, String>{
+      'repository_name': repositoryName,
+      'class_name': className,
+    };
+
     await copyTemplate(
-      templateSubPath: 'repository',
-      targetDir: repositoriesDir,
-      variables: {'repository_name': repositoryName, 'class_name': className},
+      templateSubPath: 'repository/domain',
+      targetDir: domainRepositoriesDir,
+      variables: variables,
+    );
+    await copyTemplate(
+      templateSubPath: 'repository/data',
+      targetDir: dataRepositoriesDir,
+      variables: variables,
     );
 
     if (withTests) {

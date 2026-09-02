@@ -289,11 +289,16 @@ rekeens g model profile user \
 
 ### Repository Generator
 
-Creates a repository implementation inside `lib/features/<feature>/data/repositories/`.
+Splits the repository across Clean Architecture layers: the abstract interface
+is created in `lib/features/<feature>/domain/repositories/` and the concrete
+implementation in `lib/features/<feature>/data/repositories/`. The
+implementation imports the interface via a relative path.
 
 ```bash
 rekeens g repository profile user
-# Output: lib/features/profile/data/repositories/user_repository.dart
+# Output:
+#   lib/features/profile/domain/repositories/user_repository.dart        (interface)
+#   lib/features/profile/data/repositories/user_repository_impl.dart     (implementation)
 ```
 
 ### Service Generator

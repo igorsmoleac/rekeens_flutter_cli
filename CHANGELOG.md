@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.21.0
+
+- **Repository generator split across Clean Architecture layers**: the interface and implementation are no longer emitted into a single file inside `data/repositories/` (which left `domain/repositories/` empty and violated layer separation)
+  - Interface (`abstract class`) is now created at `lib/features/<feature>/domain/repositories/<name>_repository.dart`
+  - Implementation is now created at `lib/features/<feature>/data/repositories/<name>_repository_impl.dart` and imports the interface via a relative path
+- `templates/features/repository/` restructured into `domain/` and `data/` subdirectories replacing the previous single `{{repository_name}}_repository.dart` template
+- `RepositoryGenerator.generate` — checks both target paths for existing files (respecting `--force`), ensures both directories exist, and emits two `copyTemplate` calls; dry-run logs both planned files
+- `templates/tests/repository/{{repository_name}}_repository_test.dart` — import updated to the `_repository_impl.dart` path
+- `DOCUMENTATION.md` — "Repository Generator" section updated to describe the two-file output and Clean Architecture split
+- Tests: `all_generators_test.dart` RepositoryGenerator group updated to assert both the `domain/` interface and `data/` implementation files are created with correct content and relative import
+
 ## 0.20.1
 
 - Fix info-level warning in generated app_typography.dart by using non-nullable fontFamily with empty string fallback

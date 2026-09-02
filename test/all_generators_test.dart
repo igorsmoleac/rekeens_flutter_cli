@@ -12,7 +12,7 @@ void main() {
   final h = GeneratorTestHelper()..register();
 
   group('RepositoryGenerator', () {
-    test('creates user_repository.dart with UserRepository class', () async {
+    test('creates interface in domain/ and impl in data/', () async {
       await h.withAuthFeature(() async {
         final gen = RepositoryGenerator(
           workingDirectory: h.tempProject.path,
@@ -20,7 +20,25 @@ void main() {
         );
         await gen.generate('auth', 'user');
 
-        final file = File(
+        final interfaceFile = File(
+          p.join(
+            h.tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'domain',
+            'repositories',
+            'user_repository.dart',
+          ),
+        );
+        expect(interfaceFile.existsSync(), isTrue);
+        final interfaceContent = interfaceFile.readAsStringSync();
+        expect(
+          interfaceContent.contains('abstract class UserRepository'),
+          isTrue,
+        );
+
+        final implFile = File(
           p.join(
             h.tempProject.path,
             'lib',
@@ -28,12 +46,18 @@ void main() {
             'auth',
             'data',
             'repositories',
-            'user_repository.dart',
+            'user_repository_impl.dart',
           ),
         );
-        expect(file.existsSync(), isTrue);
-        final content = file.readAsStringSync();
-        expect(content.contains('class UserRepository'), isTrue);
+        expect(implFile.existsSync(), isTrue);
+        final implContent = implFile.readAsStringSync();
+        expect(implContent.contains('class UserRepositoryImpl'), isTrue);
+        expect(
+          implContent.contains(
+            "import '../../domain/repositories/user_repository.dart';",
+          ),
+          isTrue,
+        );
       });
     });
 
@@ -59,7 +83,26 @@ void main() {
 
         await gen.generate('auth', 'user', force: true);
 
-        final file = File(
+        final interfaceFile = File(
+          p.join(
+            h.tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'domain',
+            'repositories',
+            'user_repository.dart',
+          ),
+        );
+        expect(interfaceFile.existsSync(), isTrue);
+        expect(
+          interfaceFile.readAsStringSync().contains(
+            'abstract class UserRepository',
+          ),
+          isTrue,
+        );
+
+        final implFile = File(
           p.join(
             h.tempProject.path,
             'lib',
@@ -67,12 +110,12 @@ void main() {
             'auth',
             'data',
             'repositories',
-            'user_repository.dart',
+            'user_repository_impl.dart',
           ),
         );
-        expect(file.existsSync(), isTrue);
+        expect(implFile.existsSync(), isTrue);
         expect(
-          file.readAsStringSync().contains('class UserRepository'),
+          implFile.readAsStringSync().contains('class UserRepositoryImpl'),
           isTrue,
         );
       });
