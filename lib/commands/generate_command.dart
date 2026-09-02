@@ -1,6 +1,7 @@
 import 'package:args/command_runner.dart';
 import 'package:rekeens_flutter_cli/config/config_loader.dart';
 import 'package:rekeens_flutter_cli/config/hooks.dart';
+import 'package:rekeens_flutter_cli/generators/datasource_generator.dart';
 import 'package:rekeens_flutter_cli/generators/entity_generator.dart';
 import 'package:rekeens_flutter_cli/generators/feature_generator.dart';
 import 'package:rekeens_flutter_cli/generators/model_generator.dart';
@@ -50,6 +51,7 @@ class GenerateCommand extends Command<void> {
   final _providerGenerator = ProviderGenerator();
   final _entityGenerator = EntityGenerator();
   final _useCaseGenerator = UseCaseGenerator();
+  final _datasourceGenerator = DatasourceGenerator();
 
   @override
   String get name => 'generate';
@@ -213,9 +215,23 @@ class GenerateCommand extends Command<void> {
           withTests: withTests,
         );
         break;
+      case 'datasource':
+        _validateLength(
+          rest,
+          3,
+          'rekeens generate datasource <feature_name> <datasource_name>',
+        );
+        await _datasourceGenerator.generate(
+          rest[1],
+          rest[2],
+          force: force,
+          dryRun: dryRun,
+          withTests: withTests,
+        );
+        break;
       default:
         throw UsageException(
-          'Unknown generator type "$type". Available: feature, screen, model, repository, service, provider, entity, usecase',
+          'Unknown generator type "$type". Available: feature, screen, model, repository, service, provider, entity, usecase, datasource',
           usage,
         );
     }

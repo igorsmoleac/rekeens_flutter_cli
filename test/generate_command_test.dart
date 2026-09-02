@@ -78,6 +78,13 @@ void main() {
         throwsA(isA<UsageException>()),
       );
     });
+
+    test('throws UsageException when datasource name is missing', () {
+      expect(
+        () => runner.run(['generate', 'datasource', 'auth']),
+        throwsA(isA<UsageException>()),
+      );
+    });
   });
 
   group('flag parsing', () {

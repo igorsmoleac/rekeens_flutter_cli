@@ -101,4 +101,9 @@ const generators = <GeneratorInfo>[
     description: 'Create a domain use case inside a feature.',
     example: 'rekeens generate usecase auth login',
   ),
+  GeneratorInfo(
+    name: 'datasource',
+    description: 'Create a data source (abstract interface + HTTP impl) inside a feature.',
+    example: 'rekeens generate datasource auth user_api',
+  ),
 ];

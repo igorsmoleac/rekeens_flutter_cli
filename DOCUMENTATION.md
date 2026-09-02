@@ -26,6 +26,9 @@ This document provides a technical reference for **Rekeens Flutter CLI (`rekeens
    - [Repository Generator](#repository-generator)
    - [Service Generator](#service-generator)
    - [Provider / Cubit Generator](#provider--cubit-generator)
+   - [Entity Generator](#entity-generator)
+   - [Use Case Generator](#use-case-generator)
+   - [Datasource Generator](#datasource-generator)
    - [Common Generator Flags](#common-generator-flags)
    - [Hooks](#hooks)
 5. [Listing System (`list`)](#5-listing-system-list)
@@ -361,6 +364,21 @@ rekeens g usecase auth login
 # Output: lib/features/auth/domain/usecases/login_usecase.dart
 ```
 
+### Datasource Generator
+
+Creates a data source inside `lib/features/<feature>/data/datasources/`. The datasource
+is split into an abstract interface (`<name>_datasource.dart`) and a concrete HTTP
+implementation (`<name>_datasource_impl.dart`) using `dart:io` `HttpClient`. The
+interface declares `fetchData()` and `postData()` methods; the implementation makes
+HTTP requests to `https://api.example.com/<name>` and handles JSON encoding/decoding.
+
+```bash
+rekeens g datasource auth user_api
+# Output:
+#   lib/features/auth/data/datasources/user_api_datasource.dart      (interface)
+#   lib/features/auth/data/datasources/user_api_datasource_impl.dart (implementation)
+```
+
 ### Common Generator Flags
 
 - `-f, --force`: Overwrite existing files if they already exist.
@@ -422,6 +440,7 @@ By default, every generator also creates a test file with basic checks:
 | `cubit` (bloc) | `test/features/<f>/presentation/providers/<p>_cubit_test.dart` | unit | `blocTest` initial state |
 | `entity` | `test/features/<f>/domain/entities/<e>_entity_test.dart` | unit | value equality by `id` |
 | `usecase` | `test/features/<f>/domain/usecases/<u>_usecase_test.dart` | unit | `call` returns injected params, null fallback |
+| `datasource` | `test/features/<f>/data/datasources/<d>_datasource_test.dart` | unit | `fetchData` decodes JSON, throws on non-200, `postData` completes on 201 |
 
 Test stubs use `package:{{project_name}}/...` imports resolved from `pubspec.yaml`'s `name:` field. Templates live under `templates/tests/` as a separate category from `templates/features/`.
 
