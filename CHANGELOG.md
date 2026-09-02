@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.21.3
+
+- **Repository test template now exercises the interface, not just the implementation** per STYLE.md §6 ("don't create an abstraction if it isn't used"): the generated `repository_test.dart` instantiated `RepositoryImpl` directly, leaving the `abstract class` interface with no consumer in the test
+  - `templates/tests/repository/{{repository_name}}_repository_test.dart` — now imports the domain interface, declares both test subjects as `{{class_name}}Repository` (the interface type), and adds a `_Fake{{class_name}}Repository implements {{class_name}}Repository` mock with injected items to demonstrate the interface is actually exercised
+  - Two tests: impl returns empty list by default; fake returns the injected items through the interface
+  - No new dev dependency required (hand-written fake instead of mocktail/mockito, keeping the generated project dependency-light)
+  - `test/all_generators_test.dart` — RepositoryGenerator test group now also asserts the test file imports the `domain/repositories` interface and contains `implements UserRepository`
+
 ## 0.21.2
 
 - **Removed addressless `// TODO: implement ...` comments from generator templates** per STYLE.md §6 (anti-AI markers): templates must ship either a concrete example or a meaningful no-op stub, never a bare TODO

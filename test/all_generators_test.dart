@@ -457,6 +457,11 @@ void main() {
         final content = testFile.readAsStringSync();
         expect(content.contains('UserRepository'), isTrue);
         expect(content.contains('getItems'), isTrue);
+        expect(
+          content.contains('domain/repositories/user_repository.dart'),
+          isTrue,
+        );
+        expect(content.contains('implements UserRepository'), isTrue);
       });
     });
 
