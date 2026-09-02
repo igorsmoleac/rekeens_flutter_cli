@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.22.2
+
+- **CI now matches the documented quality gates** — `DOCUMENTATION.md` claimed `dart.yml` runs format verification and `--fatal-infos` analysis, but the workflow only ran `dart analyze` (without `--fatal-infos`) and `dart test`
+  - `.github/workflows/dart.yml` — added "Verify formatting" step running `dart format --output=none --set-exit-if-changed lib test bin` (only `lib`/`test`/`bin`; `templates/` contain `{{placeholders}}` that are not valid Dart and cannot be formatted); changed "Analyze project source" from `dart analyze` to `dart analyze --fatal-infos` to match the docs
+  - `DOCUMENTATION.md` — "Testing & Code Quality" code block updated to show `lib test bin` (not `.`) with a comment explaining the `templates/` exclusion; `e2e_smoke.yml` description corrected to state all three presets (`minimal`, `mobile`, `full`) are tested as a matrix, not just `--preset=full`
+
 ## 0.22.1
 
 - **Silent `catch (_) {}` blocks now log a warning** per STYLE.md §2 ("if recovery is possible, log a warning; otherwise rethrow"): 5 catch blocks across 4 files swallowed exceptions without any diagnostic output, making failures invisible to the user

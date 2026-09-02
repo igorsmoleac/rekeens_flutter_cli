@@ -33,8 +33,13 @@ jobs:
       - name: Install dependencies
         run: dart pub get
 
+      - name: Verify formatting
+        # Only lib/test/bin — templates/ contain {{placeholders}} that are
+        # not valid Dart and cannot be formatted.
+        run: dart format --output=none --set-exit-if-changed lib test bin
+
       - name: Analyze project source
-        run: dart analyze
+        run: dart analyze --fatal-infos
 
       - name: Run tests
         run: dart test
