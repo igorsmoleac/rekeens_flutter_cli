@@ -5,7 +5,5 @@ final {{provider_name}}Provider = Provider<{{class_name}}Provider>((ref) {
 });
 
 class {{class_name}}Provider {
-  Future<void> doSomething() async {
-    // TODO: implement provider logic
-  }
+  Future<void> doSomething() async {}
 }

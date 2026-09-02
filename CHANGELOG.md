@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.21.2
+
+- **Removed addressless `// TODO: implement ...` comments from generator templates** per STYLE.md §6 (anti-AI markers): templates must ship either a concrete example or a meaningful no-op stub, never a bare TODO
+  - `templates/features/service/{{service_name}}_service.dart` — `performAction` body is now an empty `async {}` no-op (test `performAction completes` still passes)
+  - `templates/features/provider/{{provider_name}}_provider.dart` — `doSomething` body is now an empty `async {}` no-op
+  - `templates/features/cubit/{{provider_name}}_cubit.dart` — `doSomething` now emits a concrete `{{class_name}}Loading` state instead of a TODO, demonstrating the canonical `emit(...)` pattern
+  - `templates/features/cubit/{{provider_name}}_state.dart` — added `{{class_name}}Loading` state class to back the emit example
+  - Repository template TODO was already removed in 0.21.0 (`return [];` stub)
+
 ## 0.21.1
 
 - **`dio_client.dart` now matches `http_client.dart` HTTP verb coverage**: added `put` and `delete` methods so projects generated with `--networking=dio` can perform PUT/DELETE requests without manual edits
