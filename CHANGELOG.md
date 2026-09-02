@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.26.1
+
+- **Removed all references to internal style guidelines from `CHANGELOG.md`** — previous changelog entries referenced a private internal document with section numbers (e.g. "per §6"), creating a documentation ghost for public readers; all 6 references replaced with neutral descriptions of the changes themselves
+- **Parameterized `datasource_impl` template** — the generated `{{datasource_name}}_datasource_impl.dart` no longer hardcodes `https://api.example.com/{{datasource_name}}`; the base URL is now a constructor parameter (`String baseUrl = '...'`) defaulting to a configurable value
+  - `DatasourceGenerator.generate()` accepts an optional `baseUrl` parameter, passed to the template as `{{base_url}}`
+  - `GenerateCommand` adds `--base-url` CLI option; resolution priority: CLI flag → `rekeens.yaml` `defaults.base-url` → built-in placeholder `https://api.example.com`
+- **CI: added test coverage upload to Codecov** — `.github/workflows/dart.yml` now runs `dart test --coverage=coverage`, formats it as lcov via `dart run coverage:format_coverage`, and uploads `coverage/lcov.info` to Codecov (ubuntu-latest only, to avoid duplicate matrix uploads); `coverage: ^1.7.2` added to `dev_dependencies`
+
 ## 0.26.0
 
 - **New `datasource` generator** — `rekeens g feature` creates `data/datasources/` but there was no command to generate files inside it; the new `datasource` generator fills this gap, completing the data layer alongside `model`, `repository`, and `service`
@@ -57,11 +65,11 @@
 
 ## 0.22.4
 
-- **Removed commented-out `ShellRoute` block from `templates/bootstrap/router.dart`** per STYLE.md §6 ("Не оставлять закомментированный код"): the go_router template shipped with a 15-line commented-out `ShellRoute` example (settings/profile routes inside a `MainShell`); removed entirely, leaving only the active `GoRoute` for the home page
+- **Removed commented-out `ShellRoute` block from `templates/bootstrap/router.dart`**: the go_router template shipped with a 15-line commented-out `ShellRoute` example (settings/profile routes inside a `MainShell`); removed entirely, leaving only the active `GoRoute` for the home page
 
 ## 0.22.3
 
-- **`main()` is now thin per STYLE.md §1** — `bin/rekeens_flutter_cli.dart` contained `--version` handling and the `g`→`generate` alias rewrite inline; both have been extracted into `lib/utils/arg_preprocessor.dart`
+- **`main()` is now thin** — `bin/rekeens_flutter_cli.dart` contained `--version` handling and the `g`→`generate` alias rewrite inline; both have been extracted into `lib/utils/arg_preprocessor.dart`
   - New `handleVersionFlag(List<String> args)` — returns `true` when `--version`/`-v` was present (and printed the version), `false` otherwise; caller exits on `true`
   - New `expandAliases(List<String> args)` — rewrites a leading `g` to `generate`, returns the args list unchanged otherwise; only the first positional argument is considered
   - `bin/rekeens_flutter_cli.dart` — `main()` now calls `handleVersionFlag`, builds the `CommandRunner`, and calls `runner.run(expandAliases(args))`; no inline business logic remains
@@ -76,7 +84,7 @@
 
 ## 0.22.1
 
-- **Silent `catch (_) {}` blocks now log a warning** per STYLE.md §2 ("if recovery is possible, log a warning; otherwise rethrow"): 5 catch blocks across 4 files swallowed exceptions without any diagnostic output, making failures invisible to the user
+- **Silent `catch (_) {}` blocks now log a warning**: 5 catch blocks across 4 files swallowed exceptions without any diagnostic output, making failures invisible to the user
   - `lib/services/project_scaffolder.dart` — cleanup of partial project dir after `flutter create` failure now logs `Failed to clean up partial project dir: <error>`; `taskkill` fallback to `sigkill` on Windows now logs `taskkill failed, falling back to sigkill: <error>`
   - `lib/utils/template_resolver.dart` — `getPackageRoot()` failure now logs `Could not resolve package root: <error>` before falling back to other template candidates
   - `lib/utils/package_metadata.dart` — `readPackageName` failure now logs `Could not read package name from <path>: <error>` before returning `null`
@@ -102,7 +110,7 @@
 
 ## 0.21.3
 
-- **Repository test template now exercises the interface, not just the implementation** per STYLE.md §6 ("don't create an abstraction if it isn't used"): the generated `repository_test.dart` instantiated `RepositoryImpl` directly, leaving the `abstract class` interface with no consumer in the test
+- **Repository test template now exercises the interface, not just the implementation**: the generated `repository_test.dart` instantiated `RepositoryImpl` directly, leaving the `abstract class` interface with no consumer in the test
   - `templates/tests/repository/{{repository_name}}_repository_test.dart` — now imports the domain interface, declares both test subjects as `{{class_name}}Repository` (the interface type), and adds a `_Fake{{class_name}}Repository implements {{class_name}}Repository` mock with injected items to demonstrate the interface is actually exercised
   - Two tests: impl returns empty list by default; fake returns the injected items through the interface
   - No new dev dependency required (hand-written fake instead of mocktail/mockito, keeping the generated project dependency-light)
@@ -110,7 +118,7 @@
 
 ## 0.21.2
 
-- **Removed addressless `// TODO: implement ...` comments from generator templates** per STYLE.md §6 (anti-AI markers): templates must ship either a concrete example or a meaningful no-op stub, never a bare TODO
+- **Removed addressless `// TODO: implement ...` comments from generator templates**: templates must ship either a concrete example or a meaningful no-op stub, never a bare TODO
   - `templates/features/service/{{service_name}}_service.dart` — `performAction` body is now an empty `async {}` no-op (test `performAction completes` still passes)
   - `templates/features/provider/{{provider_name}}_provider.dart` — `doSomething` body is now an empty `async {}` no-op
   - `templates/features/cubit/{{provider_name}}_cubit.dart` — `doSomething` now emits a concrete `{{class_name}}Loading` state instead of a TODO, demonstrating the canonical `emit(...)` pattern
@@ -227,7 +235,7 @@
 
 - `ProjectFileWriter.configureProjectFiles` now renders `core/errors` templates into the generated project, completing the error-handling stack: `failure.dart` and `result.dart` are always rendered (foundational types), `exception_to_failure_mapper.dart` is rendered only when `--networking` is not `none` (it imports `ApiException` from `core/network/`)
 - New `templates/core/failure.dart`: sealed `Failure` class with `ServerFailure` (5xx), `ClientFailure` (4xx), `NetworkFailure`, `CacheFailure`, and `UnknownFailure` subclasses — replaces the draft that had a `CacheFailure` constructor typo and no `ClientFailure` (causing dead code in the mapper where both 4xx and 5xx returned `ServerFailure`)
-- New `templates/core/result.dart`: `Result<T>` sealed class with `Success<T>` / `FailureResult<T>` and convenience getters (`isSuccess`, `isFailure`, `valueOrNull`, `failureOrNull`) — replaces `Either<Failure, T>` from `dartz` with a dependency-free idiomatic Dart 3 sealed class, following STYLE.md's "don't add dependencies without necessity" rule
+- New `templates/core/result.dart`: `Result<T>` sealed class with `Success<T>` / `FailureResult<T>` and convenience getters (`isSuccess`, `isFailure`, `valueOrNull`, `failureOrNull`) — replaces `Either<Failure, T>` from `dartz` with a dependency-free idiomatic Dart 3 sealed class, avoiding unnecessary dependencies
 - Rewrote `templates/core/exception_to_failure_mapper.dart`: fixed broken `package:rekeens_flutter_cli/...` imports (templates render into a generated project with a different name — now uses relative `import 'failure.dart'` and `import '../network/api_exception.dart'`); 4xx now maps to `ClientFailure` instead of falling through to the unreachable `ServerFailure` branch; `null` statusCode maps to `NetworkFailure`
 - Reuses the existing `ApiException` from `core/network/api_exception.dart` (added in 0.13.0) instead of duplicating it as a separate `AppException` — both carry `message`, `statusCode`, and `responseBody`
 - `DOCUMENTATION.md` updated: `core/errors/` directory tree now lists the generated files; `core` row in Template Categories expanded to cover error templates

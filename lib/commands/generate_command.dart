@@ -39,6 +39,12 @@ class GenerateCommand extends Command<void> {
       help: 'Run before/after generate hooks from rekeens.yaml.',
       defaultsTo: true,
     );
+    argParser.addOption(
+      'base-url',
+      help:
+          'Base URL for datasource templates (e.g. https://api.example.com). '
+          'Falls back to rekeens.yaml `defaults.base-url`.',
+    );
   }
   final HookRunner _hookRunner;
   final String? _workingDirectory;
@@ -221,9 +227,11 @@ class GenerateCommand extends Command<void> {
           3,
           'rekeens generate datasource <feature_name> <datasource_name>',
         );
+        final baseUrl = _resolveBaseUrl();
         await _datasourceGenerator.generate(
           rest[1],
           rest[2],
+          baseUrl: baseUrl,
           force: force,
           dryRun: dryRun,
           withTests: withTests,
@@ -241,5 +249,20 @@ class GenerateCommand extends Command<void> {
     if (args.length < expected) {
       throw UsageException('Expected: $usage', usage);
     }
+  }
+
+  /// Resolves the datasource base URL from (in priority order):
+  /// 1. `--base-url` CLI flag
+  /// 2. `rekeens.yaml` `defaults.base-url`
+  /// 3. `null` (the generator will use its built-in placeholder)
+  String? _resolveBaseUrl() {
+    final flagValue = argResults!['base-url'] as String?;
+    if (flagValue != null && flagValue.isNotEmpty) return flagValue;
+
+    final config = ConfigLoader.load(workingDirectory: _workingDirectory);
+    final configValue = config?['base-url'];
+    if (configValue is String && configValue.isNotEmpty) return configValue;
+
+    return null;
   }
 }

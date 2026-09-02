@@ -4,15 +4,19 @@ import 'dart:io';
 import '{{datasource_name}}_datasource.dart';
 
 class {{class_name}}DataSourceImpl implements {{class_name}}DataSource {
-  {{class_name}}DataSourceImpl({HttpClient? httpClient})
-    : _httpClient = httpClient ?? HttpClient();
+  {{class_name}}DataSourceImpl({
+    HttpClient? httpClient,
+    String baseUrl = '{{base_url}}',
+  })  : _httpClient = httpClient ?? HttpClient(),
+        _baseUrl = baseUrl;
 
   final HttpClient _httpClient;
+  final String _baseUrl;
 
   @override
   Future<Map<String, dynamic>> fetchData() async {
     final request = await _httpClient.getUrl(
-      Uri.parse('https://api.example.com/{{datasource_name}}'),
+      Uri.parse('$_baseUrl/{{datasource_name}}'),
     );
     final response = await request.close();
 
@@ -29,7 +33,7 @@ class {{class_name}}DataSourceImpl implements {{class_name}}DataSource {
   @override
   Future<void> postData(Map<String, dynamic> data) async {
     final request = await _httpClient.postUrl(
-      Uri.parse('https://api.example.com/{{datasource_name}}'),
+      Uri.parse('$_baseUrl/{{datasource_name}}'),
     );
     request.headers.contentType = ContentType.json;
     request.write(jsonEncode(data));

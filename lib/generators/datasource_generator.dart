@@ -9,9 +9,15 @@ class DatasourceGenerator extends BaseGenerator {
     super.workingDirectory,
   });
 
+  /// Placeholder used when no `baseUrl` is provided. Users are expected to
+  /// replace it with their real API endpoint (e.g. via `--base-url` or
+  /// `rekeens.yaml`).
+  static const _defaultBaseUrl = 'https://api.example.com';
+
   Future<void> generate(
     String featureName,
     String datasourceName, {
+    String? baseUrl,
     bool force = false,
     bool dryRun = false,
     bool withTests = true,
@@ -66,9 +72,11 @@ class DatasourceGenerator extends BaseGenerator {
     ensureDirectory(datasourcesDir);
 
     final className = toPascalCase(datasourceName);
+    final effectiveBaseUrl = baseUrl ?? _defaultBaseUrl;
     final variables = <String, String>{
       'datasource_name': datasourceName,
       'class_name': className,
+      'base_url': effectiveBaseUrl,
     };
 
     await copyTemplate(
