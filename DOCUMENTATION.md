@@ -270,22 +270,38 @@ rekeens g model profile user \
   score:double? \
   isVerified:bool \
   roles:string[] \
-  registeredAt:datetime
+  registeredAt:datetime \
+  address:AddressModel? \
+  orders:List<OrderModel> \
+  status:enum OrderStatus \
+  metadata:Map<String, dynamic>
 ```
 
 #### Supported Field Syntax & Type Mapping
 
-| CLI Type | Dart Canonical Type | Nullable CLI Syntax | Dart Nullable Type |
-| :--- | :--- | :--- | :--- |
-| `string`, `String` | `String` | `string?` | `String?` |
-| `int` | `int` | `int?` | `int?` |
-| `double` | `double` | `double?` | `double?` |
-| `bool` | `bool` | `bool?` | `bool?` |
-| `datetime`, `date`, `DateTime` | `DateTime` | `datetime?` | `DateTime?` |
-| `string[]`, `List<String>` | `List<String>` | `string[]?` | `List<String>?` |
-| `int[]`, `List<int>` | `List<int>` | `int[]?` | `List<int>?` |
-| `double[]`, `List<double>` | `List<double>` | `double[]?` | `List<double>?` |
-| `bool[]`, `List<bool>` | `List<bool>` | `bool[]?` | `List<bool>?` |
+| CLI Type | Dart Canonical Type | Nullable CLI Syntax | Dart Nullable Type | Auto-import |
+| :--- | :--- | :--- | :--- | :--- |
+| `string`, `String` | `String` | `string?` | `String?` | — |
+| `int` | `int` | `int?` | `int?` | — |
+| `double` | `double` | `double?` | `double?` | — |
+| `bool` | `bool` | `bool?` | `bool?` | — |
+| `datetime`, `date`, `DateTime` | `DateTime` | `datetime?` | `DateTime?` | — |
+| `string[]`, `List<String>` | `List<String>` | `string[]?` | `List<String>?` | — |
+| `int[]`, `List<int>` | `List<int>` | `int[]?` | `List<int>?` | — |
+| `double[]`, `List<double>` | `List<double>` | `double[]?` | `List<double>?` | — |
+| `bool[]`, `List<bool>` | `List<bool>` | `bool[]?` | `List<bool>?` | — |
+| `Map<String, dynamic>` | `Map<String, dynamic>` | `Map<String, dynamic>?` | `Map<String, dynamic>?` | — |
+| `AddressModel` (PascalCase) | `AddressModel` | `AddressModel?` | `AddressModel?` | `import 'address_model.dart';` |
+| `List<OrderModel>` | `List<OrderModel>` | `List<OrderModel>?` | `List<OrderModel>?` | `import 'order_model.dart';` |
+| `enum OrderStatus` | `OrderStatus` | `enum OrderStatus?` | `OrderStatus?` | `import 'order_status.dart';` |
+
+**Nested custom models** (`AddressModel`, `List<OrderModel>`) — the generator emits a relative `import` at the top of the file and calls `Model.fromJson(...)` / `.toJson()` in the serialization methods. The imported file is expected to exist in the same `models/` directory (generate it separately with `rekeens g model`).
+
+**Enums** (`enum OrderStatus`) — the generator emits a relative `import` and uses `OrderStatus.values.byName(json[...] as String)` for deserialization and `.name` for serialization. The enum file is expected to exist in the same `models/` directory.
+
+**`Map<String, dynamic>`** — for arbitrary JSON payloads; serialized as-is via `Map<String, dynamic>.from(...)`.
+
+Imports are deduplicated: referencing the same custom type multiple times produces only one import line.
 
 ### Repository Generator
 

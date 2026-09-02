@@ -71,8 +71,10 @@ const generators = <GeneratorInfo>[
   ),
   GeneratorInfo(
     name: 'model',
-    description: 'Create a data model with optional fields (name:type ...).',
-    example: 'rekeens generate model auth user name:string age:int',
+    description:
+        'Create a data model with typed fields (primitives, DateTime, List, '
+        'custom models, enums, Map) and fromJson/toJson.',
+    example: 'rekeens generate model auth user name:string role:enum Role',
   ),
   GeneratorInfo(
     name: 'repository',

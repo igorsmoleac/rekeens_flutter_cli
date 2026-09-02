@@ -248,6 +248,261 @@ void main() {
     });
   });
 
+  test('ModelGenerator generates custom model field with import', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate(
+        'auth',
+        'user',
+        fields: ['name:string', 'profile:UserProfile'],
+      );
+
+      final modelFile = File(
+        p.join(
+          h.tempProject.path,
+          'lib',
+          'features',
+          'auth',
+          'data',
+          'models',
+          'user_model.dart',
+        ),
+      );
+      final content = modelFile.readAsStringSync();
+      expect(content.contains("import 'user_profile.dart';"), isTrue);
+      expect(content.contains('final UserProfile profile;'), isTrue);
+      expect(
+        content.contains(
+          'profile: UserProfile.fromJson(json[\'profile\'] as Map<String, dynamic>),',
+        ),
+        isTrue,
+      );
+      expect(content.contains("'profile': profile.toJson(),"), isTrue);
+    });
+  });
+
+  test('ModelGenerator generates nullable custom model field', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate(
+        'auth',
+        'user',
+        fields: ['name:string', 'profile:UserProfile?'],
+      );
+
+      final modelFile = File(
+        p.join(
+          h.tempProject.path,
+          'lib',
+          'features',
+          'auth',
+          'data',
+          'models',
+          'user_model.dart',
+        ),
+      );
+      final content = modelFile.readAsStringSync();
+      expect(content.contains('final UserProfile? profile;'), isTrue);
+      expect(
+        content.contains(
+          "profile: json['profile'] == null ? null : "
+          "UserProfile.fromJson(json['profile'] as Map<String, dynamic>),",
+        ),
+        isTrue,
+      );
+      expect(content.contains("'profile': profile?.toJson(),"), isTrue);
+    });
+  });
+
+  test(
+    'ModelGenerator generates List<CustomModel> field with import',
+    () async {
+      await h.withAuthFeature(() async {
+        final modelGen = ModelGenerator(
+          workingDirectory: h.tempProject.path,
+          templatesRootOverride: h.projectRoot,
+        );
+        await modelGen.generate(
+          'auth',
+          'user',
+          fields: ['name:string', 'items:List<OrderItem>'],
+        );
+
+        final modelFile = File(
+          p.join(
+            h.tempProject.path,
+            'lib',
+            'features',
+            'auth',
+            'data',
+            'models',
+            'user_model.dart',
+          ),
+        );
+        final content = modelFile.readAsStringSync();
+        expect(content.contains("import 'order_item.dart';"), isTrue);
+        expect(content.contains('final List<OrderItem> items;'), isTrue);
+        expect(
+          content.contains(
+            "items: (json['items'] as List)"
+            '.map((e) => OrderItem.fromJson(e as Map<String, dynamic>)).toList(),',
+          ),
+          isTrue,
+        );
+        expect(
+          content.contains("'items': items.map((e) => e.toJson()).toList(),"),
+          isTrue,
+        );
+      });
+    },
+  );
+
+  test('ModelGenerator generates enum field with import', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate(
+        'auth',
+        'user',
+        fields: ['name:string', 'role:enum Role'],
+      );
+
+      final modelFile = File(
+        p.join(
+          h.tempProject.path,
+          'lib',
+          'features',
+          'auth',
+          'data',
+          'models',
+          'user_model.dart',
+        ),
+      );
+      final content = modelFile.readAsStringSync();
+      expect(content.contains("import 'role.dart';"), isTrue);
+      expect(content.contains('final Role role;'), isTrue);
+      expect(
+        content.contains("role: Role.values.byName(json['role'] as String),"),
+        isTrue,
+      );
+      expect(content.contains("'role': role.name,"), isTrue);
+    });
+  });
+
+  test('ModelGenerator generates nullable enum field', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate(
+        'auth',
+        'user',
+        fields: ['name:string', 'role:enum Role?'],
+      );
+
+      final modelFile = File(
+        p.join(
+          h.tempProject.path,
+          'lib',
+          'features',
+          'auth',
+          'data',
+          'models',
+          'user_model.dart',
+        ),
+      );
+      final content = modelFile.readAsStringSync();
+      expect(content.contains('final Role? role;'), isTrue);
+      expect(content.contains('this.role,'), isTrue);
+      expect(
+        content.contains(
+          "role: json['role'] == null ? null : "
+          "Role.values.byName(json['role'] as String),",
+        ),
+        isTrue,
+      );
+      expect(content.contains("'role': role?.name,"), isTrue);
+    });
+  });
+
+  test('ModelGenerator generates Map<String, dynamic> field', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate(
+        'auth',
+        'user',
+        fields: ['name:string', 'metadata:Map<String, dynamic>'],
+      );
+
+      final modelFile = File(
+        p.join(
+          h.tempProject.path,
+          'lib',
+          'features',
+          'auth',
+          'data',
+          'models',
+          'user_model.dart',
+        ),
+      );
+      final content = modelFile.readAsStringSync();
+      expect(content.contains('final Map<String, dynamic> metadata;'), isTrue);
+      expect(
+        content.contains(
+          "metadata: Map<String, dynamic>.from(json['metadata'] as Map),",
+        ),
+        isTrue,
+      );
+      expect(content.contains("'metadata': metadata,"), isTrue);
+      // No import for Map.
+      expect(content.contains("import 'metadata"), isFalse);
+    });
+  });
+
+  test('ModelGenerator deduplicates imports for same custom type', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate(
+        'auth',
+        'user',
+        fields: ['primary:UserProfile', 'secondary:UserProfile?'],
+      );
+
+      final modelFile = File(
+        p.join(
+          h.tempProject.path,
+          'lib',
+          'features',
+          'auth',
+          'data',
+          'models',
+          'user_model.dart',
+        ),
+      );
+      final content = modelFile.readAsStringSync();
+      // Only one import line for user_profile.dart.
+      final importCount = "import 'user_profile.dart';"
+          .allMatches(content)
+          .length;
+      expect(importCount, 1);
+    });
+  });
+
   // --- Test generation ---
 
   test('FeatureGenerator creates page test file by default', () async {

@@ -101,6 +101,98 @@ void main() {
         throwsA(isA<FormatException>()),
       );
     });
+
+    test('parses custom model type (PascalCase)', () {
+      final f = parseModelField('profile:UserProfile');
+      expect(f.name, 'profile');
+      expect(f.dartType, 'UserProfile');
+      expect(f.category, FieldCategory.custom);
+      expect(f.importPath, 'user_profile.dart');
+      expect(f.isNullable, isFalse);
+    });
+
+    test('parses nullable custom model type', () {
+      final f = parseModelField('profile:UserProfile?');
+      expect(f.dartType, 'UserProfile?');
+      expect(f.category, FieldCategory.custom);
+      expect(f.importPath, 'user_profile.dart');
+      expect(f.isNullable, isTrue);
+      expect(f.baseType, 'UserProfile');
+    });
+
+    test('parses List<CustomModel>', () {
+      final f = parseModelField('items:List<OrderItem>');
+      expect(f.dartType, 'List<OrderItem>');
+      expect(f.category, FieldCategory.listCustom);
+      expect(f.innerType, 'OrderItem');
+      expect(f.importPath, 'order_item.dart');
+    });
+
+    test('parses nullable List<CustomModel>', () {
+      final f = parseModelField('items:List<OrderItem>?');
+      expect(f.dartType, 'List<OrderItem>?');
+      expect(f.category, FieldCategory.listCustom);
+      expect(f.innerType, 'OrderItem');
+      expect(f.importPath, 'order_item.dart');
+      expect(f.isNullable, isTrue);
+    });
+
+    test('parses case-insensitive list<CustomModel> alias', () {
+      final f = parseModelField('items:list<OrderItem>');
+      expect(f.dartType, 'List<OrderItem>');
+      expect(f.category, FieldCategory.listCustom);
+      expect(f.innerType, 'OrderItem');
+    });
+
+    test('parses enum type', () {
+      final f = parseModelField('role:enum Role');
+      expect(f.name, 'role');
+      expect(f.dartType, 'Role');
+      expect(f.category, FieldCategory.enumType);
+      expect(f.importPath, 'role.dart');
+    });
+
+    test('parses nullable enum type', () {
+      final f = parseModelField('role:enum Role?');
+      expect(f.dartType, 'Role?');
+      expect(f.category, FieldCategory.enumType);
+      expect(f.importPath, 'role.dart');
+      expect(f.isNullable, isTrue);
+    });
+
+    test('rejects enum with invalid name', () {
+      expect(
+        () => parseModelField('role:enum role'),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('parses Map<String, dynamic>', () {
+      final f = parseModelField('metadata:Map<String, dynamic>');
+      expect(f.dartType, 'Map<String, dynamic>');
+      expect(f.category, FieldCategory.map);
+      expect(f.importPath, isNull);
+    });
+
+    test('parses Map<String,dynamic> without space', () {
+      final f = parseModelField('metadata:Map<String,dynamic>');
+      expect(f.dartType, 'Map<String, dynamic>');
+      expect(f.category, FieldCategory.map);
+    });
+
+    test('parses nullable Map<String, dynamic>', () {
+      final f = parseModelField('metadata:Map<String, dynamic>?');
+      expect(f.dartType, 'Map<String, dynamic>?');
+      expect(f.category, FieldCategory.map);
+      expect(f.isNullable, isTrue);
+    });
+
+    test('rejects Map with non-dynamic value type', () {
+      expect(
+        () => parseModelField('data:Map<String, int>'),
+        throwsA(isA<FormatException>()),
+      );
+    });
   });
 
   group('parseModelFields', () {
