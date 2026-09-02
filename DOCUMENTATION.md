@@ -315,8 +315,8 @@ rekeens g service authentication auth_api
 Generates state management controllers in `lib/features/<feature>/presentation/providers/`.
 
 The CLI automatically detects the active state management package from `pubspec.yaml`:
-- If `flutter_bloc` is detected: Generates `<name>_cubit.dart` and `<name>_state.dart`.
-- If `flutter_riverpod` is detected: Generates `<name>_provider.dart`.
+- If `flutter_bloc` is detected: Generates `<name>_cubit.dart` and `<name>_state.dart` (sealed state with `Initial` and `Loading` variants, `emit` example in `doSomething`).
+- If `flutter_riverpod` is detected: Generates `<name>_provider.dart` and `<name>_state.dart` — a `StateNotifierProvider` backed by a `StateNotifier<<Name>State>` with a `count`/`isLoading` state class and a `doSomething` method that increments the count.
 
 ```bash
 rekeens g provider authentication auth
@@ -361,7 +361,7 @@ By default, every generator also creates a test file with basic checks:
 | `model` | `test/features/<f>/data/models/<m>_model_test.dart` | unit | constructor equality, `fromJson`, `toJson`, round-trip |
 | `repository` | `test/features/<f>/data/repositories/<r>_repository_test.dart` | unit | `getItems` returns empty list |
 | `service` | `test/features/<f>/data/services/<s>_service_test.dart` | unit | `performAction` completes |
-| `provider` (riverpod) | `test/features/<f>/presentation/providers/<p>_provider_test.dart` | unit | `ProviderContainer` resolves provider |
+| `provider` (riverpod) | `test/features/<f>/presentation/providers/<p>_provider_test.dart` | unit | initial state `count=0`/`isLoading=false`, `doSomething` increments count |
 | `cubit` (bloc) | `test/features/<f>/presentation/providers/<p>_cubit_test.dart` | unit | `blocTest` initial state |
 | `entity` | `test/features/<f>/domain/entities/<e>_entity_test.dart` | unit | value equality by `id` |
 | `usecase` | `test/features/<f>/domain/usecases/<u>_usecase_test.dart` | unit | `call` returns injected params, null fallback |

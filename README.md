@@ -93,7 +93,7 @@ rekeens g entity auth user
 rekeens g usecase auth login
 ```
 
-*The provider generator automatically detects whether your project uses **Riverpod** (generates Provider) or **BLoC** (generates Cubit + State).*
+*The provider generator automatically detects whether your project uses **Riverpod** (generates `StateNotifierProvider` + `StateNotifier` + state class) or **BLoC** (generates Cubit + State).*
 
 ---
 
@@ -131,7 +131,7 @@ lib/
 | `rekeens g model <feature> <name> [fields]` | Creates a typed model with `fromJson` and `toJson` | `rekeens g model profile user name:string age:int` |
 | `rekeens g repository <feature> <name>` | Creates a repository inside a feature | `rekeens g repository profile user` |
 | `rekeens g service <feature> <name>` | Creates an API service inside a feature | `rekeens g service profile user_api` |
-| `rekeens g provider <feature> <name>` | Creates a Riverpod provider or BLoC Cubit | `rekeens g provider profile profile_state` |
+| `rekeens g provider <feature> <name>` | Creates a Riverpod `StateNotifierProvider` or BLoC Cubit | `rekeens g provider profile profile_state` |
 | `rekeens g entity <feature> <name>` | Creates a domain entity inside a feature | `rekeens g entity profile user` |
 | `rekeens g usecase <feature> <name>` | Creates a domain use case inside a feature | `rekeens g usecase profile update_profile` |
 | `rekeens config init` | Generates a `rekeens.yaml` default configuration file | `rekeens config init` |

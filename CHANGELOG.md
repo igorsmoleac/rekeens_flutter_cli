@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.23.0
+
+- **Riverpod provider template upgraded from stateless `Provider<T>` to `StateNotifierProvider`** with real state management, matching the cubit template's level of completeness
+  - `templates/features/provider/{{provider_name}}_provider.dart` — now declares a `StateNotifierProvider<{{class_name}}Notifier, {{class_name}}State>` backed by a `{{class_name}}Notifier extends StateNotifier<{{class_name}}State>` with a `doSomething` method that toggles `isLoading` and increments `count` (replaces the previous plain `Provider<{{class_name}}Provider>` with a no-op class)
+  - `templates/features/provider/{{provider_name}}_state.dart` (new) — immutable `{{class_name}}State` class with `count`/`isLoading` fields and `copyWith`, mirroring the cubit template's separate state file
+  - `templates/tests/provider/{{provider_name}}_provider_test.dart` — rewritten: initial state assertion (`count=0`, `isLoading=false`), `doSomething` increments count via `container.read(provider.notifier)`
+  - `test/all_generators_test.dart` — ProviderGenerator group updated to assert `AuthNotifier`, `StateNotifierProvider`, `StateNotifier`, and the new `auth_state.dart` file; test-generation group asserts `count`/`isLoading` in the test stub
+  - `DOCUMENTATION.md` — "Provider / Cubit Generator" section and "Generated Test Stubs" table updated to describe the `StateNotifierProvider` + state class output
+  - `README.md` — quick-start note and commands table updated
+  - `lib/commands/list_command.dart` — provider description updated to mention `StateNotifierProvider`
+
 ## 0.22.4
 
 - **Removed commented-out `ShellRoute` block from `templates/bootstrap/router.dart`** per STYLE.md §6 ("Не оставлять закомментированный код"): the go_router template shipped with a 15-line commented-out `ShellRoute` example (settings/profile routes inside a `MainShell`); removed entirely, leaving only the active `GoRoute` for the home page
