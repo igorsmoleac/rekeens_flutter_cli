@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:{{project_name}}/features/{{feature_name}}/data/repositories/{{repository_name}}_repository.dart';
+import 'package:{{project_name}}/features/{{feature_name}}/data/repositories/{{repository_name}}_repository_impl.dart';
 
 void main() {
   group('{{class_name}}Repository', () {
