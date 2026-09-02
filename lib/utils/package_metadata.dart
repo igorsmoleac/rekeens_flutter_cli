@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:rekeens_flutter_cli/utils/logger.dart';
+
 String? readPackageName(File pubspecFile) {
   if (!pubspecFile.existsSync()) return null;
   try {
@@ -12,6 +14,8 @@ String? readPackageName(File pubspecFile) {
       if (value.isEmpty) return null;
       return value;
     }
-  } catch (_) {}
+  } catch (e) {
+    logger.warn('Could not read package name from ${pubspecFile.path}: $e');
+  }
   return null;
 }

@@ -126,7 +126,9 @@ class ProjectScaffolder {
         if (projectDir.existsSync()) {
           projectDir.deleteSync(recursive: true);
         }
-      } catch (_) {}
+      } catch (e) {
+        logger.warn('Failed to clean up partial project dir: $e');
+      }
       throw Exception(
         'Failed to create Flutter project "$projectName".\n'
         'Subsequent steps (template, dependencies, codegen) were skipped.\n'
@@ -310,7 +312,8 @@ Future<void> defaultScaffoldProcessRunner(
         // flutter.bat — taskkill /T kills the entire process tree.
         try {
           Process.runSync('taskkill', ['/F', '/T', '/PID', '${process.pid}']);
-        } catch (_) {
+        } catch (e) {
+          logger.warn('taskkill failed, falling back to sigkill: $e');
           process.kill(ProcessSignal.sigkill);
         }
       } else {
