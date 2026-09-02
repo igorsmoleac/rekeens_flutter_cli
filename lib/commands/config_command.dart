@@ -90,6 +90,21 @@ defaults:
   codegen: false
   pin_versions: false
 
+# Hooks — shell commands run before/after `rekeens generate`.
+# Each entry is either a plain string (runs for all generators) or a map
+# with `run` (required), `when` (optional list of generator types), and
+# `description` (optional label shown in logs).
+#
+# hooks:
+#   before_generate:
+#     - echo "Starting generation"
+#   after_generate:
+#     - run: dart format lib/
+#       when: [model, entity, usecase]
+#       description: Format generated Dart files
+#     - run: dart analyze lib/
+#       description: Static analysis after generation
+
 # Custom analysis_options.yaml for generated projects.
 # Uncomment and adapt to enforce your team's linting standards.
 # analysis_options:

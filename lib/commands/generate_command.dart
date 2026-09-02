@@ -1,4 +1,6 @@
 import 'package:args/command_runner.dart';
+import 'package:rekeens_flutter_cli/config/config_loader.dart';
+import 'package:rekeens_flutter_cli/config/hooks.dart';
 import 'package:rekeens_flutter_cli/generators/entity_generator.dart';
 import 'package:rekeens_flutter_cli/generators/feature_generator.dart';
 import 'package:rekeens_flutter_cli/generators/model_generator.dart';
@@ -9,7 +11,10 @@ import 'package:rekeens_flutter_cli/generators/service_generator.dart';
 import 'package:rekeens_flutter_cli/generators/usecase_generator.dart';
 
 class GenerateCommand extends Command<void> {
-  GenerateCommand() {
+  GenerateCommand({HookRunner? hookRunner, String? workingDirectory})
+    : _hookRunner =
+          hookRunner ?? HookRunner(workingDirectory: workingDirectory),
+      _workingDirectory = workingDirectory {
     argParser.addFlag(
       'force',
       abbr: 'f',
@@ -28,7 +33,15 @@ class GenerateCommand extends Command<void> {
       help: 'Generate unit/widget test stubs alongside the component.',
       defaultsTo: true,
     );
+    argParser.addFlag(
+      'hooks',
+      help: 'Run before/after generate hooks from rekeens.yaml.',
+      defaultsTo: true,
+    );
   }
+  final HookRunner _hookRunner;
+  final String? _workingDirectory;
+
   final _featureGenerator = FeatureGenerator();
   final _screenGenerator = ScreenGenerator();
   final _modelGenerator = ModelGenerator();
@@ -58,7 +71,40 @@ class GenerateCommand extends Command<void> {
     final force = argResults!['force'] as bool;
     final dryRun = argResults!['dry-run'] as bool;
     final withTests = argResults!['tests'] as bool;
+    final hooksEnabled = argResults!['hooks'] as bool;
 
+    final featureName = rest[1];
+    final entityName = rest.length > 2 ? rest[2] : null;
+
+    final hookSet = hooksEnabled
+        ? ConfigLoader.loadHooks(workingDirectory: _workingDirectory)
+        : const HookSet();
+
+    final context = HookContext(
+      generatorType: type,
+      featureName: featureName,
+      entityName: entityName,
+      dryRun: dryRun,
+    );
+
+    if (hooksEnabled && hookSet.beforeGenerate.isNotEmpty) {
+      await _hookRunner.runHooks(hookSet.beforeGenerate, context);
+    }
+
+    await _runGenerator(type, rest, force, dryRun, withTests);
+
+    if (hooksEnabled && hookSet.afterGenerate.isNotEmpty) {
+      await _hookRunner.runHooks(hookSet.afterGenerate, context);
+    }
+  }
+
+  Future<void> _runGenerator(
+    String type,
+    List<String> rest,
+    bool force,
+    bool dryRun,
+    bool withTests,
+  ) async {
     switch (type) {
       case 'feature':
         await _featureGenerator.generate(

@@ -27,6 +27,7 @@ This document provides a technical reference for **Rekeens Flutter CLI (`rekeens
    - [Service Generator](#service-generator)
    - [Provider / Cubit Generator](#provider--cubit-generator)
    - [Common Generator Flags](#common-generator-flags)
+   - [Hooks](#hooks)
 5. [Listing System (`list`)](#5-listing-system-list)
 6. [Configuration Management (`rekeens.yaml`)](#6-configuration-management-rekeensyaml)
    - [Schema Specification](#schema-specification)
@@ -365,6 +366,46 @@ rekeens g usecase auth login
 - `-f, --force`: Overwrite existing files if they already exist.
 - `-n, --dry-run`: Preview planned file generations in the console without writing to disk.
 - `--tests` (default) / `--no-tests`: Generate unit/widget test stubs alongside the component. Test files are placed under `test/features/<feature>/...` mirroring the `lib/` structure. Use `--no-tests` to skip test generation.
+- `--hooks` (default) / `--no-hooks`: Run before/after generate hooks defined in `rekeens.yaml` (see [Hooks](#hooks)).
+
+### Hooks
+
+`rekeens.yaml` supports a `hooks` section that runs shell commands before and after every `rekeens generate` invocation. This is useful for auto-formatting generated code, running analysis, updating DI registrations, or any other post-generation task.
+
+Each hook entry is either a **plain string** (runs for all generator types) or a **map** with three fields:
+
+| Field | Required | Description |
+|:---|:---|:---|
+| `run` | yes | Shell command to execute (via `sh -c` on Linux/macOS, `cmd /c` on Windows) |
+| `when` | no | List of generator types that trigger this hook (e.g. `[model, entity]`). Omit to run for all generators. |
+| `description` | no | Human-readable label shown in logs |
+
+```yaml
+hooks:
+  before_generate:
+    - echo "Starting generation"
+  after_generate:
+    - run: dart format lib/
+      when: [model, entity, usecase]
+      description: Format generated Dart files
+    - run: dart analyze lib/
+      description: Static analysis after generation
+```
+
+**Environment variables** passed to every hook:
+
+| Variable | Example | Description |
+|:---|:---|:---|
+| `REKEENS_GENERATOR_TYPE` | `model` | The generator type (`feature`, `screen`, `model`, `repository`, `service`, `provider`, `entity`, `usecase`) |
+| `REKEENS_FEATURE_NAME` | `auth` | The feature name argument |
+| `REKEENS_ENTITY_NAME` | `user` | The entity/model/screen/etc. name (if provided) |
+
+**Behavior**:
+- Hooks run in the project's working directory (where `rekeens.yaml` is located).
+- `--dry-run` skips hook execution and logs what would have run.
+- `--no-hooks` disables hooks entirely for that invocation.
+- A hook with a non-zero exit code stops the pipeline and throws an exception (after-generate hooks won't run if a before-generate hook fails).
+- Hooks are loaded from the same `rekeens.yaml` resolution chain as other config (local → home directory).
 
 ### Generated Test Stubs
 

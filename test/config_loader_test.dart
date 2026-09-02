@@ -395,6 +395,125 @@ analysis_options:
       expect(result!['include'], 'package:lints/recommended.yaml');
     });
   });
+
+  group('ConfigLoader.loadHooks', () {
+    test('returns empty HookSet when no config file exists', () {
+      final result = ConfigLoader.loadHooks(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+      expect(result.isEmpty, isTrue);
+    });
+
+    test('returns empty HookSet when config has no hooks section', () {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+defaults:
+  state_management: riverpod
+''');
+
+      final result = ConfigLoader.loadHooks(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+      expect(result.isEmpty, isTrue);
+    });
+
+    test('loads simple string hooks', () {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+hooks:
+  before_generate:
+    - echo "before"
+  after_generate:
+    - echo "after"
+''');
+
+      final result = ConfigLoader.loadHooks(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+
+      expect(result.beforeGenerate.length, 1);
+      expect(result.beforeGenerate[0].run, 'echo "before"');
+      expect(result.beforeGenerate[0].when, isNull);
+      expect(result.afterGenerate.length, 1);
+      expect(result.afterGenerate[0].run, 'echo "after"');
+    });
+
+    test('loads map-style hooks with when and description', () {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+hooks:
+  after_generate:
+    - run: dart format lib/
+      when: [model, entity]
+      description: Format after generation
+''');
+
+      final result = ConfigLoader.loadHooks(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+
+      expect(result.afterGenerate.length, 1);
+      final hook = result.afterGenerate[0];
+      expect(hook.run, 'dart format lib/');
+      expect(hook.when, ['model', 'entity']);
+      expect(hook.description, 'Format after generation');
+    });
+
+    test('loads multiple hooks', () {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+hooks:
+  before_generate:
+    - echo "first"
+    - run: echo "second"
+      when: [feature]
+  after_generate:
+    - echo "after1"
+    - echo "after2"
+''');
+
+      final result = ConfigLoader.loadHooks(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+
+      expect(result.beforeGenerate.length, 2);
+      expect(result.beforeGenerate[0].run, 'echo "first"');
+      expect(result.beforeGenerate[1].run, 'echo "second"');
+      expect(result.beforeGenerate[1].when, ['feature']);
+      expect(result.afterGenerate.length, 2);
+    });
+
+    test('skips entries without run field', () {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+hooks:
+  after_generate:
+    - description: missing run
+    - run: echo "valid"
+''');
+
+      final result = ConfigLoader.loadHooks(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+
+      expect(result.afterGenerate.length, 1);
+      expect(result.afterGenerate[0].run, 'echo "valid"');
+    });
+
+    test('returns empty on malformed YAML', () {
+      File(p.join(tempDir.path, 'rekeens.yaml')).writeAsStringSync('''
+hooks: [invalid
+''');
+
+      final result = ConfigLoader.loadHooks(
+        workingDirectory: tempDir.path,
+        homeDirectory: fakeHome.path,
+      );
+
+      expect(result.isEmpty, isTrue);
+    });
+  });
 }
 
 class _MemoryStdout implements Stdout {
