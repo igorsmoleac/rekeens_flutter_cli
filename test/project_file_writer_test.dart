@@ -351,6 +351,12 @@ void main() {
         expect(dioContent.contains('_AuthInterceptor'), isTrue);
         expect(dioContent.contains('LogInterceptor'), isTrue);
         expect(dioContent.contains('ApiException'), isTrue);
+        expect(dioContent.contains('Future<T> get<T>'), isTrue);
+        expect(dioContent.contains('Future<T> post<T>'), isTrue);
+        expect(dioContent.contains('Future<T> put<T>'), isTrue);
+        expect(dioContent.contains('Future<T> delete<T>'), isTrue);
+        expect(dioContent.contains('_dio.put'), isTrue);
+        expect(dioContent.contains('_dio.delete'), isTrue);
 
         expect(
           File(p.join(networkDir.path, 'http_client.dart')).existsSync(),
