@@ -90,4 +90,14 @@ const generators = <GeneratorInfo>[
         'Create a provider (riverpod) or cubit+state (bloc) inside a feature.',
     example: 'rekeens generate provider auth auth',
   ),
+  GeneratorInfo(
+    name: 'entity',
+    description: 'Create a domain entity inside a feature.',
+    example: 'rekeens generate entity auth user',
+  ),
+  GeneratorInfo(
+    name: 'usecase',
+    description: 'Create a domain use case inside a feature.',
+    example: 'rekeens generate usecase auth login',
+  ),
 ];

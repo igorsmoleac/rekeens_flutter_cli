@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.22.0
+
+- **New `entity` and `usecase` generators complete the domain layer** of the Clean Architecture scaffolding: `rekeens g feature` already created `domain/entities/`, `domain/repositories/`, and `domain/usecases/` directories, but only `repository` had a generator — entities and use cases had to be hand-written
+  - `rekeens g entity <feature> <name>` — creates `lib/features/<feature>/domain/entities/<name>_entity.dart` (plain Dart class with value equality via `==`/`hashCode` and a `const` constructor; no JSON codegen, no external deps)
+  - `rekeens g usecase <feature> <name>` — creates `lib/features/<feature>/domain/usecases/<name>_usecase.dart` with a `<Name>UseCase` class exposing `Future<String> call(<Name>Params params)` and a matching `<Name>Params` class, following the canonical Clean Architecture use case pattern
+  - Both generators support `--force`, `--dry-run`, and `--tests`/`--no-tests` like all other generators
+- New templates: `templates/features/entity/`, `templates/features/usecase/`, `templates/tests/entity/`, `templates/tests/usecase/`
+- New generator classes: `EntityGenerator`, `UseCaseGenerator` (in `lib/generators/`)
+- `GenerateCommand` — registers both new generators with `entity` and `usecase` cases; updated "Available:" list in the unknown-type error message
+- `ListCommand` — `generators` list extended with `entity` and `usecase` entries (description + example)
+- Generated test stubs:
+  - `entity_test`: value equality by `id` (same id → equal, different id → not equal)
+  - `usecase_test`: `call` returns the injected params input; null input falls back to empty string
+- `DOCUMENTATION.md` — new "Entity Generator" and "Use Case Generator" sections; "Generated Test Stubs" table extended with `entity` and `usecase` rows
+- `README.md` — quick-start examples and commands table extended with `entity` and `usecase`
+- Tests: `all_generators_test.dart` (+14 tests: 5 EntityGenerator + 5 UseCaseGenerator + 2 EntityGenerator tests + 2 UseCaseGenerator tests), `generate_command_test.dart` (+2 tests: missing entity name, missing usecase name), `list_command_test.dart` (extended assertions for `entity`/`usecase` in list, examples, and generators set)
+
 ## 0.21.3
 
 - **Repository test template now exercises the interface, not just the implementation** per STYLE.md §6 ("don't create an abstraction if it isn't used"): the generated `repository_test.dart` instantiated `RepositoryImpl` directly, leaving the `abstract class` interface with no consumer in the test
