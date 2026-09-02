@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:rekeens_flutter_cli/utils/logger.dart';
 import 'package:rekeens_flutter_cli/utils/project_paths.dart';
 
 class TemplateResolver {
@@ -28,7 +29,8 @@ class TemplateResolver {
     String? root;
     try {
       root = packageRootOverride ?? await getPackageRoot();
-    } catch (_) {
+    } catch (e) {
+      logger.warn('Could not resolve package root: $e');
       root = null;
     }
     if (root != null) {

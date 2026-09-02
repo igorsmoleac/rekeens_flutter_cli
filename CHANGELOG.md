@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.22.1
+
+- **Silent `catch (_) {}` blocks now log a warning** per STYLE.md §2 ("if recovery is possible, log a warning; otherwise rethrow"): 5 catch blocks across 4 files swallowed exceptions without any diagnostic output, making failures invisible to the user
+  - `lib/services/project_scaffolder.dart` — cleanup of partial project dir after `flutter create` failure now logs `Failed to clean up partial project dir: <error>`; `taskkill` fallback to `sigkill` on Windows now logs `taskkill failed, falling back to sigkill: <error>`
+  - `lib/utils/template_resolver.dart` — `getPackageRoot()` failure now logs `Could not resolve package root: <error>` before falling back to other template candidates
+  - `lib/utils/package_metadata.dart` — `readPackageName` failure now logs `Could not read package name from <path>: <error>` before returning `null`
+  - `lib/utils/app_version.dart` — `getAppVersion` failure now logs `Could not read app version from <path>: <error>` before returning `'unknown'`
+  - All 5 blocks changed from `catch (_)` to `catch (e)` to include the underlying error in the warning message; `logger` import added to `template_resolver.dart`, `package_metadata.dart`, and `app_version.dart`
+
 ## 0.22.0
 
 - **New `entity` and `usecase` generators complete the domain layer** of the Clean Architecture scaffolding: `rekeens g feature` already created `domain/entities/`, `domain/repositories/`, and `domain/usecases/` directories, but only `repository` had a generator — entities and use cases had to be hand-written
