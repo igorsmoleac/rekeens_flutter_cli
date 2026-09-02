@@ -2,11 +2,12 @@
 
 <p align="center">
   <strong>Production-ready Flutter scaffolding and code generation tool.</strong><br>
-  Built on Feature-First Clean Architecture, pre-configured state management, and modular generators.
+  Built on Feature-First Clean Architecture, pre-configured state management (Riverpod / BLoC), typed models, and modular generators.
 </p>
 
 <p align="center">
-  <a href="https://pub.dev/packages/rekeens_flutter_cli"><img src="https://img.shields.io/pub/v/rekeens_flutter_cli.svg" alt="coming soon"></a>
+  <a href="https://pub.dev/packages/rekeens_flutter_cli"><img src="https://img.shields.io/pub/v/rekeens_flutter_cli.svg" alt="Pub Version"></a>
+  <a href="https://pub.dev/packages/rekeens_flutter_cli/score"><img src="https://img.shields.io/pub/points/rekeens_flutter_cli.svg" alt="Pub Points"></a>
   <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.13+-blue.svg" alt="Dart SDK Version"></a>
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.x-02569B.svg" alt="Flutter"></a>
   <a href="https://github.com/igorsmoleac/rekeens_flutter_cli/actions"><img src="https://img.shields.io/github/actions/workflow/status/igorsmoleac/rekeens_flutter_cli/dart.yml?branch=main" alt="CI Status"></a>
@@ -18,11 +19,13 @@
 
 ## Highlights
 
-- **Instant Scaffolding** &mdash; Creates a runnable Flutter app with routing, theme, state management, and networking pre-wired.
+- **Deterministic Scaffolding** &mdash; Creates a runnable Flutter app with routing, theme tokens, error models, and networking pre-wired.
 - **Feature-First Architecture** &mdash; Enforces domain boundaries (`data`, `domain`, `presentation`) per business feature.
-- **Code Generators** &mdash; Scaffolds features, screens, repositories, services, providers, and typed models (`fromJson`/`toJson`).
+- **Typed Code Generators** &mdash; Scaffolds features, screens, repositories, services, datasources, use cases, providers, and typed models with serialization.
+- **State Management Adaptability** &mdash; Auto-detects Riverpod (`StateNotifier`) or BLoC (`Cubit`) in the target project.
 - **Presets and Configs** &mdash; Predefined profiles (`minimal`, `mobile`, `full`) and team-wide defaults via `rekeens.yaml`.
-- **Environment Diagnostics** &mdash; Built-in `doctor` command to inspect your local Flutter/Dart toolchain.
+- **Pre/Post Generation Hooks** &mdash; Executes arbitrary shell commands (format, analyze, code generation) around CLI actions.
+- **Environment Diagnostics** &mdash; Built-in `doctor` command to inspect your local Flutter and Dart toolchain.
 
 For complete specifications and template override guides, see the [Technical Documentation](DOCUMENTATION.md).
 
@@ -63,11 +66,11 @@ rekeens create my_app --state-management=riverpod --router=go_router --networkin
 
 #### Presets
 
-| Preset | Platforms | State | Router | Network | Localization | Codegen |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`minimal`** | `android, ios` | None | None | None | No | No |
-| **`mobile`** | `android, ios` | Riverpod | GoRouter | Dio | Yes | No |
-| **`full`** | `android, ios, windows, linux, macos, web` | Riverpod | GoRouter | Dio | Yes | Yes (`freezed`, `json_serializable`) |
+| Preset | Platforms | State | Router | Network | Storage | Localization | Codegen |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **`minimal`** | `android, ios` | None | None | None | None | No | No |
+| **`mobile`** | `android, ios` | Riverpod | GoRouter | Dio | SharedPreferences | Yes | No |
+| **`full`** | `android, ios, windows, linux, macos, web` | Riverpod | GoRouter | Dio | SecureStorage | Yes | Yes (`freezed`, `json_serializable`) |
 
 ---
 
@@ -133,7 +136,7 @@ lib/
 | `rekeens g feature <name>` | Scaffolds feature layers (`data`, `domain`, `presentation`) | `rekeens g feature profile` |
 | `rekeens g screen <feature> <name>` | Creates a screen widget inside a feature | `rekeens g screen profile settings` |
 | `rekeens g model <feature> <name> [fields]` | Creates a typed model with `fromJson`/`toJson`; supports primitives, `DateTime`, `List<>`, custom models, enums, `Map` | `rekeens g model profile user name:string age:int role:enum Role` |
-| `rekeens g repository <feature> <name>` | Creates a repository inside a feature | `rekeens g repository profile user` |
+| `rekeens g repository <feature> <name>` | Creates a repository (interface + implementation) inside a feature | `rekeens g repository profile user` |
 | `rekeens g service <feature> <name>` | Creates an API service inside a feature | `rekeens g service profile user_api` |
 | `rekeens g provider <feature> <name>` | Creates a Riverpod `StateNotifierProvider` or BLoC Cubit | `rekeens g provider profile profile_state` |
 | `rekeens g entity <feature> <name>` | Creates a domain entity inside a feature | `rekeens g entity profile user` |
@@ -147,7 +150,7 @@ lib/
 
 ## Configuration (`rekeens.yaml`)
 
-Define shared team defaults in `rekeens.yaml`:
+Define shared team defaults and lifecycle hooks in `rekeens.yaml`:
 
 ```yaml
 defaults:
@@ -156,9 +159,15 @@ defaults:
   state_management: riverpod
   router: go_router
   networking: dio
+  storage: shared_preferences
   localization: true
   theme: material3
   codegen: false
+
+hooks:
+  after_generate:
+    - run: dart format lib/
+      description: Auto-format generated Dart files
 ```
 
 ---
@@ -170,7 +179,7 @@ For full guides on:
 - Advanced CLI flags and CI/CD integration
 - Model generator field types and nullability rules
 - Overriding templates via `~/.rekeens/templates/` or `./.rekeens/templates/`
-- Local development and testing
+- Troubleshooting and local development workflows
 
 See the [Technical Documentation (DOCUMENTATION.md)](DOCUMENTATION.md).
 

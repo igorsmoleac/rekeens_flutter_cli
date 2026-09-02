@@ -1,7 +1,17 @@
 name: rekeens_flutter_cli
-description: A CLI tool for generating Flutter projects with custom architecture, presets, and feature generators.
+description: CLI tool for scaffolding Flutter applications with Feature-First Clean Architecture, Riverpod/BLoC, GoRouter, Dio, and modular code generators.
 version: 0.26.1
 repository: https://github.com/igorsmoleac/rekeens_flutter_cli
+issue_tracker: https://github.com/igorsmoleac/rekeens_flutter_cli/issues
+homepage: https://github.com/igorsmoleac/rekeens_flutter_cli
+documentation: https://github.com/igorsmoleac/rekeens_flutter_cli/blob/main/DOCUMENTATION.md
+
+topics:
+  - flutter-cli
+  - code-generation
+  - clean-architecture
+  - scaffolding
+  - developer-tools
 
 environment:
   sdk: ^3.13.0

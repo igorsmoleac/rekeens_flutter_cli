@@ -39,7 +39,9 @@ This document provides a technical reference for **Rekeens Flutter CLI (`rekeens
 7. [Custom Template System](#7-custom-template-system)
    - [Template Resolution Hierarchy](#template-resolution-hierarchy)
    - [Template Variables](#template-variables)
-8. [Development & Contributing](#8-development--contributing)
+8. [CI/CD Integration](#8-cicd-integration)
+9. [Troubleshooting & FAQ](#9-troubleshooting--faq)
+10. [Development & Contributing](#10-development--contributing)
 
 ---
 
@@ -599,7 +601,67 @@ void main() {
 
 ---
 
-## 8. Development & Contributing
+## 8. CI/CD Integration
+
+The CLI is designed for non-interactive execution in automated build and scaffolding pipelines.
+
+### Non-Interactive Project Creation
+
+Always pass `--preset` or complete CLI flags together with project names in headless scripts:
+
+```bash
+# GitHub Actions / GitLab CI example step
+- name: Scaffold Flutter App
+  run: |
+    dart pub global activate rekeens_flutter_cli
+    rekeens create test_app --preset=full --no-verbose
+```
+
+### Automated Code Generation in Pipelines
+
+When adding features in scripts, pass `--force` to prevent interactive prompts if target files exist:
+
+```bash
+rekeens g feature payments --force
+rekeens g model payments transaction id:string amount:double status:string --force
+```
+
+---
+
+## 9. Troubleshooting & FAQ
+
+### 1. `rekeens: command not found`
+
+**Cause:** Dart global pub cache `bin` directory is not present in system `PATH`.
+
+**Resolution:**
+- **Linux / macOS**: Add `export PATH="$PATH":"$HOME/.pub-cache/bin"` to `~/.bashrc` or `~/.zshrc`.
+- **Windows**: Add `%LOCALAPPDATA%\Pub\Cache\bin` to the `Path` environment variable in User settings.
+
+### 2. Route registration was skipped
+
+**Cause:** `rekeens g feature` or `rekeens g screen` looks for `lib/app/router.dart`. If this file was moved or renamed, route auto-injection is skipped with a warning.
+
+**Resolution:** Manually register the generated page in your router configuration or ensure `lib/app/router.dart` is present in the standard location.
+
+### 3. Model generator import resolution
+
+**Cause:** Using custom nested types (e.g. `user:UserModel`) produces `import 'user_model.dart';`.
+
+**Resolution:** Ensure that `UserModel` is generated in the same feature's `data/models/` directory:
+```bash
+rekeens g model <feature> user [fields]
+```
+
+### 4. Overriding templates locally
+
+**Cause:** Need team-specific headers or custom lint rules in all generated files.
+
+**Resolution:** Place template files matching the relative directory structure in `./.rekeens/templates/` (project-scoped) or `~/.rekeens/templates/` (global-scoped).
+
+---
+
+## 10. Development & Contributing
 
 ### Running from Source
 
