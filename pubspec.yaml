@@ -1,6 +1,6 @@
 name: rekeens_flutter_cli
 description: CLI tool for scaffolding Flutter applications with Feature-First Clean Architecture, Riverpod/BLoC, GoRouter, Dio, and modular code generators.
-version: 0.26.1
+version: 0.26.2
 repository: https://github.com/igorsmoleac/rekeens_flutter_cli
 issue_tracker: https://github.com/igorsmoleac/rekeens_flutter_cli/issues
 homepage: https://github.com/igorsmoleac/rekeens_flutter_cli
