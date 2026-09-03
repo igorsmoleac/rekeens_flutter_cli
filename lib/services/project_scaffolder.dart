@@ -9,12 +9,13 @@ import 'package:rekeens_flutter_cli/utils/dependency_resolver.dart';
 import 'package:rekeens_flutter_cli/utils/logger.dart';
 import 'package:rekeens_flutter_cli/utils/template_resolver.dart';
 
-typedef ScaffoldProcessRunner = Future<void> Function(
-  String executable,
-  List<String> args, {
-  String? workingDirectory,
-  Duration? timeout,
-});
+typedef ScaffoldProcessRunner =
+    Future<void> Function(
+      String executable,
+      List<String> args, {
+      String? workingDirectory,
+      Duration? timeout,
+    });
 
 /// Timeout constants for external process invocations.
 ///

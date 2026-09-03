@@ -21,8 +21,9 @@ void main() {
     expect(Directory(p.join(featureDir.path, 'data')).existsSync(), isTrue);
     expect(Directory(p.join(featureDir.path, 'domain')).existsSync(), isTrue);
     expect(
-      File(p.join(featureDir.path, 'presentation', 'pages', 'auth_page.dart'))
-          .existsSync(),
+      File(
+        p.join(featureDir.path, 'presentation', 'pages', 'auth_page.dart'),
+      ).existsSync(),
       isTrue,
     );
   });
@@ -320,48 +321,45 @@ void main() {
     });
   });
 
-  test(
-    'ModelGenerator generates List<CustomModel> field with import',
-    () async {
-      await h.withAuthFeature(() async {
-        final modelGen = ModelGenerator(
-          workingDirectory: h.tempProject.path,
-          templatesRootOverride: h.projectRoot,
-        );
-        await modelGen.generate(
-          'auth',
-          'user',
-          fields: ['name:string', 'items:List<OrderItem>'],
-        );
+  test('ModelGenerator generates List<CustomModel> field with import', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate(
+        'auth',
+        'user',
+        fields: ['name:string', 'items:List<OrderItem>'],
+      );
 
-        final modelFile = File(
-          p.join(
-            h.tempProject.path,
-            'lib',
-            'features',
-            'auth',
-            'data',
-            'models',
-            'user_model.dart',
-          ),
-        );
-        final content = modelFile.readAsStringSync();
-        expect(content.contains("import 'order_item.dart';"), isTrue);
-        expect(content.contains('final List<OrderItem> items;'), isTrue);
-        expect(
-          content.contains(
-            "items: (json['items'] as List)"
-            '.map((e) => OrderItem.fromJson(e as Map<String, dynamic>)).toList(),',
-          ),
-          isTrue,
-        );
-        expect(
-          content.contains("'items': items.map((e) => e.toJson()).toList(),"),
-          isTrue,
-        );
-      });
-    },
-  );
+      final modelFile = File(
+        p.join(
+          h.tempProject.path,
+          'lib',
+          'features',
+          'auth',
+          'data',
+          'models',
+          'user_model.dart',
+        ),
+      );
+      final content = modelFile.readAsStringSync();
+      expect(content.contains("import 'order_item.dart';"), isTrue);
+      expect(content.contains('final List<OrderItem> items;'), isTrue);
+      expect(
+        content.contains(
+          "items: (json['items'] as List)"
+          '.map((e) => OrderItem.fromJson(e as Map<String, dynamic>)).toList(),',
+        ),
+        isTrue,
+      );
+      expect(
+        content.contains("'items': items.map((e) => e.toJson()).toList(),"),
+        isTrue,
+      );
+    });
+  });
 
   test('ModelGenerator generates enum field with import', () async {
     await h.withAuthFeature(() async {

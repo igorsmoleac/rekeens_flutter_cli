@@ -25,8 +25,9 @@ void main() {
       final source = Directory(p.join(tempDir.path, 'source'))..createSync();
       final target = Directory(p.join(tempDir.path, 'target'))..createSync();
 
-      File(p.join(source.path, '{{name}}_file.txt'))
-          .writeAsStringSync('Hello {{name}}!');
+      File(
+        p.join(source.path, '{{name}}_file.txt'),
+      ).writeAsStringSync('Hello {{name}}!');
 
       await service.copyTemplate(
         sourceDir: source.path,
@@ -91,8 +92,9 @@ void main() {
     final source = Directory(p.join(tempDir.path, 'source'))..createSync();
     final target = Directory(p.join(tempDir.path, 'target'))..createSync();
 
-    File(p.join(source.path, 'file.txt'))
-        .writeAsStringSync('{{name}} is {{age}} years old');
+    File(
+      p.join(source.path, 'file.txt'),
+    ).writeAsStringSync('{{name}} is {{age}} years old');
 
     await service.copyTemplate(
       sourceDir: source.path,
@@ -111,8 +113,9 @@ void main() {
     final target = Directory(p.join(tempDir.path, 'target'))..createSync();
 
     Directory(p.join(source.path, '{{feature}}')).createSync();
-    File(p.join(source.path, '{{feature}}', 'file.dart'))
-        .writeAsStringSync('class {{feature}} {}');
+    File(
+      p.join(source.path, '{{feature}}', 'file.dart'),
+    ).writeAsStringSync('class {{feature}} {}');
 
     await service.copyTemplate(
       sourceDir: source.path,
@@ -149,10 +152,12 @@ void main() {
     final source = Directory(p.join(tempDir.path, 'source'))..createSync();
     final target = Directory(p.join(tempDir.path, 'target'))..createSync();
 
-    Directory(p.join(source.path, 'a', 'b', 'c', 'd'))
-        .createSync(recursive: true);
-    File(p.join(source.path, 'a', 'b', 'c', 'd', 'deep.txt'))
-        .writeAsStringSync('deep content');
+    Directory(
+      p.join(source.path, 'a', 'b', 'c', 'd'),
+    ).createSync(recursive: true);
+    File(
+      p.join(source.path, 'a', 'b', 'c', 'd', 'deep.txt'),
+    ).writeAsStringSync('deep content');
 
     await service.copyTemplate(
       sourceDir: source.path,
@@ -203,8 +208,9 @@ void main() {
     final source = Directory(p.join(tempDir.path, 'source'))..createSync();
     final target = Directory(p.join(tempDir.path, 'target'))..createSync();
 
-    File(p.join(source.path, 'file.txt'))
-        .writeAsStringSync('Hello {{name}} and {{other}}!');
+    File(
+      p.join(source.path, 'file.txt'),
+    ).writeAsStringSync('Hello {{name}} and {{other}}!');
 
     await service.copyTemplate(
       sourceDir: source.path,
@@ -325,8 +331,9 @@ void main() {
         },
       );
 
-      final content = File(p.join(target.path, 'model.dart'))
-          .readAsStringSync();
+      final content = File(
+        p.join(target.path, 'model.dart'),
+      ).readAsStringSync();
       expect(
         content,
         'class User {\n  final String email;\n  final int age;\n}',

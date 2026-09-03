@@ -43,8 +43,9 @@ void main() {
           throw ProcessException('flutter', args);
         }
         // Simulate `flutter create` by building the expected skeleton.
-        Directory(p.join(workingDir.path, 'my_app', 'lib', 'app'))
-            .createSync(recursive: true);
+        Directory(
+          p.join(workingDir.path, 'my_app', 'lib', 'app'),
+        ).createSync(recursive: true);
         return;
       }
 

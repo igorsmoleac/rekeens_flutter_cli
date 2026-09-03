@@ -88,7 +88,8 @@ const generators = <GeneratorInfo>[
   ),
   GeneratorInfo(
     name: 'provider',
-    description: 'Create a StateNotifierProvider (riverpod) or cubit+state (bloc) inside a feature.',
+    description:
+        'Create a StateNotifierProvider (riverpod) or cubit+state (bloc) inside a feature.',
     example: 'rekeens generate provider auth auth',
   ),
   GeneratorInfo(
@@ -103,7 +104,8 @@ const generators = <GeneratorInfo>[
   ),
   GeneratorInfo(
     name: 'datasource',
-    description: 'Create a data source (abstract interface + HTTP impl) inside a feature.',
+    description:
+        'Create a data source (abstract interface + HTTP impl) inside a feature.',
     example: 'rekeens generate datasource auth user_api',
   ),
 ];

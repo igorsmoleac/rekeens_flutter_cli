@@ -144,8 +144,9 @@ class ProjectFileWriter {
     final editor = YamlEditor('');
     editor.update([], analysisOptions);
     final content = editor.toString();
-    File(p.join(projectName, 'analysis_options.yaml'))
-        .writeAsStringSync(content);
+    File(
+      p.join(projectName, 'analysis_options.yaml'),
+    ).writeAsStringSync(content);
   }
 
   Future<void> _renderNetworkFiles(

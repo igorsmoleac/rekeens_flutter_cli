@@ -16,8 +16,9 @@ void main() {
 
   setUp(() {
     tempProject = Directory.systemTemp.createTempSync('pfw_test_');
-    Directory(p.join(tempProject.path, 'lib', 'app'))
-        .createSync(recursive: true);
+    Directory(
+      p.join(tempProject.path, 'lib', 'app'),
+    ).createSync(recursive: true);
     writer = ProjectFileWriter(templatesRootOverride: projectRoot);
   });
 
@@ -96,8 +97,9 @@ void main() {
       );
       expect(content.contains('ProviderScope'), isTrue);
       expect(
-        File(p.join(tempProject.path, 'lib', 'core', 'state', 'app_cubit.dart'))
-            .existsSync(),
+        File(
+          p.join(tempProject.path, 'lib', 'core', 'state', 'app_cubit.dart'),
+        ).existsSync(),
         isFalse,
       );
     });
@@ -418,8 +420,9 @@ void main() {
       });
 
       expect(
-        Directory(p.join(tempProject.path, 'lib', 'core', 'network'))
-            .existsSync(),
+        Directory(
+          p.join(tempProject.path, 'lib', 'core', 'network'),
+        ).existsSync(),
         isFalse,
       );
     });
@@ -433,8 +436,9 @@ void main() {
       });
 
       expect(
-        Directory(p.join(tempProject.path, 'lib', 'core', 'network'))
-            .existsSync(),
+        Directory(
+          p.join(tempProject.path, 'lib', 'core', 'network'),
+        ).existsSync(),
         isFalse,
       );
     });
@@ -575,8 +579,9 @@ void main() {
       });
 
       expect(
-        Directory(p.join(tempProject.path, 'lib', 'core', 'errors'))
-            .existsSync(),
+        Directory(
+          p.join(tempProject.path, 'lib', 'core', 'errors'),
+        ).existsSync(),
         isTrue,
       );
       expect(
@@ -595,57 +600,60 @@ void main() {
   });
 
   group('ProjectFileWriter core/storage', () {
-    test('creates shared_preferences storage files when storage=shared_preferences', () async {
-      await writer.configureProjectFiles(tempProject.path, {
-        'state_management': 'none',
-        'router': 'none',
-        'storage': 'shared_preferences',
-        'theme': 'material3',
-        'localization': false,
-      });
+    test(
+      'creates shared_preferences storage files when storage=shared_preferences',
+      () async {
+        await writer.configureProjectFiles(tempProject.path, {
+          'state_management': 'none',
+          'router': 'none',
+          'storage': 'shared_preferences',
+          'theme': 'material3',
+          'localization': false,
+        });
 
-      final storageDir = Directory(
-        p.join(tempProject.path, 'lib', 'core', 'storage'),
-      );
-      expect(storageDir.existsSync(), isTrue);
+        final storageDir = Directory(
+          p.join(tempProject.path, 'lib', 'core', 'storage'),
+        );
+        expect(storageDir.existsSync(), isTrue);
 
-      final interfaceFile = File(
-        p.join(storageDir.path, 'key_value_storage.dart'),
-      );
-      expect(interfaceFile.existsSync(), isTrue);
-      final interfaceContent = interfaceFile.readAsStringSync();
-      expect(
-        interfaceContent.contains('abstract class KeyValueStorage'),
-        isTrue,
-      );
-      expect(interfaceContent.contains('Future<String?> read'), isTrue);
-      expect(interfaceContent.contains('Future<void> write'), isTrue);
-      expect(interfaceContent.contains('Future<void> delete'), isTrue);
-      expect(interfaceContent.contains('Future<void> clear'), isTrue);
+        final interfaceFile = File(
+          p.join(storageDir.path, 'key_value_storage.dart'),
+        );
+        expect(interfaceFile.existsSync(), isTrue);
+        final interfaceContent = interfaceFile.readAsStringSync();
+        expect(
+          interfaceContent.contains('abstract class KeyValueStorage'),
+          isTrue,
+        );
+        expect(interfaceContent.contains('Future<String?> read'), isTrue);
+        expect(interfaceContent.contains('Future<void> write'), isTrue);
+        expect(interfaceContent.contains('Future<void> delete'), isTrue);
+        expect(interfaceContent.contains('Future<void> clear'), isTrue);
 
-      final implFile = File(
-        p.join(storageDir.path, 'shared_preferences_storage.dart'),
-      );
-      expect(implFile.existsSync(), isTrue);
-      final implContent = implFile.readAsStringSync();
-      expect(
-        implContent.contains(
-          "import 'package:shared_preferences/shared_preferences.dart'",
-        ),
-        isTrue,
-      );
-      expect(
-        implContent.contains(
-          'class SharedPreferencesStorage implements KeyValueStorage',
-        ),
-        isTrue,
-      );
+        final implFile = File(
+          p.join(storageDir.path, 'shared_preferences_storage.dart'),
+        );
+        expect(implFile.existsSync(), isTrue);
+        final implContent = implFile.readAsStringSync();
+        expect(
+          implContent.contains(
+            "import 'package:shared_preferences/shared_preferences.dart'",
+          ),
+          isTrue,
+        );
+        expect(
+          implContent.contains(
+            'class SharedPreferencesStorage implements KeyValueStorage',
+          ),
+          isTrue,
+        );
 
-      expect(
-        File(p.join(storageDir.path, 'secure_storage.dart')).existsSync(),
-        isFalse,
-      );
-    });
+        expect(
+          File(p.join(storageDir.path, 'secure_storage.dart')).existsSync(),
+          isFalse,
+        );
+      },
+    );
 
     test('creates secure_storage files when storage=secure_storage', () async {
       await writer.configureProjectFiles(tempProject.path, {
@@ -680,8 +688,9 @@ void main() {
       );
 
       expect(
-        File(p.join(storageDir.path, 'shared_preferences_storage.dart'))
-            .existsSync(),
+        File(
+          p.join(storageDir.path, 'shared_preferences_storage.dart'),
+        ).existsSync(),
         isFalse,
       );
     });
@@ -696,8 +705,9 @@ void main() {
       });
 
       expect(
-        Directory(p.join(tempProject.path, 'lib', 'core', 'storage'))
-            .existsSync(),
+        Directory(
+          p.join(tempProject.path, 'lib', 'core', 'storage'),
+        ).existsSync(),
         isFalse,
       );
     });
@@ -711,8 +721,9 @@ void main() {
       });
 
       expect(
-        Directory(p.join(tempProject.path, 'lib', 'core', 'storage'))
-            .existsSync(),
+        Directory(
+          p.join(tempProject.path, 'lib', 'core', 'storage'),
+        ).existsSync(),
         isFalse,
       );
     });

@@ -5,11 +5,12 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/utils/logger.dart';
 
-typedef ProcessRunner = Future<ProcessResult> Function(
-  String executable,
-  List<String> args, {
-  Map<String, String>? environment,
-});
+typedef ProcessRunner =
+    Future<ProcessResult> Function(
+      String executable,
+      List<String> args, {
+      Map<String, String>? environment,
+    });
 
 class DoctorCommand extends Command<void> {
   DoctorCommand({

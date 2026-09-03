@@ -57,7 +57,8 @@ class CreateCommand extends Command<void> {
     argParser.addOption('theme', help: 'Theme (material3, material2)');
     argParser.addOption(
       'seed-color',
-      help: 'Seed color hex (e.g. 0xFF2196F3 or #2196F3) for ColorScheme.fromSeed',
+      help:
+          'Seed color hex (e.g. 0xFF2196F3 or #2196F3) for ColorScheme.fromSeed',
     );
     argParser.addOption(
       'font-family',
