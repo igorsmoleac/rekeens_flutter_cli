@@ -128,7 +128,7 @@ lib/
 
 ### Prerequisites
 
-- **Dart SDK**: `>= 3.13.0`
+- **Dart SDK**: `>=3.12.0 <4.0.0`
 - **Flutter SDK**: `>= 3.0.0`
 - **Git**: `>= 2.x`
 
