@@ -8,7 +8,7 @@
 <p align="center">
   <a href="https://pub.dev/packages/rekeens_flutter_cli"><img src="https://img.shields.io/pub/v/rekeens_flutter_cli.svg" alt="Pub Version"></a>
   <a href="https://pub.dev/packages/rekeens_flutter_cli/score"><img src="https://img.shields.io/pub/points/rekeens_flutter_cli.svg" alt="Pub Points"></a>
-  <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.13+-blue.svg" alt="Dart SDK Version"></a>
+  <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.12+-blue.svg" alt="Dart SDK Version"></a>
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.x-02569B.svg" alt="Flutter"></a>
   <a href="https://github.com/igorsmoleac/rekeens_flutter_cli/actions"><img src="https://img.shields.io/github/actions/workflow/status/igorsmoleac/rekeens_flutter_cli/dart.yml?branch=main" alt="CI Status"></a>
   <a href="https://github.com/igorsmoleac/rekeens_flutter_cli/actions"><img src="https://img.shields.io/github/actions/workflow/status/igorsmoleac/rekeens_flutter_cli/e2e_smoke.yml?branch=main" alt="E2E Smoke"></a>

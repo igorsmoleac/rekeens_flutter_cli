@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.26.2
+- Update Dart SDK constraint to >=3.12.0 <4.0.0
+
 ## 0.26.1
 
 - **Removed all references to internal style guidelines from `CHANGELOG.md`** — previous changelog entries referenced a private internal document with section numbers (e.g. "per §6"), creating a documentation ghost for public readers; all 6 references replaced with neutral descriptions of the changes themselves
