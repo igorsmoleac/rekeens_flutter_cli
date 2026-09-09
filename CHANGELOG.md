@@ -1,12 +1,7 @@
 # Changelog
 
-## Unreleased
-- **Runnable `example/`** — the `example/` directory previously contained only a `rekeens.yaml.example` stub and did not reflect the current generator output; pub.dev scored "Provide documentation" 10/20 because pana requires a `.dart` file under `example/` for the "Package has an example" point
-  - **New `example/main.dart`** — executable example that scaffolds a minimal demo project in a temp directory and drives all nine generators (`feature`, `model`, `entity`, `usecase`, `repository`, `datasource`, `service`, `provider`, `screen`) through the same public API the CLI uses, then prints the generated file tree and the generated `user_model.dart`; run with `dart run example/main.dart`
-  - **New `example/README.md`** — describes the example, the equivalent `rekeens g` commands, and the full generated project tree (as of 0.26.x)
-  - **Updated `example/rekeens.yaml.example`** — synced with the current `rekeens config init` output: `storage`, `seed_color`, `font_family`, `pin_versions`, commented `hooks` and `analysis_options` sections
-  - `README.md` / `DOCUMENTATION.md` — pointers to the runnable example added
-
+## 0.26.3
+  - Add runnable example/ (main.dart, README.md, updated rekeens.yaml.example)
 ## 0.26.2
 - Update Dart SDK constraint to >=3.12.0 <4.0.0
 
