@@ -2,6 +2,8 @@
 
 This document provides a technical reference for **Rekeens Flutter CLI (`rekeens`)**, including architectural standards, command references, configuration options, code generator specifications, and custom template extensibility.
 
+A runnable example that drives every generator through the public API and prints the resulting project tree is available in [`example/main.dart`](example/main.dart) (see [`example/README.md`](example/README.md)).
+
 ---
 
 ## Table of Contents
