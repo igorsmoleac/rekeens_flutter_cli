@@ -188,6 +188,8 @@ For full guides on:
 
 See the [Technical Documentation (DOCUMENTATION.md)](DOCUMENTATION.md).
 
+Want to contribute? See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch model, commit conventions, and local checks.
+
 A runnable example lives in [`example/`](example/README.md): [`example/main.dart`](example/main.dart) drives all nine generators against a temporary demo project and prints the resulting file tree — run it with `dart run example/main.dart`.
 
 ---

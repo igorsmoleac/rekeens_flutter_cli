@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.27.1
+
+- **New `CONTRIBUTING.md`** — public contributor guide covering the branch model (`feature/<name>` → `dev` → `main`), commit message conventions, local checks (`dart format`, `dart analyze --fatal-infos`, `dart test`), PR checklist, versioning/changelog rules, and issue reporting guidelines; linked from `README.md`; no references to the private internal style guide remain in public docs
+
 ## 0.27.0
 
 - **Update existing models with `--add-field` / `--remove-field`** — after the initial generation, adding or removing a field previously required manual file editing; `rekeens g model` can now parse the existing model and regenerate it
