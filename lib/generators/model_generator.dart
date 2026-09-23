@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:path/path.dart' as p;
 import 'package:rekeens_flutter_cli/generators/base_generator.dart';
 import 'package:rekeens_flutter_cli/utils/logger.dart';
 import 'package:rekeens_flutter_cli/utils/model_fields.dart';
+import 'package:rekeens_flutter_cli/utils/model_file_parser.dart';
 
 class ModelGenerator extends BaseGenerator {
   ModelGenerator({
@@ -85,6 +88,105 @@ class ModelGenerator extends BaseGenerator {
     }
 
     logger.success('Model "$modelName" created in feature "$featureName".');
+  }
+
+  /// Updates an existing model by adding and/or removing fields, then
+  /// re-rendering the file from the `model_with_fields` template.
+  ///
+  /// Removals are applied before additions, so a field can be replaced by
+  /// combining `--remove-field name --add-field name:newType`. The test file
+  /// is left untouched.
+  Future<void> updateFields(
+    String featureName,
+    String modelName, {
+    List<String> addFields = const [],
+    List<String> removeFields = const [],
+    bool dryRun = false,
+  }) async {
+    if (featureName.isEmpty || modelName.isEmpty) {
+      throw Exception('Feature name and model name are required.');
+    }
+    if (!isSnakeCase(featureName) || !isSnakeCase(modelName)) {
+      throw Exception('Names must be in snake_case.');
+    }
+    if (addFields.isEmpty && removeFields.isEmpty) {
+      throw Exception(
+        'Nothing to update: specify --add-field or --remove-field.',
+      );
+    }
+
+    final addedFields = parseModelFields(addFields);
+    final removeNames = removeFields.toSet();
+
+    final featureDir = getFeatureDir(featureName);
+    final modelsDir = p.join(featureDir, 'data', 'models');
+    final targetPath = p.join(modelsDir, '${modelName}_model.dart');
+    final modelFile = File(targetPath);
+    if (!modelFile.existsSync()) {
+      throw Exception(
+        'Model "$modelName" not found at $targetPath. '
+        'Create it first with: rekeens g model $featureName $modelName',
+      );
+    }
+
+    final existingFields = parseModelFileSource(
+      modelFile.readAsStringSync(),
+    ).fields;
+
+    for (final name in removeNames) {
+      if (!existingFields.any((f) => f.name == name)) {
+        final available = existingFields.map((f) => f.name).join(', ');
+        throw Exception(
+          'Field "$name" not found in model "$modelName". '
+          'Existing fields: $available',
+        );
+      }
+    }
+    final updatedFields = existingFields
+        .where((f) => !removeNames.contains(f.name))
+        .toList();
+    for (final field in addedFields) {
+      if (updatedFields.any((f) => f.name == field.name)) {
+        throw Exception(
+          'Field "${field.name}" already exists in model "$modelName". '
+          'Remove it first or choose another name.',
+        );
+      }
+      updatedFields.add(field);
+    }
+    if (updatedFields.isEmpty) {
+      throw Exception(
+        'Model "$modelName" must keep at least one field. '
+        'Cannot remove all fields.',
+      );
+    }
+
+    if (dryRun) {
+      logDryRun('update model "$modelName"', targetPath);
+      for (final name in removeNames) {
+        logger.warn('DRY RUN: would remove field "$name"');
+      }
+      for (final field in addedFields) {
+        logger.warn(
+          'DRY RUN: would add field "${field.name}:${field.dartType}"',
+        );
+      }
+      return;
+    }
+
+    final className = toPascalCase(modelName);
+    final imports = _collectImports(updatedFields);
+    await copyTemplate(
+      templateSubPath: 'model_with_fields',
+      targetDir: modelsDir,
+      variables: {'model_name': modelName, 'class_name': className},
+      lists: {
+        'fields': _buildFieldVariables(updatedFields),
+        if (imports.isNotEmpty) 'imports': imports,
+      },
+    );
+
+    logger.success('Model "$modelName" updated in feature "$featureName".');
   }
 
   List<Map<String, String>> _buildFieldVariables(List<ModelField> fields) {

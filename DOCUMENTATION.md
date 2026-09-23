@@ -311,6 +311,33 @@ rekeens g model profile user \
 
 Imports are deduplicated: referencing the same custom type multiple times produces only one import line.
 
+#### Updating an Existing Model (`--add-field` / `--remove-field`)
+
+Existing models can be updated without editing the file by hand. When `--add-field` or `--remove-field` is passed, the generator parses the current field declarations from `<model>_model.dart`, applies the changes, and regenerates the file:
+
+```bash
+# Add one or more fields
+rekeens g model profile user --add-field phone:string --add-field age:int?
+
+# Remove fields
+rekeens g model profile user --remove-field age
+
+# Combine both in a single call (removals are applied before additions,
+# so re-adding a removed name works as a type change)
+rekeens g model profile user --add-field email:string --remove-field phone
+
+# Preview without writing
+rekeens g model profile user --add-field email:string --dry-run
+```
+
+Behavior notes:
+
+- The model must already exist (create it with `rekeens g model <feature> <name>` first); the test stub is left untouched.
+- `--add-field` with a name that already exists fails with an error — remove the field first or pick another name.
+- `--remove-field` with an unknown name fails and lists the existing fields.
+- Removing all fields is not allowed; a model must keep at least one field.
+- All supported field types (see table above) are recognized when re-parsing, including nested custom models, enums, and `Map<String, dynamic>`.
+
 ### Repository Generator
 
 Splits the repository across Clean Architecture layers: the abstract interface

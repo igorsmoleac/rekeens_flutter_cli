@@ -45,6 +45,17 @@ class GenerateCommand extends Command<void> {
           'Base URL for datasource templates (e.g. https://api.example.com). '
           'Falls back to rekeens.yaml `defaults.base-url`.',
     );
+    argParser.addMultiOption(
+      'add-field',
+      help:
+          'Update an existing model by adding a field (name:type). '
+          'Repeatable, combinable with --remove-field.',
+    );
+    argParser.addMultiOption(
+      'remove-field',
+      help: 'Update an existing model by removing a field (name). '
+          'Repeatable, combinable with --add-field.',
+    );
   }
   final HookRunner _hookRunner;
   final String? _workingDirectory;
@@ -80,6 +91,16 @@ class GenerateCommand extends Command<void> {
     final dryRun = argResults!['dry-run'] as bool;
     final withTests = argResults!['tests'] as bool;
     final hooksEnabled = argResults!['hooks'] as bool;
+    final addFields = argResults!['add-field'] as List<String>;
+    final removeFields = argResults!['remove-field'] as List<String>;
+
+    if ((addFields.isNotEmpty || removeFields.isNotEmpty) &&
+        type != 'model') {
+      throw UsageException(
+        '--add-field/--remove-field are only supported for models.',
+        usage,
+      );
+    }
 
     final featureName = rest[1];
     final entityName = rest.length > 2 ? rest[2] : null;
@@ -99,7 +120,7 @@ class GenerateCommand extends Command<void> {
       await _hookRunner.runHooks(hookSet.beforeGenerate, context);
     }
 
-    await _runGenerator(type, rest, force, dryRun, withTests);
+    await _runGenerator(type, rest, force, dryRun, withTests, addFields, removeFields);
 
     if (hooksEnabled && hookSet.afterGenerate.isNotEmpty) {
       await _hookRunner.runHooks(hookSet.afterGenerate, context);
@@ -112,6 +133,8 @@ class GenerateCommand extends Command<void> {
     bool force,
     bool dryRun,
     bool withTests,
+    List<String> addFields,
+    List<String> removeFields,
   ) async {
     switch (type) {
       case 'feature':
@@ -137,6 +160,30 @@ class GenerateCommand extends Command<void> {
         );
         break;
       case 'model':
+        final updateMode = addFields.isNotEmpty || removeFields.isNotEmpty;
+        if (updateMode) {
+          _validateLength(
+            rest,
+            3,
+            'rekeens generate model <feature_name> <model_name> '
+            '(--add-field <name:type> | --remove-field <name>)',
+          );
+          if (rest.length > 3) {
+            throw UsageException(
+              'Positional fields cannot be combined with '
+              '--add-field/--remove-field.',
+              usage,
+            );
+          }
+          await _modelGenerator.updateFields(
+            rest[1],
+            rest[2],
+            addFields: addFields,
+            removeFields: removeFields,
+            dryRun: dryRun,
+          );
+          break;
+        }
         _validateLength(
           rest,
           3,
