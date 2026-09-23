@@ -56,7 +56,11 @@ ParsedModelFile parseModelFileSource(String source) {
 ///
 /// Enum fields cannot be recognized from the declaration alone (a bare
 /// PascalCase type), so the matching `fromJson` expression is used as a hint.
-ModelField _reconstructField(String name, String dartType, String? fromJsonExpr) {
+ModelField _reconstructField(
+  String name,
+  String dartType,
+  String? fromJsonExpr,
+) {
   final ModelField field;
   try {
     field = parseModelField('$name:$dartType');
