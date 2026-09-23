@@ -6,6 +6,7 @@
   - `rekeens g model <feature> <model> --add-field name:type` (repeatable) — appends new fields with full `fromJson`/`toJson` support; adding a name that already exists fails with an error
   - `rekeens g model <feature> <model> --remove-field name` (repeatable) — removes fields; unknown names fail with the list of existing fields; removing all fields is rejected
   - `--add-field` and `--remove-field` can be combined in one call; removals are applied before additions, so re-adding a removed name works as a type replacement
+    - **Windows fix** — model parser now handles CRLF line endings, so field updates work on Windows-generated files
   - **New files**: `lib/utils/model_file_parser.dart` (parses `final <type> <name>;` declarations back into `ModelField`s, reusing the generation-time type rules; enum fields are recognized via their `.values.byName(...)` `fromJson` expression), `test/model_file_parser_test.dart` (13 tests)
   - **`ModelGenerator.updateFields`** — merge + regeneration via the existing `model_with_fields` template; the test stub is left untouched; `--dry-run` prints the planned field changes
   - **`GenerateCommand`** — registers `--add-field` / `--remove-field` multi-options; usage with a non-`model` generator type or with positional fields throws a `UsageException`
