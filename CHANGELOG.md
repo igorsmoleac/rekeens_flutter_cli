@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.27.0
+
+- **Update existing models with `--add-field` / `--remove-field`** — after the initial generation, adding or removing a field previously required manual file editing; `rekeens g model` can now parse the existing model and regenerate it
+  - `rekeens g model <feature> <model> --add-field name:type` (repeatable) — appends new fields with full `fromJson`/`toJson` support; adding a name that already exists fails with an error
+  - `rekeens g model <feature> <model> --remove-field name` (repeatable) — removes fields; unknown names fail with the list of existing fields; removing all fields is rejected
+  - `--add-field` and `--remove-field` can be combined in one call; removals are applied before additions, so re-adding a removed name works as a type replacement
+  - **New files**: `lib/utils/model_file_parser.dart` (parses `final <type> <name>;` declarations back into `ModelField`s, reusing the generation-time type rules; enum fields are recognized via their `.values.byName(...)` `fromJson` expression), `test/model_file_parser_test.dart` (13 tests)
+  - **`ModelGenerator.updateFields`** — merge + regeneration via the existing `model_with_fields` template; the test stub is left untouched; `--dry-run` prints the planned field changes
+  - **`GenerateCommand`** — registers `--add-field` / `--remove-field` multi-options; usage with a non-`model` generator type or with positional fields throws a `UsageException`
+  - **Tests**: `generators_test.dart` (+11: add, remove, combined add+remove, enum preservation, untouched test stub, missing model, unknown field, duplicate add, remove-all, nothing-to-update, dry-run); `generate_command_test.dart` (+4: flag validation and multi-value parsing)
+  - **Docs**: `README.md` (quick-start example + command reference row), `DOCUMENTATION.md` (new "Updating an Existing Model" section)
+
 ## 0.26.3
   - Add runnable example/ (main.dart, README.md, updated rekeens.yaml.example)
   

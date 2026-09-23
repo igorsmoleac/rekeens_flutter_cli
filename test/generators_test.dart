@@ -663,4 +663,245 @@ void main() {
       expect(testFile.existsSync(), isFalse);
     });
   });
+
+  test('ModelGenerator updateFields adds a field to an existing model', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user', fields: ['name:string']);
+      await modelGen.updateFields('auth', 'user', addFields: ['age:int?']);
+
+      final content = _readModel(h, 'user');
+      expect(content.contains('final String name;'), isTrue);
+      expect(content.contains('final int? age;'), isTrue);
+      expect(content.contains('required this.name,'), isTrue);
+      expect(content.contains('this.age,'), isTrue);
+      expect(content.contains("age: json['age'] as int?,"), isTrue);
+      expect(content.contains("'age': age,"), isTrue);
+    });
+  });
+
+  test('ModelGenerator updateFields removes a field', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user', fields: ['name:string', 'age:int']);
+      await modelGen.updateFields('auth', 'user', removeFields: ['age']);
+
+      final content = _readModel(h, 'user');
+      expect(content.contains('final int age;'), isFalse);
+      expect(content.contains("'age': age,"), isFalse);
+      expect(content.contains('final String name;'), isTrue);
+      expect(content.contains("name: json['name'] as String,"), isTrue);
+    });
+  });
+
+  test('ModelGenerator updateFields combines add and remove in one call', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user', fields: ['name:string', 'age:int']);
+      await modelGen.updateFields(
+        'auth',
+        'user',
+        addFields: ['email:string'],
+        removeFields: ['age'],
+      );
+
+      final content = _readModel(h, 'user');
+      expect(content.contains('final int age;'), isFalse);
+      expect(content.contains('final String email;'), isTrue);
+      expect(content.contains("email: json['email'] as String,"), isTrue);
+    });
+  });
+
+  test('ModelGenerator updateFields preserves enum fields', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user', fields: ['role:enum Role']);
+      await modelGen.updateFields('auth', 'user', addFields: ['name:string']);
+
+      final content = _readModel(h, 'user');
+      expect(content.contains("import 'role.dart';"), isTrue);
+      expect(
+        content.contains('role: Role.values.byName(json[\'role\'] as String),'),
+        isTrue,
+      );
+      expect(content.contains("'role': role.name,"), isTrue);
+      expect(content.contains('final String name;'), isTrue);
+    });
+  });
+
+  test('ModelGenerator updateFields leaves the test file untouched', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user', fields: ['name:string']);
+      final testPath = p.join(
+        h.tempProject.path,
+        'test',
+        'features',
+        'auth',
+        'data',
+        'models',
+        'user_model_test.dart',
+      );
+      final before = File(testPath).readAsStringSync();
+
+      await modelGen.updateFields('auth', 'user', addFields: ['age:int']);
+
+      expect(File(testPath).readAsStringSync(), before);
+    });
+  });
+
+  test('ModelGenerator updateFields throws when the model does not exist', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user');
+
+      expect(
+        () => modelGen.updateFields('auth', 'order', addFields: ['total:double']),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Model "order" not found'),
+          ),
+        ),
+      );
+    });
+  });
+
+  test('ModelGenerator updateFields throws when removing an unknown field', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user', fields: ['name:string']);
+
+      expect(
+        () => modelGen.updateFields('auth', 'user', removeFields: ['email']),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Field "email" not found'),
+          ),
+        ),
+      );
+    });
+  });
+
+  test('ModelGenerator updateFields throws when adding a duplicate field', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user', fields: ['name:string']);
+
+      expect(
+        () => modelGen.updateFields('auth', 'user', addFields: ['name:string']),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Field "name" already exists'),
+          ),
+        ),
+      );
+    });
+  });
+
+  test('ModelGenerator updateFields throws when removing all fields', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user', fields: ['name:string']);
+
+      expect(
+        () => modelGen.updateFields('auth', 'user', removeFields: ['name']),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('at least one field'),
+          ),
+        ),
+      );
+    });
+  });
+
+  test('ModelGenerator updateFields throws when nothing to update', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user');
+
+      expect(
+        () => modelGen.updateFields('auth', 'user'),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Nothing to update'),
+          ),
+        ),
+      );
+    });
+  });
+
+  test('ModelGenerator updateFields dry-run does not modify the file', () async {
+    await h.withAuthFeature(() async {
+      final modelGen = ModelGenerator(
+        workingDirectory: h.tempProject.path,
+        templatesRootOverride: h.projectRoot,
+      );
+      await modelGen.generate('auth', 'user', fields: ['name:string']);
+      final before = _readModel(h, 'user');
+
+      await modelGen.updateFields(
+        'auth',
+        'user',
+        addFields: ['age:int'],
+        removeFields: ['name'],
+        dryRun: true,
+      );
+
+      expect(_readModel(h, 'user'), before);
+    });
+  });
+}
+
+String _readModel(GeneratorTestHelper h, String modelName) {
+  return File(
+    p.join(
+      h.tempProject.path,
+      'lib',
+      'features',
+      'auth',
+      'data',
+      'models',
+      '${modelName}_model.dart',
+    ),
+  ).readAsStringSync();
 }

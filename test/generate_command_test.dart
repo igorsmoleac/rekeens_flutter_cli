@@ -114,6 +114,81 @@ void main() {
     });
   });
 
+  group('model field update flags', () {
+    test('rejects --add-field for non-model generator types', () {
+      expect(
+        () => runner.run([
+          'generate',
+          'feature',
+          'auth',
+          '--add-field',
+          'email:string',
+        ]),
+        throwsA(
+          isA<UsageException>().having(
+            (e) => e.message,
+            'message',
+            contains('only supported for models'),
+          ),
+        ),
+      );
+    });
+
+    test('throws UsageException when model name is missing in update mode', () {
+      expect(
+        () => runner.run([
+          'generate',
+          'model',
+          'auth',
+          '--add-field',
+          'email:string',
+        ]),
+        throwsA(isA<UsageException>()),
+      );
+    });
+
+    test('throws UsageException when positional fields are combined with '
+        '--add-field', () {
+      expect(
+        () => runner.run([
+          'generate',
+          'model',
+          'auth',
+          'user',
+          'name:string',
+          '--add-field',
+          'email:string',
+        ]),
+        throwsA(
+          isA<UsageException>().having(
+            (e) => e.message,
+            'message',
+            contains('cannot be combined'),
+          ),
+        ),
+      );
+    });
+
+    test('accepts repeated --add-field and --remove-field options', () async {
+      await expectLater(
+        runner.run([
+          'generate',
+          'model',
+          'auth',
+          'user',
+          '--add-field',
+          'email:string',
+          '--add-field',
+          'age:int?',
+          '--remove-field',
+          'name',
+          '--dry-run',
+        ]),
+        throwsA(isNot(isA<UsageException>())),
+      );
+    });
+  });
+
   group('hooks flag', () {
     test('accepts --no-hooks flag without error', () async {
       final fakeRunner = _FakeHookRunner();
