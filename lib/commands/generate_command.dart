@@ -53,7 +53,8 @@ class GenerateCommand extends Command<void> {
     );
     argParser.addMultiOption(
       'remove-field',
-      help: 'Update an existing model by removing a field (name). '
+      help:
+          'Update an existing model by removing a field (name). '
           'Repeatable, combinable with --add-field.',
     );
   }
@@ -94,8 +95,7 @@ class GenerateCommand extends Command<void> {
     final addFields = argResults!['add-field'] as List<String>;
     final removeFields = argResults!['remove-field'] as List<String>;
 
-    if ((addFields.isNotEmpty || removeFields.isNotEmpty) &&
-        type != 'model') {
+    if ((addFields.isNotEmpty || removeFields.isNotEmpty) && type != 'model') {
       throw UsageException(
         '--add-field/--remove-field are only supported for models.',
         usage,
@@ -120,7 +120,15 @@ class GenerateCommand extends Command<void> {
       await _hookRunner.runHooks(hookSet.beforeGenerate, context);
     }
 
-    await _runGenerator(type, rest, force, dryRun, withTests, addFields, removeFields);
+    await _runGenerator(
+      type,
+      rest,
+      force,
+      dryRun,
+      withTests,
+      addFields,
+      removeFields,
+    );
 
     if (hooksEnabled && hookSet.afterGenerate.isNotEmpty) {
       await _hookRunner.runHooks(hookSet.afterGenerate, context);

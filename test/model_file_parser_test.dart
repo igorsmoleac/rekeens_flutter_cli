@@ -252,7 +252,7 @@ class DupModel {
 }
 
 ModelField _field(String name) {
-  return parseModelFileSource(_modelSource).fields.firstWhere(
-    (f) => f.name == name,
-  );
+  return parseModelFileSource(
+    _modelSource,
+  ).fields.firstWhere((f) => f.name == name);
 }
