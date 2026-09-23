@@ -6,7 +6,6 @@ final _fieldDeclRegex = RegExp(
 
 final _fromJsonEntryRegex = RegExp(r'^([a-zA-Z_][a-zA-Z0-9_]*):(.*)$');
 
-/// The result of parsing an existing model file.
 class ParsedModelFile {
   const ParsedModelFile({required this.fields});
 
@@ -25,11 +24,14 @@ class ParsedModelFile {
 /// Throws [FormatException] when the source contains no field declarations
 /// or a declaration uses an unsupported type.
 ParsedModelFile parseModelFileSource(String source) {
-  final fromJsonExprs = _extractFromJsonExprs(source);
+  var content = source.startsWith('\uFEFF') ? source.substring(1) : source;
+  content = content.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+
+  final fromJsonExprs = _extractFromJsonExprs(content);
 
   final fields = <ModelField>[];
   final seen = <String>{};
-  for (final line in source.split('\n')) {
+  for (final line in content.split('\n')) {
     final match = _fieldDeclRegex.firstMatch(line);
     if (match == null) continue;
 
