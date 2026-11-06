@@ -9,6 +9,13 @@ name: E2E Smoke
 # codegen). A bug in the `none` branches — only hit by the `minimal` preset —
 # would go unnoticed if only `--preset=full` were tested, so all three presets
 # are covered as a matrix.
+#
+# The matrix also spans ubuntu-latest and windows-latest: dart.yml already
+# analyzes the CLI itself on both OSes, but the generated project was only
+# ever analyzed on Linux. `flutter create`/`pub`/`test` behave differently on
+# Windows (path separators, process spawning), and the scaffolder has explicit
+# `Platform.isWindows` branches (cmd /c, taskkill /T) that nothing exercised
+# end-to-end until now.
 
 on:
   push:
@@ -19,13 +26,23 @@ on:
 
 jobs:
   smoke:
-    name: create (${{ matrix.preset }}) + analyze + test
-    runs-on: ubuntu-latest
+    name: create (${{ matrix.os }} / ${{ matrix.preset }}) + analyze + test
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
         preset: [minimal, mobile, full]
+        # Windows runners are slow — three heavy `flutter test` runs in
+        # sequence would dominate the workflow, so Windows gets `minimal`
+        # only (it exercises the `none` branches of every conditional block);
+        # ubuntu keeps full preset coverage.
+        exclude:
+          - os: windows-latest
+            preset: mobile
+          - os: windows-latest
+            preset: full
 
     steps:
       - uses: actions/checkout@v4
@@ -40,6 +57,9 @@ jobs:
           cache: true
 
       - name: Cache Pub dependencies (CLI)
+        # setup-dart exports PUB_CACHE as ~/.pub-cache on every OS (USERPROFILE
+        # on Windows) and puts its bin/ on PATH, so this path is valid for both
+        # matrix legs and `rekeens` resolves after `dart pub global activate`.
         uses: actions/cache@v4
         with:
           path: ~/.pub-cache
