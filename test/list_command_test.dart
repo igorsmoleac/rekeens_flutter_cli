@@ -61,6 +61,7 @@ void main() {
       expect(out, contains('entity'));
       expect(out, contains('usecase'));
       expect(out, contains('datasource'));
+      expect(out, contains('Create a test stub for an existing component'));
     });
 
     test('includes usage examples for generators', () async {
@@ -74,6 +75,7 @@ void main() {
       expect(out, contains('rekeens generate entity auth user'));
       expect(out, contains('rekeens generate usecase auth login'));
       expect(out, contains('rekeens generate datasource auth user_api'));
+      expect(out, contains('rekeens g test model auth user'));
     });
 
     test('includes preset details', () async {
@@ -98,6 +100,7 @@ void main() {
         'entity',
         'usecase',
         'datasource',
+        'test',
       });
     });
   });

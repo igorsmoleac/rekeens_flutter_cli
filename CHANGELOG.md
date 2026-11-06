@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.0
+
+- **Standalone test generator** — `rekeens g test <type> <feature> <name>` allows generating a test stub for an existing component without regenerating the component itself.
+- **CI improvements** — added Windows (`windows-latest`) to the E2E smoke test matrix to cover Windows-specific process execution logic (`cmd /c`, `taskkill /T`).
+- **Developer tooling** — added a local pre-commit hook (`tool/githooks/pre-commit`) to enforce `dart format` and `dart analyze` before committing, plus a `.gitattributes` rule to keep the hook's line endings as LF.
+
 ## 0.27.2
 
 - **Local pre-commit hook** — formatting and static analysis now run automatically before every commit, catching issues locally instead of waiting for CI

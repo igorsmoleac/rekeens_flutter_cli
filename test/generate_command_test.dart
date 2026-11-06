@@ -85,6 +85,20 @@ void main() {
         throwsA(isA<UsageException>()),
       );
     });
+
+    test('throws UsageException when test arguments are incomplete', () {
+      expect(
+        () => runner.run(['generate', 'test', 'model', 'auth']),
+        throwsA(isA<UsageException>()),
+      );
+    });
+
+    test('throws UsageException when test gets extra arguments', () {
+      expect(
+        () => runner.run(['generate', 'test', 'model', 'auth', 'user', 'x']),
+        throwsA(isA<UsageException>()),
+      );
+    });
   });
 
   group('flag parsing', () {

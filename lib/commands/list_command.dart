@@ -108,4 +108,9 @@ const generators = <GeneratorInfo>[
         'Create a data source (abstract interface + HTTP impl) inside a feature.',
     example: 'rekeens generate datasource auth user_api',
   ),
+  GeneratorInfo(
+    name: 'test',
+    description: 'Create a test stub for an existing component.',
+    example: 'rekeens g test model auth user',
+  ),
 ];
