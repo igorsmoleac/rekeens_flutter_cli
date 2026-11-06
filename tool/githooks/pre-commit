@@ -1,0 +1,48 @@
+#!/bin/sh
+# Pre-commit hook: formatting + static analysis before every commit.
+#
+# Install (one time, from the repository root):
+#   chmod +x tool/githooks/pre-commit
+#   git config core.hooksPath tool/githooks
+#
+# Skippable for a single commit with: git commit --no-verify
+
+# Staged .dart files (added / copied / modified / renamed).
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.dart$')
+
+# Nothing to check — allow the commit.
+if [ -z "$STAGED" ]; then
+  echo "No Dart files staged. Skipping..."
+  exit 0
+fi
+
+# Formatting scope matches CI (lib, test, bin): templates/ contain
+# {{placeholders}} that are not valid Dart and cannot be formatted.
+set --
+while IFS= read -r file; do
+  case "$file" in
+    lib/*|test/*|bin/*) set -- "$@" "$file" ;;
+  esac
+done <<EOF
+$STAGED
+EOF
+
+if [ $# -eq 0 ]; then
+  echo "No formattable Dart files (lib/test/bin) staged. Skipping..."
+  exit 0
+fi
+
+echo "Checking formatting of $# staged file(s)..."
+if ! dart format --output=none --set-exit-if-changed "$@"; then
+  echo "❌ Formatting failed. Please run 'dart format lib test bin' and stage the changes." >&2
+  exit 1
+fi
+
+echo "Running static analysis..."
+if ! dart analyze --fatal-infos lib test bin; then
+  echo "❌ Static analysis failed." >&2
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"
+exit 0

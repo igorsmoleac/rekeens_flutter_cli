@@ -20,6 +20,33 @@ cd rekeens_flutter_cli
 dart pub get
 ```
 
+## Pre-commit hooks (recommended)
+
+A local pre-commit hook runs the same formatting and analysis checks as CI
+before every commit, so issues surface before you push instead of after.
+Install it once from the repository root:
+
+```bash
+chmod +x tool/githooks/pre-commit
+git config core.hooksPath tool/githooks
+```
+
+Once installed, every `git commit` runs:
+
+1. `dart format --output=none --set-exit-if-changed` on the staged `.dart`
+   files under `lib/`, `test/`, and `bin/` — the same scope as CI; `templates/`
+   is skipped because its `{{placeholders}}` are not valid Dart.
+2. `dart analyze --fatal-infos lib test bin`.
+
+If a check fails, the commit is aborted with a hint on how to fix it. To skip
+the hooks for a single commit (e.g. work in progress), use
+`git commit --no-verify`.
+
+The hook file **must** have LF line endings: a CRLF shebang (`#!/bin/sh\r`)
+makes git fail to execute the hook. `.gitattributes` enforces this with
+`tool/githooks/* text eol=lf`, so a fresh checkout is always safe; if you edit
+the hook on Windows, keep LF in your editor settings.
+
 ## Branching model
 
 | Branch | Purpose |
