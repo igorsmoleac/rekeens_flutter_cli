@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.27.2
+
+- **Local pre-commit hook** — formatting and static analysis now run automatically before every commit, catching issues locally instead of waiting for CI
+  - **New file**: `tool/githooks/pre-commit` — POSIX `sh` script (Linux, macOS, and Windows via Git Bash) that checks staged `.dart` files with `dart format --output=none --set-exit-if-changed` and runs `dart analyze --fatal-infos lib test bin`; a failing check aborts the commit with a fix hint
+  - Formatting scope matches CI (`lib`, `test`, `bin`) — `templates/` are skipped because their `{{placeholders}}` are not valid Dart and cannot be formatted
+  - Skippable for a single commit with `git commit --no-verify`
+- **`CONTRIBUTING.md`** — new "Pre-commit hooks (recommended)" section with one-time installation (`chmod +x tool/githooks/pre-commit && git config core.hooksPath tool/githooks`)
+
 ## 0.27.1
 
 - **New `CONTRIBUTING.md`** — public contributor guide covering the branch model (`feature/<name>` → `dev` → `main`), commit message conventions, local checks (`dart format`, `dart analyze --fatal-infos`, `dart test`), PR checklist, versioning/changelog rules, and issue reporting guidelines; linked from `README.md`; no references to the private internal style guide remain in public docs
