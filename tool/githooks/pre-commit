@@ -11,7 +11,10 @@
 STAGED=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.dart$')
 
 # Nothing to check — allow the commit.
-[ -z "$STAGED" ] && exit 0
+if [ -z "$STAGED" ]; then
+  echo "No Dart files staged. Skipping..."
+  exit 0
+fi
 
 # Formatting scope matches CI (lib, test, bin): templates/ contain
 # {{placeholders}} that are not valid Dart and cannot be formatted.
@@ -24,7 +27,10 @@ done <<EOF
 $STAGED
 EOF
 
-[ $# -eq 0 ] && exit 0
+if [ $# -eq 0 ]; then
+  echo "No formattable Dart files (lib/test/bin) staged. Skipping..."
+  exit 0
+fi
 
 echo "Checking formatting of $# staged file(s)..."
 if ! dart format --output=none --set-exit-if-changed "$@"; then

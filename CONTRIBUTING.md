@@ -42,6 +42,11 @@ If a check fails, the commit is aborted with a hint on how to fix it. To skip
 the hooks for a single commit (e.g. work in progress), use
 `git commit --no-verify`.
 
+The hook file **must** have LF line endings: a CRLF shebang (`#!/bin/sh\r`)
+makes git fail to execute the hook. `.gitattributes` enforces this with
+`tool/githooks/* text eol=lf`, so a fresh checkout is always safe; if you edit
+the hook on Windows, keep LF in your editor settings.
+
 ## Branching model
 
 | Branch | Purpose |
