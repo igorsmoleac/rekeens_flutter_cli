@@ -9,6 +9,7 @@ import 'package:rekeens_flutter_cli/generators/provider_generator.dart';
 import 'package:rekeens_flutter_cli/generators/repository_generator.dart';
 import 'package:rekeens_flutter_cli/generators/screen_generator.dart';
 import 'package:rekeens_flutter_cli/generators/service_generator.dart';
+import 'package:rekeens_flutter_cli/generators/test_generator.dart';
 import 'package:rekeens_flutter_cli/generators/usecase_generator.dart';
 
 class GenerateCommand extends Command<void> {
@@ -70,6 +71,7 @@ class GenerateCommand extends Command<void> {
   final _entityGenerator = EntityGenerator();
   final _useCaseGenerator = UseCaseGenerator();
   final _datasourceGenerator = DatasourceGenerator();
+  final _testGenerator = TestGenerator();
 
   @override
   String get name => 'generate';
@@ -102,8 +104,15 @@ class GenerateCommand extends Command<void> {
       );
     }
 
-    final featureName = rest[1];
-    final entityName = rest.length > 2 ? rest[2] : null;
+    // The `test` generator takes <type> <feature> <name>, so the feature and
+    // entity are shifted one position later than for the other generators.
+    final isTestGenerator = type == 'test';
+    final featureName = isTestGenerator
+        ? (rest.length > 2 ? rest[2] : '')
+        : rest[1];
+    final entityName = isTestGenerator
+        ? (rest.length > 3 ? rest[3] : null)
+        : (rest.length > 2 ? rest[2] : null);
 
     final hookSet = hooksEnabled
         ? ConfigLoader.loadHooks(workingDirectory: _workingDirectory)
@@ -292,9 +301,25 @@ class GenerateCommand extends Command<void> {
           withTests: withTests,
         );
         break;
+      case 'test':
+        if (rest.length != 4) {
+          throw UsageException(
+            'Expected: rekeens generate test <type> <feature_name> '
+            '<component_name>',
+            usage,
+          );
+        }
+        await _testGenerator.generate(
+          rest[1],
+          rest[2],
+          rest[3],
+          force: force,
+          dryRun: dryRun,
+        );
+        break;
       default:
         throw UsageException(
-          'Unknown generator type "$type". Available: feature, screen, model, repository, service, provider, entity, usecase, datasource',
+          'Unknown generator type "$type". Available: feature, screen, model, repository, service, provider, entity, usecase, datasource, test',
           usage,
         );
     }
